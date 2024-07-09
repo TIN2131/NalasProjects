@@ -90,6 +90,7 @@
         .date-input {
             flex: 1 1 calc(20% - 10px);
             min-width: 150px;
+            position: relative;
         }
         .date-input label {
             font-size: 0.9em;
@@ -97,6 +98,14 @@
         }
         .date-input input {
             width: 100%;
+            padding-right: 30px; /* Make room for the emoji */
+        }
+        .emoji {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
         }
         .modal {
             display: none;
@@ -187,6 +196,9 @@
         
         <div id="hourInputs"></div>
         
+        <label for="pto">PTO Hours:</label>
+        <input type="number" id="pto" min="0" step="0.25">
+        
         <button type="button" id="calculateButton" style="display:none;">Calculate</button>
     </div>
 
@@ -198,7 +210,6 @@
     </div>
 
     <script>
-        // The JavaScript remains unchanged from the previous version
         function getDaysInMonth(year, month) {
             return new Date(year, month, 0).getDate();
         }
@@ -206,6 +217,12 @@
         function isWeekend(year, month, day) {
             const date = new Date(year, month - 1, day);
             return date.getDay() === 0 || date.getDay() === 6;
+        }
+
+        function getEmoji(hours) {
+            if (hours >= 10) return '😍';
+            if (hours >= 9) return '😊';
+            return '😒';
         }
 
         function generateDateFields() {
@@ -265,6 +282,15 @@
                     input.step = '0.25';
                     dateDiv.appendChild(input);
 
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.className = 'emoji';
+                    dateDiv.appendChild(emojiSpan);
+
+                    input.addEventListener('input', function() {
+                        const hours = parseFloat(this.value) || 0;
+                        emojiSpan.textContent = getEmoji(hours);
+                    });
+
                     hourInputs.appendChild(dateDiv);
                 }
 
@@ -279,7 +305,8 @@
         document.getElementById('calculateButton').addEventListener('click', function() {
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
             const inputs = document.querySelectorAll('#hourInputs input');
-            let totalHours = 0;
+            const ptoHours = parseFloat(document.getElementById('pto').value) || 0;
+            let totalHours = ptoHours;
 
             inputs.forEach(input => {
                 totalHours += parseFloat(input.value) || 0;
@@ -300,9 +327,10 @@
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = `
                 <h2>Results</h2>
-                <p>Total Hours: ${totalHours.toFixed(2)}</p>
+                <p>Total Hours (including PTO): ${totalHours.toFixed(2)}</p>
                 <p>Regular Hours: ${regularHours.toFixed(2)}</p>
                 <p>Overtime Hours: ${overtimeHours.toFixed(2)}</p>
+                <p>PTO Hours: ${ptoHours.toFixed(2)}</p>
                 <p>Gross Pay: $${grossPay.toFixed(2)}</p>
                 <p>Net Pay (after taxes): $${netPay.toFixed(2)}</p>
                 <p class="large-message"><strong>${message}</strong></p>
