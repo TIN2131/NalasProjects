@@ -374,3 +374,32 @@
                 <p>Regular Hours: ${regularHours.toFixed(2)}</p>
                 <p>Overtime Hours: ${overtimeHours.toFixed(2)}</p>
                 <p>PTO Hours: ${ptoHours.toFixed(
+2)}</p>
+                <p>Gross Pay: $${grossPay.toFixed(2)}</p>
+                <p>Net Pay (after taxes): $${netPay.toFixed(2)}</p>
+                <p class="large-message"><strong>${message}</strong></p>
+            `;
+
+            document.getElementById('resultsModal').style.display = "block";
+        });
+
+        // Get the modal
+        var modal = document.getElementById('resultsModal');
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
