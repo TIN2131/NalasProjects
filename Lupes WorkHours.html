@@ -55,6 +55,7 @@
             border-radius: 8px;
             font-size: 16px;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
         input[type="number"]:focus, select:focus {
             outline: none;
@@ -95,7 +96,7 @@
             margin-top: 0;
         }
         .date-input input {
-            width: calc(100% - 24px);
+            width: 100%;
         }
         .modal {
             display: none;
@@ -197,6 +198,7 @@
     </div>
 
     <script>
+        // The JavaScript remains unchanged from the previous version
         function getDaysInMonth(year, month) {
             return new Date(year, month, 0).getDate();
         }
@@ -290,7 +292,7 @@
             const overtimePay = overtimeHours * (hourlyRate * 1.5);
             const grossPay = regularPay + overtimePay;
             
-            const taxRate = 0.27; // Updated to 27% tax rate
+            const taxRate = 0.27; // 27% tax rate
             const netPay = grossPay * (1 - taxRate);
             
             let message = netPay < 2200 ? "Te va dar un Papatuz!, Deje el Tiktok y a trabajar" : "A descansar con una copita de agua jajaja";
