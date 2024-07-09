@@ -88,8 +88,8 @@
             margin-top: 20px;
         }
         .date-input {
-            flex: 1 1 calc(20% - 10px);
-            min-width: 150px;
+            flex: 1 1 calc(33.33% - 10px);
+            min-width: 200px;
             position: relative;
         }
         .date-input label {
@@ -98,14 +98,24 @@
         }
         .date-input input {
             width: 100%;
-            padding-right: 30px; /* Make room for the emoji */
+            padding-right: 60px; /* Make room for the emoji and target */
         }
         .emoji {
+            position: absolute;
+            right: 35px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+        .target {
             position: absolute;
             right: 10px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 20px;
+            font-size: 14px;
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 4px;
         }
         .modal {
             display: none;
@@ -145,14 +155,6 @@
             color: var(--secondary-color);
             text-align: center;
             margin-top: 20px;
-        }
-        #goalStatus {
-            background-color: #f0f0f0;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-weight: bold;
-            text-align: center;
         }
         @media (max-width: 600px) {
             .container {
@@ -207,8 +209,6 @@
         <label for="pto">PTO Hours:</label>
         <input type="number" id="pto" min="0" step="0.25">
         
-        <div id="goalStatus"></div>
-        
         <button type="button" id="calculateButton" style="display:none;">Calculate</button>
     </div>
 
@@ -238,31 +238,38 @@
             return '😒';
         }
 
-        function calculateHoursNeeded() {
+        function calculateTargetHours() {
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
             if (!hourlyRate) return;
 
             const inputs = document.querySelectorAll('#hourInputs input');
             const ptoHours = parseFloat(document.getElementById('pto').value) || 0;
             let totalHours = ptoHours;
+            let filledDays = 0;
 
             inputs.forEach(input => {
-                totalHours += parseFloat(input.value) || 0;
+                const hours = parseFloat(input.value) || 0;
+                totalHours += hours;
+                if (hours > 0) filledDays++;
             });
 
             const grossPayNeeded = NET_PAY_GOAL / (1 - TAX_RATE);
             const hoursNeeded = grossPayNeeded / hourlyRate;
             const remainingHours = Math.max(0, hoursNeeded - totalHours);
+            const remainingDays = inputs.length - filledDays;
 
-            const workdaysLeft = inputs.length - [...inputs].filter(input => parseFloat(input.value) > 0).length;
-            const hoursPerDay = workdaysLeft > 0 ? remainingHours / workdaysLeft : 0;
+            const targetHoursPerDay = remainingDays > 0 ? remainingHours / remainingDays : 0;
 
-            const goalStatus = document.getElementById('goalStatus');
-            if (remainingHours > 0) {
-                goalStatus.textContent = `To reach $${NET_PAY_GOAL} net pay, you need ${remainingHours.toFixed(2)} more hours total, or ${hoursPerDay.toFixed(2)} hours per remaining workday.`;
-            } else {
-                goalStatus.textContent = `Congratulations! You've reached your $${NET_PAY_GOAL} net pay goal!`;
-            }
+            inputs.forEach((input, index) => {
+                const targetSpan = document.getElementById(`target-${index}`);
+                if (targetSpan) {
+                    if (index >= filledDays) {
+                        targetSpan.textContent = targetHoursPerDay.toFixed(2);
+                    } else {
+                        targetSpan.textContent = '-';
+                    }
+                }
+            });
         }
 
         function generateDateFields() {
@@ -291,6 +298,7 @@
             let currentDay = startDay;
             let currentMonth = month;
             let currentYear = year;
+            let index = 0;
 
             while (true) {
                 if (currentDay > getDaysInMonth(currentYear, currentMonth)) {
@@ -326,25 +334,31 @@
                     emojiSpan.className = 'emoji';
                     dateDiv.appendChild(emojiSpan);
 
+                    const targetSpan = document.createElement('span');
+                    targetSpan.className = 'target';
+                    targetSpan.id = `target-${index}`;
+                    dateDiv.appendChild(targetSpan);
+
                     input.addEventListener('input', function() {
                         const hours = parseFloat(this.value) || 0;
                         emojiSpan.textContent = getEmoji(hours);
-                        calculateHoursNeeded();
+                        calculateTargetHours();
                     });
 
                     hourInputs.appendChild(dateDiv);
+                    index++;
                 }
 
                 currentDay++;
             }
 
             document.getElementById('calculateButton').style.display = 'block';
-            calculateHoursNeeded();
+            calculateTargetHours();
         }
 
-        document.getElementById('generateFields').addEventListener('click', generateFields);
-        document.getElementById('hourlyRate').addEventListener('input', calculateHoursNeeded);
-        document.getElementById('pto').addEventListener('input', calculateHoursNeeded);
+        document.getElementById('generateFields').addEventListener('click', generateDateFields);
+        document.getElementById('hourlyRate').addEventListener('input', calculateTargetHours);
+        document.getElementById('pto').addEventListener('input', calculateTargetHours);
 
         document.getElementById('calculateButton').addEventListener('click', function() {
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
@@ -373,12 +387,12 @@
                 <p>Total Hours (including PTO): ${totalHours.toFixed(2)}</p>
                 <p>Regular Hours: ${regularHours.toFixed(2)}</p>
                 <p>Overtime Hours: ${overtimeHours.toFixed(2)}</p>
-                <p>PTO Hours: ${ptoHours.toFixed(
-2)}</p>
+                <p>PTO Hours: ${ptoHours.toFixed(2)}</p>
                 <p>Gross Pay: $${grossPay.toFixed(2)}</p>
                 <p>Net Pay (after taxes): $${netPay.toFixed(2)}</p>
                 <p class="large-message"><strong>${message}</strong></p>
-            `;
+`;
+
 
             document.getElementById('resultsModal').style.display = "block";
         });
