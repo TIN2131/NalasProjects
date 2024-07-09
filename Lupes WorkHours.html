@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lupe's Work Hours Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF69B4;
+            --secondary-color: #FF1493;
+            --background-color: #FFE6F2;
+            --text-color: #4A4A4A;
+            --card-color: #FFFFFF;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--card-color);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
+        }
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin-top: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+        button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+        }
+        #results, #hourInputs {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #FFF0F5;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        #hourInputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .large-message {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            text-align: center;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lupe's Work Hours Tracker</h1>
+        <form id="workHoursForm">
+            <label for="month">Select Month:</label>
+            <select id="month" required>
+                <option value="">Select a month</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+
+            <label for="year">Enter Year:</label>
+            <input type="number" id="year" min="2024" max="2100" required>
+
+            <label for="payPeriod">Select Pay Period:</label>
+            <select id="payPeriod" required>
+                <option value="">Select a pay period</option>
+                <option value="1">Pay Period 1 (11th-25th)</option>
+                <option value="2">Pay Period 2 (26th-10th)</option>
+            </select>
+
+            <label for="hourlyRate">Hourly Rate ($):</label>
+            <input type="number" id="hourlyRate" step="0.01" required>
+            
+            <button type="button" id="generateFields">Generate Date Fields</button>
+        </form>
+        
+        <div id="hourInputs"></div>
+        
+        <button type="button" id="calculateButton" style="display:none;">Calculate</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function getDaysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        function isWeekend(year, month, day) {
+            const date = new Date(year, month - 1, day);
+            return date.getDay() === 0 || date.getDay() === 6;
+        }
+
+        function generateDateFields() {
+            const month = parseInt(document.getElementById('month').value, 10);
+            const year = parseInt(document.getElementById('year').value, 10);
+            const payPeriod = parseInt(document.getElementById('payPeriod').value, 10);
+            const hourInputs = document.getElementById('hourInputs');
+            hourInputs.innerHTML = '';
+
+            if (!month || !year || !payPeriod) {
+                alert('Please select all fields.');
+                return;
+            }
+
+            let startDay, endDay, endMonth;
+            if (payPeriod === 1) {
+                startDay = 11;
+                endDay = 25;
+                endMonth = month;
+            } else {
+                startDay = 26;
+                endDay = 10;
+                endMonth = month % 12 + 1;
+            }
+
+            let currentDay = startDay;
+            let currentMonth = month;
+            let currentYear = year;
+
+            while (true) {
+                if (currentDay > getDaysInMonth(currentYear, currentMonth)) {
+                    currentDay = 1;
+                    currentMonth++;
+                    if (currentMonth > 12) {
+                        currentMonth = 1;
+                        currentYear++;
+                    }
+                }
+
+                if (currentMonth === endMonth && currentDay > endDay) break;
+
+                if (!isWeekend(currentYear, currentMonth, currentDay)) {
+                    const dateStr = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`;
+                    const dateDiv = document.createElement('div');
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = dateStr;
+                    label.textContent = dateStr;
+                    dateDiv.appendChild(label);
+
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = dateStr;
+                    input.min = '0';
+                    input.max = '24';
+                    input.step = '0.25';
+                    dateDiv.appendChild(input);
+
+                    hourInputs.appendChild(dateDiv);
+                }
+
+                currentDay++;
+            }
+
+            document.getElementById('calculateButton').style.display = 'block';
+        }
+
+        document.getElementById('generateFields').addEventListener('click', generateDateFields);
+
+        document.getElementById('calculateButton').addEventListener('click', function() {
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+            const inputs = document.querySelectorAll('#hourInputs input');
+            let totalHours = 0;
+
+            inputs.forEach(input => {
+                totalHours += parseFloat(input.value) || 0;
+            });
+
+            const regularHours = Math.min(totalHours, 80);
+            const overtimeHours = Math.max(totalHours - 80, 0);
+            
+            const regularPay = regularHours * hourlyRate;
+            const overtimePay = overtimeHours * (hourlyRate * 1.5);
+            const grossPay = regularPay + overtimePay;
+            
+            const taxRate = 0.22; // 22% effective tax rate for simplicity
+            const netPay = grossPay * (1 - taxRate);
+            
+            let message = netPay < 2200 ? "Te va dar un Papatuz!, Deje el Tiktok y a trabajar" : "A descansar con una copita de agua jajaja";
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h2>Results</h2>
+                <p>Total Hours: ${totalHours.toFixed(2)}</p>
+                <p>Regular Hours: ${regularHours.toFixed(2)}</p>
+                <p>Overtime Hours: ${overtimeHours.toFixed(2)}</p>
+                <p>Gross Pay: $${grossPay.toFixed(2)}</p>
+                <p>Net Pay (after taxes): $${netPay.toFixed(2)}</p>
+                <p class="large-message"><strong>${message}</strong></p>
+            `;
+        });
+    </script>
+</body>
+</html>
