@@ -146,6 +146,14 @@
             text-align: center;
             margin-top: 20px;
         }
+        #goalStatus {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -199,6 +207,8 @@
         <label for="pto">PTO Hours:</label>
         <input type="number" id="pto" min="0" step="0.25">
         
+        <div id="goalStatus"></div>
+        
         <button type="button" id="calculateButton" style="display:none;">Calculate</button>
     </div>
 
@@ -210,6 +220,9 @@
     </div>
 
     <script>
+        const NET_PAY_GOAL = 2200;
+        const TAX_RATE = 0.27;
+
         function getDaysInMonth(year, month) {
             return new Date(year, month, 0).getDate();
         }
@@ -223,6 +236,33 @@
             if (hours >= 10) return '😍';
             if (hours >= 9) return '😊';
             return '😒';
+        }
+
+        function calculateHoursNeeded() {
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+            if (!hourlyRate) return;
+
+            const inputs = document.querySelectorAll('#hourInputs input');
+            const ptoHours = parseFloat(document.getElementById('pto').value) || 0;
+            let totalHours = ptoHours;
+
+            inputs.forEach(input => {
+                totalHours += parseFloat(input.value) || 0;
+            });
+
+            const grossPayNeeded = NET_PAY_GOAL / (1 - TAX_RATE);
+            const hoursNeeded = grossPayNeeded / hourlyRate;
+            const remainingHours = Math.max(0, hoursNeeded - totalHours);
+
+            const workdaysLeft = inputs.length - [...inputs].filter(input => parseFloat(input.value) > 0).length;
+            const hoursPerDay = workdaysLeft > 0 ? remainingHours / workdaysLeft : 0;
+
+            const goalStatus = document.getElementById('goalStatus');
+            if (remainingHours > 0) {
+                goalStatus.textContent = `To reach $${NET_PAY_GOAL} net pay, you need ${remainingHours.toFixed(2)} more hours total, or ${hoursPerDay.toFixed(2)} hours per remaining workday.`;
+            } else {
+                goalStatus.textContent = `Congratulations! You've reached your $${NET_PAY_GOAL} net pay goal!`;
+            }
         }
 
         function generateDateFields() {
@@ -289,6 +329,7 @@
                     input.addEventListener('input', function() {
                         const hours = parseFloat(this.value) || 0;
                         emojiSpan.textContent = getEmoji(hours);
+                        calculateHoursNeeded();
                     });
 
                     hourInputs.appendChild(dateDiv);
@@ -298,9 +339,12 @@
             }
 
             document.getElementById('calculateButton').style.display = 'block';
+            calculateHoursNeeded();
         }
 
-        document.getElementById('generateFields').addEventListener('click', generateDateFields);
+        document.getElementById('generateFields').addEventListener('click', generateFields);
+        document.getElementById('hourlyRate').addEventListener('input', calculateHoursNeeded);
+        document.getElementById('pto').addEventListener('input', calculateHoursNeeded);
 
         document.getElementById('calculateButton').addEventListener('click', function() {
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
@@ -319,10 +363,9 @@
             const overtimePay = overtimeHours * (hourlyRate * 1.5);
             const grossPay = regularPay + overtimePay;
             
-            const taxRate = 0.27; // 27% tax rate
-            const netPay = grossPay * (1 - taxRate);
+            const netPay = grossPay * (1 - TAX_RATE);
             
-            let message = netPay < 2200 ? "Te va dar un Papatuz!, Deje el Tiktok y a trabajar" : "A descansar con una copita de agua jajaja";
+            let message = netPay < NET_PAY_GOAL ? "Te va dar un Papatuz!, Deje el Tiktok y a trabajar" : "A descansar con una copita de agua jajaja";
             
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = `
@@ -330,32 +373,4 @@
                 <p>Total Hours (including PTO): ${totalHours.toFixed(2)}</p>
                 <p>Regular Hours: ${regularHours.toFixed(2)}</p>
                 <p>Overtime Hours: ${overtimeHours.toFixed(2)}</p>
-                <p>PTO Hours: ${ptoHours.toFixed(2)}</p>
-                <p>Gross Pay: $${grossPay.toFixed(2)}</p>
-                <p>Net Pay (after taxes): $${netPay.toFixed(2)}</p>
-                <p class="large-message"><strong>${message}</strong></p>
-            `;
-
-            document.getElementById('resultsModal').style.display = "block";
-        });
-
-        // Get the modal
-        var modal = document.getElementById('resultsModal');
-
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    </script>
-</body>
-</html>
+                <p>PTO Hours: ${ptoHours.toFixed(
