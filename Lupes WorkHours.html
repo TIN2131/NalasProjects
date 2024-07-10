@@ -220,7 +220,7 @@
     </div>
 
     <script>
-        const NET_PAY_GOAL = 2200;
+        const NET_PAY_GOAL = 2100; // $2,100 net pay goal
         const TAX_RATE = 0.27;
 
         function getDaysInMonth(year, month) {
@@ -391,8 +391,7 @@
                 <p>Gross Pay: $${grossPay.toFixed(2)}</p>
                 <p>Net Pay (after taxes): $${netPay.toFixed(2)}</p>
                 <p class="large-message"><strong>${message}</strong></p>
-`;
-
+            `;
 
             document.getElementById('resultsModal').style.display = "block";
         });
