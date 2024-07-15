@@ -215,6 +215,25 @@
         .bounce {
             animation: bounce 1s;
         }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
@@ -252,6 +271,8 @@
         <div id="history-content" class="history-content"></div>
     </div>
 
+    <div id="notification" class="notification">Entry submitted successfully!</div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dateInput = document.getElementById('date-input');
@@ -269,6 +290,7 @@
             const mainView = document.getElementById('main-view');
             const historyView = document.getElementById('history-view');
             const historyContent = document.getElementById('history-content');
+            const notification = document.getElementById('notification');
 
             let entries = [];
 
@@ -301,13 +323,13 @@
                 })
                 .then(response => {
                     console.log('Data sent to Google Sheets:', response);
+                    showNotification();
                 })
                 .catch(error => {
                     console.error('Error sending data to Google Sheets:', error);
                 });
 
                 entries.unshift(data);  // Add new entry to the beginning of the array
-                alert('Entry submitted successfully!');
 
                 // Clear inputs after submission
                 resetInputs();
@@ -384,6 +406,13 @@
                     reader.onload = () => resolve(reader.result);
                     reader.onerror = error => reject(error);
                 });
+            }
+
+            function showNotification() {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
             }
 
             // Add hover effect to input sections
