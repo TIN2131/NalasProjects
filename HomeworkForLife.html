@@ -313,26 +313,26 @@
                 };
 
                 // Send data to Google Sheets
-                fetch('https://script.google.com/macros/s/AKfycbwJva6GSHwccQUsXTp2Q2rIBnnm8S2egIkzT0y5h6XttlKSh6Kp5P7WqyC49-efA84yCw/exec', {
+                fetch('https://script.google.com/macros/s/AKfycbwDjep0lYbx7jEo7dDqVl_cgF8YOacWF1Tv2gujuJ6aLKqdneIjQO1HvXBOdY4Bkfv8-A/exec', {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'cors', // Ensure correct mode
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
                 })
                 .then(response => {
-                    console.log('Data sent to Google Sheets:', response);
-                    showNotification();
+                    if (response.ok) {
+                        showNotification();
+                        entries.unshift(data);  // Add new entry to the beginning of the array
+                        resetInputs(); // Clear inputs after submission
+                    } else {
+                        console.error('Failed to send data:', response.statusText);
+                    }
                 })
                 .catch(error => {
                     console.error('Error sending data to Google Sheets:', error);
                 });
-
-                entries.unshift(data);  // Add new entry to the beginning of the array
-
-                // Clear inputs after submission
-                resetInputs();
 
                 // Add bounce animation to submit button
                 this.classList.add('bounce');
@@ -387,7 +387,7 @@
 
             async function fetchHistory() {
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbwJva6GSHwccQUsXTp2Q2rIBnnm8S2egIkzT0y5h6XttlKSh6Kp5P7WqyC49-efA84yCw/exec');
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbwDjep0lYbx7jEo7dDqVl_cgF8YOacWF1Tv2gujuJ6aLKqdneIjQO1HvXBOdY4Bkfv8-A/exec');
                     const data = await response.json();
                     entries = data;
                     renderEntries(entries);
