@@ -327,7 +327,7 @@
                     };
 
                     // Send data to Google Sheets
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbzjDQShNx1TcUtrIvj92cJqRsZLqViIe8jhzl6x1qKgTLiQZz8olIjhgHsZV_WXUkDwNQ/exec', {
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbyhW5ivPlx4gCvCRU78gTK2v5VmUW_Id3oHP8PuVloaW7hdpYJNPjZazy-SDBmC3mh8Xw/exec', {
                         method: 'POST',
                         mode: 'no-cors',
                         headers: {
@@ -399,22 +399,22 @@
 
            async function fetchHistory() {
     try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzjDQShNx1TcUtrIvj92cJqRsZLqViIe8jhzl6x1qKgTLiQZz8olIjhgHsZV_WXUkDwNQ/exec');
+        console.log('Fetching history...');
+        const response = await fetch('https://script.google.com/macros/s/AKfycbyhW5ivPlx4gCvCRU78gTK2v5VmUW_Id3oHP8PuVloaW7hdpYJNPjZazy-SDBmC3mh8Xw/exec', {
+            method: 'GET',
+            mode: 'cors',
+        });
+        
+        console.log('Response status:', response.status);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const text = await response.text();
-        console.log('Raw response:', text);  // Log the raw response
+        console.log('Raw response:', text);
         
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('Error parsing JSON:', e);
-            throw new Error('Invalid JSON in response');
-        }
+        const data = JSON.parse(text);
         
         if (!Array.isArray(data)) {
             console.error('Unexpected data format:', data);
