@@ -6,44 +6,214 @@
     <title>Homework for Life</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* ... (previous CSS remains the same) ... */
+        :root {
+            --primary-color: #47618f;
+            --secondary-color: #88a0bc;
+            --background-color: #e3e4e6;
+            --text-color: #1b3245;
+            --accent-color: #006e87;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        h1:hover, h2:hover {
+            color: var(--accent-color);
+        }
+
+        .input-section {
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .input-section:hover {
+            transform: scale(1.02);
+        }
+
+        textarea, input[type="date"], input[type="text"] {
+            width: calc(100% - 50px);
+            padding: 0.5rem;
+            border: 2px solid var(--secondary-color);
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="date"]:focus, input[type="text"]:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .primary:hover {
+            background-color: #005a6f;
+            transform: scale(1.05);
+        }
+
+        .secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .secondary:hover {
+            background-color: #7691ad;
+            transform: scale(1.05);
+        }
+
+        #submit-btn {
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        #reset-btn, #view-history-btn {
+            margin-right: 0.5rem;
+        }
+
+        .history-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .history-content {
+            padding: 2rem;
+        }
+
+        .history-entry {
+            background-color: #f9f9f9;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .history-entry:hover {
+            transform: scale(1.02);
+        }
+
+        #search-input {
+            width: 70%;
+            max-width: 300px;
+        }
 
         .image-upload {
-            display: flex;
-            align-items: center;
-            margin-top: 0.5rem;
+            display: inline-block;
+            margin-left: 10px;
         }
 
-        .image-upload input[type="file"] {
-            display: none;
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .btn {
+                font-size: 0.9rem;
+            }
+
+            textarea, input[type="date"], input[type="text"] {
+                width: 100%;
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .image-upload {
+                display: block;
+                margin-top: 10px;
+            }
         }
 
-        .image-upload label {
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            background-color: var(--secondary-color);
-            color: white;
-            border-radius: 15px;
-            transition: background-color 0.3s ease;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .image-upload label:hover {
-            background-color: var(--accent-color);
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
 
-        .image-preview {
-            max-width: 100px;
-            max-height: 100px;
-            margin-left: 1rem;
-            border-radius: 10px;
-            display: none;
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
         }
 
-        .history-entry img {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 10px;
-            margin-top: 0.5rem;
+        .bounce {
+            animation: bounce 1s;
         }
     </style>
 </head>
@@ -56,35 +226,17 @@
         <div class="input-section">
             <h2>Moment of the Day</h2>
             <textarea id="moment-input" rows="4"></textarea>
-            <div class="image-upload">
-                <label for="moment-image">
-                    <i class="fas fa-camera"></i> Add Image
-                </label>
-                <input type="file" id="moment-image" accept="image/*">
-                <img id="moment-preview" class="image-preview">
-            </div>
+            <input type="file" class="image-upload" id="moment-image">
         </div>
         <div class="input-section">
             <h2>Reminders</h2>
             <textarea id="reminders-input" rows="4"></textarea>
-            <div class="image-upload">
-                <label for="reminders-image">
-                    <i class="fas fa-camera"></i> Add Image
-                </label>
-                <input type="file" id="reminders-image" accept="image/*">
-                <img id="reminders-preview" class="image-preview">
-            </div>
+            <input type="file" class="image-upload" id="reminders-image">
         </div>
         <div class="input-section">
             <h2>Recipe of the Day</h2>
             <textarea id="recipe-input" rows="4"></textarea>
-            <div class="image-upload">
-                <label for="recipe-image">
-                    <i class="fas fa-camera"></i> Add Image
-                </label>
-                <input type="file" id="recipe-image" accept="image/*">
-                <img id="recipe-preview" class="image-preview">
-            </div>
+            <input type="file" class="image-upload" id="recipe-image">
         </div>
         <button id="submit-btn" class="btn primary">This is Life</button>
         <button id="reset-btn" class="btn secondary"><i class="fas fa-undo"></i> Reset</button>
@@ -106,6 +258,9 @@
             const momentInput = document.getElementById('moment-input');
             const remindersInput = document.getElementById('reminders-input');
             const recipeInput = document.getElementById('recipe-input');
+            const momentImage = document.getElementById('moment-image');
+            const remindersImage = document.getElementById('reminders-image');
+            const recipeImage = document.getElementById('recipe-image');
             const submitBtn = document.getElementById('submit-btn');
             const resetBtn = document.getElementById('reset-btn');
             const viewHistoryBtn = document.getElementById('view-history-btn');
@@ -115,72 +270,34 @@
             const historyView = document.getElementById('history-view');
             const historyContent = document.getElementById('history-content');
 
-            const momentImage = document.getElementById('moment-image');
-            const remindersImage = document.getElementById('reminders-image');
-            const recipeImage = document.getElementById('recipe-image');
-            const momentPreview = document.getElementById('moment-preview');
-            const remindersPreview = document.getElementById('reminders-preview');
-            const recipePreview = document.getElementById('recipe-preview');
-
-            let entries = [];
+            let entries = [
+                { date: '2023-07-13', moment: 'A great day!', reminders: 'Call mom', recipe: 'Pasta' },
+                { date: '2023-07-12', moment: 'Learned something new', reminders: 'Buy groceries', recipe: 'Salad' },
+                { date: '2023-07-11', moment: 'Relaxing evening', reminders: 'Pay bills', recipe: 'Grilled chicken' },
+                { date: '2023-07-10', moment: 'Productive workday', reminders: 'Team meeting', recipe: 'Stir fry' }
+            ];
 
             // Set default date to today
             dateInput.valueAsDate = new Date();
 
-            // Function to handle image upload preview
-            function handleImageUpload(input, preview) {
-                input.addEventListener('change', function() {
-                    if (this.files && this.files[0]) {
-                        let reader = new FileReader();
-                        reader.onload = function(e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                        }
-                        reader.readAsDataURL(this.files[0]);
-                    }
-                });
-            }
-
-            handleImageUpload(momentImage, momentPreview);
-            handleImageUpload(remindersImage, remindersPreview);
-            handleImageUpload(recipeImage, recipePreview);
-
-            function fetchEntries() {
-                fetch('YOUR_GOOGLE_APPS_SCRIPT_URL')
-                    .then(response => response.json())
-                    .then(data => {
-                        entries = data;
-                        renderEntries(entries);
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-
             submitBtn.addEventListener('click', function() {
-                const formData = new FormData();
-                formData.append('date', dateInput.value);
-                formData.append('moment', momentInput.value);
-                formData.append('reminders', remindersInput.value);
-                formData.append('recipe', recipeInput.value);
-                
-                if (momentImage.files[0]) formData.append('momentImage', momentImage.files[0]);
-                if (remindersImage.files[0]) formData.append('remindersImage', remindersImage.files[0]);
-                if (recipeImage.files[0]) formData.append('recipeImage', recipeImage.files[0]);
+                const data = {
+                    date: dateInput.value,
+                    moment: momentInput.value,
+                    reminders: remindersInput.value,
+                    recipe: recipeInput.value,
+                    momentImage: momentImage.files[0],
+                    remindersImage: remindersImage.files[0],
+                    recipeImage: recipeImage.files[0]
+                };
 
-                fetch('YOUR_GOOGLE_APPS_SCRIPT_URL', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(result => {
-                    console.log('Success:', result);
-                    alert('Entry submitted successfully!');
-                    resetInputs();
-                    fetchEntries();  // Refresh the entries
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to submit entry. Please try again.');
-                });
+                // In a real application, you would send this data to your Google Apps Script
+                console.log('Submitting data:', data);
+                entries.unshift(data);  // Add new entry to the beginning of the array
+                alert('Entry submitted successfully!');
+
+                // Clear inputs after submission
+                resetInputs();
 
                 // Add bounce animation to submit button
                 this.classList.add('bounce');
@@ -192,7 +309,7 @@
             viewHistoryBtn.addEventListener('click', function() {
                 mainView.style.display = 'none';
                 historyView.style.display = 'block';
-                fetchEntries();
+                renderEntries(entries);
             });
 
             backToMainBtn.addEventListener('click', function() {
@@ -219,9 +336,6 @@
                 momentImage.value = '';
                 remindersImage.value = '';
                 recipeImage.value = '';
-                momentPreview.style.display = 'none';
-                remindersPreview.style.display = 'none';
-                recipePreview.style.display = 'none';
             }
 
             function renderEntries(entriesToRender) {
@@ -229,16 +343,40 @@
                     <div class="history-entry fade-in">
                         <h3>${entry.date}</h3>
                         <p><strong>Moment:</strong> ${entry.moment}</p>
-                        ${entry.momentImageUrl ? `<img src="${entry.momentImageUrl}" alt="Moment Image">` : ''}
                         <p><strong>Reminders:</strong> ${entry.reminders}</p>
-                        ${entry.remindersImageUrl ? `<img src="${entry.remindersImageUrl}" alt="Reminders Image">` : ''}
                         <p><strong>Recipe:</strong> ${entry.recipe}</p>
-                        ${entry.recipeImageUrl ? `<img src="${entry.recipeImageUrl}" alt="Recipe Image">` : ''}
+                        ${entry.momentImage ? `<p><strong>Moment Image:</strong> <img src="${URL.createObjectURL(entry.momentImage)}" alt="Moment Image" width="100"></p>` : ''}
+                        ${entry.remindersImage ? `<p><strong>Reminders Image:</strong> <img src="${URL.createObjectURL(entry.remindersImage)}" alt="Reminders Image" width="100"></p>` : ''}
+                        ${entry.recipeImage ? `<p><strong>Recipe Image:</strong> <img src="${URL.createObjectURL(entry.recipeImage)}" alt="Recipe Image" width="100"></p>` : ''}
                     </div>
                 `).join('');
             }
 
-            // ... (rest of the JavaScript remains the same) ...
+            // Add hover effect to input sections
+            document.querySelectorAll('.input-section').forEach(section => {
+                section.addEventListener('mouseover', function() {
+                    this.style.transform = 'scale(1.02)';
+                });
+                section.addEventListener('mouseout', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Add typing animation to textareas
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    this.style.borderColor = getRandomColor();
+                });
+            });
+
+            function getRandomColor() {
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
         });
     </script>
 </body>
