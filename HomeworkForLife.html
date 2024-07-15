@@ -286,15 +286,31 @@
                     moment: momentInput.value,
                     reminders: remindersInput.value,
                     recipe: recipeInput.value,
-                    momentImage: momentImage.files[0],
-                    remindersImage: remindersImage.files[0],
-                    recipeImage: recipeImage.files[0]
+                    momentImage: momentImage.files[0] ? momentImage.files[0].name : '',
+                    remindersImage: remindersImage.files[0] ? remindersImage.files[0].name : '',
+                    recipeImage: recipeImage.files[0] ? recipeImage.files[0].name : ''
                 };
 
                 // In a real application, you would send this data to your Google Apps Script
                 console.log('Submitting data:', data);
                 entries.unshift(data);  // Add new entry to the beginning of the array
                 alert('Entry submitted successfully!');
+
+                // Send data to Google Sheets
+                fetch('https://script.google.com/macros/s/AKfycbwJva6GSHwccQUsXTp2Q2rIBnnm8S2egIkzT0y5h6XttlKSh6Kp5P7WqyC49-efA84yCw/exec', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    console.log('Data sent to Google Sheets:', response);
+                })
+                .catch(error => {
+                    console.error('Error sending data to Google Sheets:', error);
+                });
 
                 // Clear inputs after submission
                 resetInputs();
@@ -345,9 +361,9 @@
                         <p><strong>Moment:</strong> ${entry.moment}</p>
                         <p><strong>Reminders:</strong> ${entry.reminders}</p>
                         <p><strong>Recipe:</strong> ${entry.recipe}</p>
-                        ${entry.momentImage ? `<p><strong>Moment Image:</strong> <img src="${URL.createObjectURL(entry.momentImage)}" alt="Moment Image" width="100"></p>` : ''}
-                        ${entry.remindersImage ? `<p><strong>Reminders Image:</strong> <img src="${URL.createObjectURL(entry.remindersImage)}" alt="Reminders Image" width="100"></p>` : ''}
-                        ${entry.recipeImage ? `<p><strong>Recipe Image:</strong> <img src="${URL.createObjectURL(entry.recipeImage)}" alt="Recipe Image" width="100"></p>` : ''}
+                        ${entry.momentImage ? `<p><strong>Moment Image:</strong> <img src="${entry.momentImage}" alt="Moment Image" width="100"></p>` : ''}
+                        ${entry.remindersImage ? `<p><strong>Reminders Image:</strong> <img src="${entry.remindersImage}" alt="Reminders Image" width="100"></p>` : ''}
+                        ${entry.recipeImage ? `<p><strong>Recipe Image:</strong> <img src="${entry.recipeImage}" alt="Recipe Image" width="100"></p>` : ''}
                     </div>
                 `).join('');
             }
