@@ -280,21 +280,20 @@
             // Set default date to today
             dateInput.valueAsDate = new Date();
 
-            submitBtn.addEventListener('click', function() {
+            submitBtn.addEventListener('click', async function() {
+                const momentImageData = await getBase64(momentImage.files[0]);
+                const remindersImageData = await getBase64(remindersImage.files[0]);
+                const recipeImageData = await getBase64(recipeImage.files[0]);
+
                 const data = {
                     date: dateInput.value,
                     moment: momentInput.value,
                     reminders: remindersInput.value,
                     recipe: recipeInput.value,
-                    momentImage: momentImage.files[0] ? momentImage.files[0].name : '',
-                    remindersImage: remindersImage.files[0] ? remindersImage.files[0].name : '',
-                    recipeImage: recipeImage.files[0] ? recipeImage.files[0].name : ''
+                    momentImage: momentImageData,
+                    remindersImage: remindersImageData,
+                    recipeImage: recipeImageData
                 };
-
-                // In a real application, you would send this data to your Google Apps Script
-                console.log('Submitting data:', data);
-                entries.unshift(data);  // Add new entry to the beginning of the array
-                alert('Entry submitted successfully!');
 
                 // Send data to Google Sheets
                 fetch('https://script.google.com/macros/s/AKfycbwJva6GSHwccQUsXTp2Q2rIBnnm8S2egIkzT0y5h6XttlKSh6Kp5P7WqyC49-efA84yCw/exec', {
@@ -311,6 +310,9 @@
                 .catch(error => {
                     console.error('Error sending data to Google Sheets:', error);
                 });
+
+                entries.unshift(data);  // Add new entry to the beginning of the array
+                alert('Entry submitted successfully!');
 
                 // Clear inputs after submission
                 resetInputs();
@@ -366,6 +368,16 @@
                         ${entry.recipeImage ? `<p><strong>Recipe Image:</strong> <img src="${entry.recipeImage}" alt="Recipe Image" width="100"></p>` : ''}
                     </div>
                 `).join('');
+            }
+
+            // Function to convert file to base64
+            function getBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
             }
 
             // Add hover effect to input sections
