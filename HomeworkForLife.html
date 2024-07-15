@@ -325,19 +325,16 @@
                     recipeImage: recipeImageData
                 };
 
-                // Ensure the URL is correct and has the correct permissions
-                const url = 'https://script.google.com/macros/s/AKfycbzT-Y7oRBrCt0K2gbyMky4Y4TCLpE1FYqbK9hTXjlvo37LOyfmCs5QdAvRWeetp2M-yxQ/exec';
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        mode: 'cors', // Ensure correct mode
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-
+                // Send data to Google Sheets
+                fetch('https://script.google.com/macros/s/AKfycbwRQSgqF16JJVFKNM81fdQk8qupG3TfdX3oVbockLLXpq0qlAV-hUIWZaxAIvUSBPGdYw/exec', {
+                    method: 'POST',
+                    mode: 'cors', // Ensure correct mode
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
                     if (response.ok) {
                         showNotification();
                         entries.unshift(data);  // Add new entry to the beginning of the array
@@ -345,9 +342,10 @@
                     } else {
                         console.error('Failed to send data:', response.statusText);
                     }
-                } catch (error) {
+                })
+                .catch(error => {
                     console.error('Error sending data to Google Sheets:', error);
-                }
+                });
 
                 // Add bounce animation to submit button
                 this.classList.add('bounce');
@@ -402,7 +400,7 @@
 
             async function fetchHistory() {
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbzT-Y7oRBrCt0K2gbyMky4Y4TCLpE1FYqbK9hTXjlvo37LOyfmCs5QdAvRWeetp2M-yxQ/exec');
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbwRQSgqF16JJVFKNM81fdQk8qupG3TfdX3oVbockLLXpq0qlAV-hUIWZaxAIvUSBPGdYw/exec');
                     const data = await response.json();
                     entries = data;
                     renderEntries(entries);
