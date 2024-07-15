@@ -270,12 +270,7 @@
             const historyView = document.getElementById('history-view');
             const historyContent = document.getElementById('history-content');
 
-            let entries = [
-                { date: '2023-07-13', moment: 'A great day!', reminders: 'Call mom', recipe: 'Pasta' },
-                { date: '2023-07-12', moment: 'Learned something new', reminders: 'Buy groceries', recipe: 'Salad' },
-                { date: '2023-07-11', moment: 'Relaxing evening', reminders: 'Pay bills', recipe: 'Grilled chicken' },
-                { date: '2023-07-10', moment: 'Productive workday', reminders: 'Team meeting', recipe: 'Stir fry' }
-            ];
+            let entries = [];
 
             // Set default date to today
             dateInput.valueAsDate = new Date();
@@ -325,9 +320,7 @@
             resetBtn.addEventListener('click', resetInputs);
 
             viewHistoryBtn.addEventListener('click', function() {
-                mainView.style.display = 'none';
-                historyView.style.display = 'block';
-                renderEntries(entries);
+                fetchHistory();
             });
 
             backToMainBtn.addEventListener('click', function() {
@@ -368,6 +361,19 @@
                         ${entry.recipeImage ? `<p><strong>Recipe Image:</strong> <img src="${entry.recipeImage}" alt="Recipe Image" width="100"></p>` : ''}
                     </div>
                 `).join('');
+            }
+
+            async function fetchHistory() {
+                try {
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbwJva6GSHwccQUsXTp2Q2rIBnnm8S2egIkzT0y5h6XttlKSh6Kp5P7WqyC49-efA84yCw/exec');
+                    const data = await response.json();
+                    entries = data;
+                    renderEntries(entries);
+                    mainView.style.display = 'none';
+                    historyView.style.display = 'block';
+                } catch (error) {
+                    console.error('Error fetching history:', error);
+                }
             }
 
             // Function to convert file to base64
