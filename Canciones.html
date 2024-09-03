@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Canciones para la Boda</title>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #3F3D56;
+            --background-color: #F9FAFB;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background-color);
+        }
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #5A52D5;
+        }
+        th:first-child {
+            border-top-left-radius: var(--border-radius);
+        }
+        th:last-child {
+            border-top-right-radius: var(--border-radius);
+        }
+        tr {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        td:first-child {
+            border-top-left-radius: var(--border-radius);
+            border-bottom-left-radius: var(--border-radius);
+        }
+        td:last-child {
+            border-top-right-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background-color: #5A52D5;
+        }
+        .remove-btn {
+            background-color: #FF6B6B;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .remove-btn:hover {
+            background-color: #EE5253;
+        }
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #5A52D5;
+        }
+        .sort-icon::after {
+            content: '\25B2';
+            margin-left: 5px;
+        }
+        .sort-icon.desc::after {
+            content: '\25BC';
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Canciones para la Boda</h1>
+        <table id="songTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Nombre de la Canción <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(1)">Artista <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(2)">Enlace de YouTube <span class="sort-icon"></span></th>
+                    <th onclick="sortTable(3)">Para <span class="sort-icon"></span></th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Songs will be dynamically added here -->
+            </tbody>
+        </table>
+
+        <div class="form-group">
+            <input type="text" id="songName" placeholder="Nombre de la Canción">
+            <input type="text" id="artist" placeholder="Artista">
+            <input type="text" id="youtubeLink" placeholder="Enlace de YouTube">
+            <input type="text" id="for" placeholder="Para (ej. Primer Baile, Ceremonia)">
+        </div>
+        <button onclick="addSong()">Añadir Canción</button>
+    </div>
+
+    <script>
+        let songs = [];
+        let currentSort = { column: -1, asc: true };
+
+        function loadSongs() {
+            google.script.run.withSuccessHandler(onSongsLoaded).getSongs();
+        }
+
+        function onSongsLoaded(loadedSongs) {
+            songs = loadedSongs;
+            renderSongs();
+        }
+
+        function renderSongs() {
+            const tableBody = document.querySelector("#songTable tbody");
+            tableBody.innerHTML = "";
+            songs.forEach((song, index) => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).textContent = song.name;
+                row.insertCell(1).textContent = song.artist;
+                const linkCell = row.insertCell(2);
+                const link = document.createElement("a");
+                link.href = song.youtubeLink;
+                link.textContent = "Escuchar";
+                link.target = "_blank";
+                linkCell.appendChild(link);
+                row.insertCell(3).textContent = song.for;
+                const actionCell = row.insertCell(4);
+                const removeButton = document.createElement("button");
+                removeButton.textContent = "Eliminar";
+                removeButton.className = "remove-btn";
+                removeButton.onclick = () => confirmRemoveSong(index);
+                actionCell.appendChild(removeButton);
+            });
+        }
+
+        function addSong() {
+            const name = document.getElementById("songName").value;
+            const artist = document.getElementById("artist").value;
+            const youtubeLink = document.getElementById("youtubeLink").value;
+            const forWhom = document.getElementById("for").value;
+
+            if (name && artist) {
+                const newSong = { name, artist, youtubeLink, for: forWhom };
+                google.script.run.withSuccessHandler(onSongsLoaded).addSong(newSong);
+                // Clear input fields
+                document.getElementById("songName").value = "";
+                document.getElementById("artist").value = "";
+                document.getElementById("youtubeLink").value = "";
+                document.getElementById("for").value = "";
+            } else {
+                alert("Por favor, ingrese al menos el nombre de la canción y el artista.");
+            }
+        }
+
+        function confirmRemoveSong(index) {
+            if (confirm("¿Estás seguro de que quieres eliminar esta canción?")) {
+                removeSong(index);
+            }
+        }
+
+        function removeSong(index) {
+            google.script.run.withSuccessHandler(onSongsLoaded).removeSong(index);
+        }
+
+        function sortTable(column) {
+            const headers = document.querySelectorAll('#songTable th');
+            headers.forEach((header, index) => {
+                if (index !== column) {
+                    header.querySelector('.sort-icon').className = 'sort-icon';
+                }
+            });
+
+            if (currentSort.column === column) {
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort.column = column;
+                currentSort.asc = true;
+            }
+
+            const sortIcon = headers[column].querySelector('.sort-icon');
+            sortIcon.className = 'sort-icon ' + (currentSort.asc ? '' : 'desc');
+
+            songs.sort((a, b) => {
+                let valueA = Object.values(a)[column];
+                let valueB = Object.values(b)[column];
+                if (valueA < valueB) return currentSort.asc ? -1 : 1;
+                if (valueA > valueB) return currentSort.asc ? 1 : -1;
+                return 0;
+            });
+
+            renderSongs();
+        }
+
+        // Load songs when the page is ready
+        document.addEventListener('DOMContentLoaded', loadSongs);
+    </script>
+</body>
+</html>
