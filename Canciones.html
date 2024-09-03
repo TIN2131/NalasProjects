@@ -186,7 +186,7 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxi_o0hi38ZYku43KjeVgXANF0bmcp9UFN7jrogc1YCP8xQPfrE0nccSu2HG5B_V3wn/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxufkn0gw62URMxPkhWcEumn6gZ2Z3zE_grC2mlcYAyzuYCgIwcV3v5id8gSafvHUpP/exec';
         let songs = [];
         let currentSort = { column: -1, asc: true };
 
@@ -200,21 +200,26 @@
         }
 
         function loadSongs() {
-            showLoading(true);
-            showError('');
-            fetch(scriptURL + '?action=getSongs')
-                .then(response => response.json())
-                .then(loadedSongs => {
-                    songs = loadedSongs;
-                    renderSongs();
-                    showLoading(false);
-                })
-                .catch(error => {
-                    console.error('Error loading songs:', error);
-                    showError('Error al cargar las canciones. Por favor, intente de nuevo.');
-                    showLoading(false);
-                });
-        }
+    showLoading(true);
+    showError('');
+    fetch(scriptURL + '?action=getSongs')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(loadedSongs => {
+            songs = loadedSongs;
+            renderSongs();
+            showLoading(false);
+        })
+        .catch(error => {
+            console.error('Error loading songs:', error);
+            showError('Error al cargar las canciones: ' + error.message);
+            showLoading(false);
+        });
+}
 
         function renderSongs() {
             const tableBody = document.querySelector("#songTable tbody");
