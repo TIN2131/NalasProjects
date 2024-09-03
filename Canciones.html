@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -111,6 +111,10 @@
         button:hover {
             background-color: #5A52D5;
         }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
         .remove-btn {
             background-color: #FF6B6B;
             padding: 8px 12px;
@@ -135,11 +139,24 @@
         .sort-icon.desc::after {
             content: '\25BC';
         }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            font-style: italic;
+        }
+        #error {
+            color: red;
+            text-align: center;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Lista de Canciones para la Boda</h1>
+        <div id="loading">Cargando...</div>
+        <div id="error"></div>
         <table id="songTable">
             <thead>
                 <tr>
@@ -161,7 +178,7 @@
             <input type="text" id="youtubeLink" placeholder="Enlace de YouTube">
             <input type="text" id="for" placeholder="Para (ej. Primer Baile, Ceremonia)">
         </div>
-        <button onclick="addSong()">Añadir Canción</button>
+        <button id="addButton" onclick="addSong()">Añadir Canción</button>
     </div>
 
     <script>
@@ -169,14 +186,30 @@
         let songs = [];
         let currentSort = { column: -1, asc: true };
 
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('addButton').disabled = show;
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+        }
+
         function loadSongs() {
+            showLoading(true);
+            showError('');
             fetch(scriptURL + '?action=getSongs')
                 .then(response => response.json())
                 .then(loadedSongs => {
                     songs = loadedSongs;
                     renderSongs();
+                    showLoading(false);
                 })
-                .catch(error => console.error('Error loading songs:', error));
+                .catch(error => {
+                    console.error('Error loading songs:', error);
+                    showError('Error al cargar las canciones. Por favor, intente de nuevo.');
+                    showLoading(false);
+                });
         }
 
         function renderSongs() {
@@ -203,13 +236,15 @@
         }
 
         function addSong() {
-            const name = document.getElementById("songName").value;
-            const artist = document.getElementById("artist").value;
-            const youtubeLink = document.getElementById("youtubeLink").value;
-            const forWhom = document.getElementById("for").value;
+            const name = document.getElementById("songName").value.trim();
+            const artist = document.getElementById("artist").value.trim();
+            const youtubeLink = document.getElementById("youtubeLink").value.trim();
+            const forWhom = document.getElementById("for").value.trim();
 
             if (name && artist) {
                 const newSong = { name, artist, youtubeLink, for: forWhom };
+                showLoading(true);
+                showError('');
 
                 fetch(scriptURL, {
                     method: 'POST',
@@ -228,8 +263,13 @@
                     document.getElementById("artist").value = "";
                     document.getElementById("youtubeLink").value = "";
                     document.getElementById("for").value = "";
+                    showLoading(false);
                 })
-                .catch(error => console.error('Error adding song:', error));
+                .catch(error => {
+                    console.error('Error adding song:', error);
+                    showError('Error al añadir la canción. Por favor, intente de nuevo.');
+                    showLoading(false);
+                });
             } else {
                 alert("Por favor, ingrese al menos el nombre de la canción y el artista.");
             }
@@ -242,6 +282,9 @@
         }
 
         function removeSong(index) {
+            showLoading(true);
+            showError('');
+
             fetch(scriptURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -254,8 +297,13 @@
             .then(loadedSongs => {
                 songs = loadedSongs;
                 renderSongs();
+                showLoading(false);
             })
-            .catch(error => console.error('Error removing song:', error));
+            .catch(error => {
+                console.error('Error removing song:', error);
+                showError('Error al eliminar la canción. Por favor, intente de nuevo.');
+                showLoading(false);
+            });
         }
 
         function sortTable(column) {
