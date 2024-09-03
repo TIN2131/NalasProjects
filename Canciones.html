@@ -1,26 +1,134 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Canciones para la Boda</title>
+    <title>Wedding Song List</title>
     <style>
-        /* Your existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #6C63FF;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        table td {
+            background-color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        table tr:hover td {
+            background-color: #f2f2f2;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .btn {
+            background-color: #6C63FF;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #5a52d5;
+        }
+
+        .remove-btn {
+            background-color: #FF6B6B;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background-color: #ee5253;
+        }
+
+        .loading {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Lista de Canciones para la Boda</h1>
-        <div id="loading">Cargando...</div>
-        <div id="error"></div>
+        <h1>Wedding Song List</h1>
+
+        <div id="error" class="error"></div>
+        <div id="loading" class="loading">Loading...</div>
+
         <table id="songTable">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Nombre de la Canción <span class="sort-icon"></span></th>
-                    <th onclick="sortTable(1)">Artista <span class="sort-icon"></span></th>
-                    <th onclick="sortTable(2)">Enlace de YouTube <span class="sort-icon"></span></th>
-                    <th onclick="sortTable(3)">Para <span class="sort-icon"></span></th>
-                    <th>Acciones</th>
+                    <th>Song Name</th>
+                    <th>Artist</th>
+                    <th>YouTube Link</th>
+                    <th>For</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,39 +137,36 @@
         </table>
 
         <div class="form-group">
-            <input type="text" id="songName" placeholder="Nombre de la Canción">
-            <input type="text" id="artist" placeholder="Artista">
-            <input type="text" id="youtubeLink" placeholder="Enlace de YouTube">
-            <input type="text" id="for" placeholder="Para (ej. Primer Baile, Ceremonia)">
+            <input type="text" id="songName" placeholder="Song Name">
+            <input type="text" id="artist" placeholder="Artist">
+            <input type="text" id="youtubeLink" placeholder="YouTube Link">
+            <input type="text" id="for" placeholder="For (e.g., First Dance)">
         </div>
-        <button id="addButton" onclick="addSong()">Añadir Canción</button>
-        <button id="testButton" onclick="testConnection()">Probar Conexión</button>
+
+        <button class="btn" onclick="addSong()">Add Song</button>
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwNao4gDVnzb42K5ZvP-SMPWtu9y2jaSUZzppk_5mBUIC_1Fpm_VnDnJTDSHQ-PFf-0/exec';
-        let songs = [];
-        let currentSort = { column: -1, asc: true };
+        const scriptURL = 'YOUR_DEPLOYED_SCRIPT_URL';  // Replace with your Google Apps Script URL
 
+        let songs = [];
+
+        // Function to display the loading text
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
-            document.getElementById('addButton').disabled = show;
         }
 
+        // Function to show error messages
         function showError(message) {
             document.getElementById('error').textContent = message;
         }
 
+        // Load songs from Google Sheets
         function loadSongs() {
             showLoading(true);
             showError('');
             fetch(scriptURL + '?action=getSongs')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(loadedSongs => {
                     songs = loadedSongs;
                     renderSongs();
@@ -69,34 +174,29 @@
                 })
                 .catch(error => {
                     console.error('Error loading songs:', error);
-                    showError('Error al cargar las canciones: ' + error.message);
+                    showError('Error loading songs');
                     showLoading(false);
                 });
         }
 
+        // Render songs in the table
         function renderSongs() {
             const tableBody = document.querySelector("#songTable tbody");
             tableBody.innerHTML = "";
             songs.forEach((song, index) => {
-                const row = tableBody.insertRow();
-                row.insertCell(0).textContent = song.name;
-                row.insertCell(1).textContent = song.artist;
-                const linkCell = row.insertCell(2);
-                const link = document.createElement("a");
-                link.href = song.youtubeLink;
-                link.textContent = "Escuchar";
-                link.target = "_blank";
-                linkCell.appendChild(link);
-                row.insertCell(3).textContent = song.for;
-                const actionCell = row.insertCell(4);
-                const removeButton = document.createElement("button");
-                removeButton.textContent = "Eliminar";
-                removeButton.className = "remove-btn";
-                removeButton.onclick = () => confirmRemoveSong(index);
-                actionCell.appendChild(removeButton);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${song.name}</td>
+                    <td>${song.artist}</td>
+                    <td><a href="${song.youtubeLink}" target="_blank">Listen</a></td>
+                    <td>${song.for}</td>
+                    <td><button class="remove-btn" onclick="confirmRemoveSong(${index})">Remove</button></td>
+                `;
+                tableBody.appendChild(row);
             });
         }
 
+        // Add a new song
         function addSong() {
             const name = document.getElementById("songName").value.trim();
             const artist = document.getElementById("artist").value.trim();
@@ -106,8 +206,6 @@
             if (name && artist) {
                 const newSong = { name, artist, youtubeLink, for: forWhom };
                 showLoading(true);
-                showError('');
-
                 fetch(scriptURL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -116,14 +214,9 @@
                         song: newSong
                     })
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(loadedSongs => {
-                    songs = loadedSongs;
+                .then(response => response.json())
+                .then(updatedSongs => {
+                    songs = updatedSongs;
                     renderSongs();
                     // Clear input fields
                     document.getElementById("songName").value = "";
@@ -134,24 +227,25 @@
                 })
                 .catch(error => {
                     console.error('Error adding song:', error);
-                    showError('Error al añadir la canción: ' + error.message);
+                    showError('Error adding song');
                     showLoading(false);
                 });
             } else {
-                alert("Por favor, ingrese al menos el nombre de la canción y el artista.");
+                showError('Please enter both the song name and artist.');
             }
         }
 
+        // Confirm before removing a song
         function confirmRemoveSong(index) {
-            if (confirm("¿Estás seguro de que quieres eliminar esta canción?")) {
+            if (confirm("Are you sure you
+want to remove this song?")) {
                 removeSong(index);
             }
         }
 
+        // Remove a song
         function removeSong(index) {
             showLoading(true);
-            showError('');
-
             fetch(scriptURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -160,67 +254,20 @@
                     index: index
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(loadedSongs => {
-                songs = loadedSongs;
+            .then(response => response.json())
+            .then(updatedSongs => {
+                songs = updatedSongs;
                 renderSongs();
                 showLoading(false);
             })
             .catch(error => {
                 console.error('Error removing song:', error);
-                showError('Error al eliminar la canción: ' + error.message);
+                showError('Error removing song');
                 showLoading(false);
             });
         }
 
-        function sortTable(column) {
-            const headers = document.querySelectorAll('#songTable th');
-            headers.forEach((header, index) => {
-                if (index !== column) {
-                    header.querySelector('.sort-icon').className = 'sort-icon';
-                }
-            });
-
-            if (currentSort.column === column) {
-                currentSort.asc = !currentSort.asc;
-            } else {
-                currentSort.column = column;
-                currentSort.asc = true;
-            }
-
-            const sortIcon = headers[column].querySelector('.sort-icon');
-            sortIcon.className = 'sort-icon ' + (currentSort.asc ? '' : 'desc');
-
-            songs.sort((a, b) => {
-                let valueA = Object.values(a)[column];
-                let valueB = Object.values(b)[column];
-                if (valueA < valueB) return currentSort.asc ? -1 : 1;
-                if (valueA > valueB) return currentSort.asc ? 1 : -1;
-                return 0;
-            });
-
-            renderSongs();
-        }
-
-        function testConnection() {
-            fetch(scriptURL + '?action=test')
-                .then(response => response.text())
-                .then(data => {
-                    console.log('Connection test response:', data);
-                    alert('Prueba de conexión exitosa. Revisa la consola para más detalles.');
-                })
-                .catch(error => {
-                    console.error('Connection test failed:', error);
-                    alert('Prueba de conexión fallida. Revisa la consola para más detalles.');
-                });
-        }
-
-        // Load songs when the page is ready
+        // Initialize the song list on page load
         document.addEventListener('DOMContentLoaded', loadSongs);
     </script>
 </body>
