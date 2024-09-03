@@ -150,6 +150,10 @@
             text-align: center;
             padding: 10px;
         }
+        .highlight {
+            background-color: #FFFACD !important;
+            transition: background-color 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -233,6 +237,10 @@
                 removeButton.onclick = () => confirmRemoveSong(index);
                 actionCell.appendChild(removeButton);
             });
+
+            // Scroll to the bottom of the table
+            const table = document.getElementById("songTable");
+            table.scrollTop = table.scrollHeight;
         }
 
         function addSong() {
@@ -258,6 +266,7 @@
                 .then(loadedSongs => {
                     songs = loadedSongs;
                     renderSongs();
+                    highlightNewSong(name, artist);
                     // Clear input fields
                     document.getElementById("songName").value = "";
                     document.getElementById("artist").value = "";
@@ -273,6 +282,18 @@
             } else {
                 alert("Por favor, ingrese al menos el nombre de la canción y el artista.");
             }
+        }
+
+        function highlightNewSong(name, artist) {
+            const rows = document.querySelectorAll("#songTable tbody tr");
+            rows.forEach(row => {
+                if (row.cells[0].textContent === name && row.cells[1].textContent === artist) {
+                    row.classList.add('highlight');
+                    setTimeout(() => {
+                        row.classList.remove('highlight');
+                    }, 3000); // Remove highlight after 3 seconds
+                }
+            });
         }
 
         function confirmRemoveSong(index) {
