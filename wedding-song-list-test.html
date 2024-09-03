@@ -17,7 +17,7 @@
     <div id="result"></div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzq8MVbqPe-UWGFPBsyIAwT_bJRN7xyx6gFqB5sDVrmiI6Ym615CTJP9RhL1124lSBZ/exec'; // Replace with your actual script URL
+        const scriptURL = 'YOUR_NEW_SCRIPT_URL_HERE'; // Replace with your new script URL
 
         function addSong() {
             console.log('addSong function called');
@@ -42,10 +42,12 @@
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
-                    return response.json();
+                    return response.text(); // Change this to text() instead of json()
                 })
-                .then(result => {
-                    console.log('Success:', result);
+                .then(text => {
+                    console.log('Raw response:', text);
+                    const result = JSON.parse(text);
+                    console.log('Parsed result:', result);
                     document.getElementById('result').textContent = 'Song added successfully!';
                 })
                 .catch(error => {
