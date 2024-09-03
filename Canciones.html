@@ -154,6 +154,13 @@
             background-color: #FFFACD !important;
             transition: background-color 0.5s ease;
         }
+        #testButton {
+            margin-top: 10px;
+            background-color: var(--secondary-color);
+        }
+        #testButton:hover {
+            background-color: #2C2A40;
+        }
     </style>
 </head>
 <body>
@@ -183,10 +190,11 @@
             <input type="text" id="for" placeholder="Para (ej. Primer Baile, Ceremonia)">
         </div>
         <button id="addButton" onclick="addSong()">Añadir Canción</button>
+        <button id="testButton" onclick="testConnection()">Probar Conexión</button>
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxufkn0gw62URMxPkhWcEumn6gZ2Z3zE_grC2mlcYAyzuYCgIwcV3v5id8gSafvHUpP/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwSdEPQm4KvwqA5GfjtgeHlH135BLAdj2JFf4_GDxkThK94yZJJfDJ-xJupFnYtNVMA/exec';
         let songs = [];
         let currentSort = { column: -1, asc: true };
 
@@ -200,26 +208,26 @@
         }
 
         function loadSongs() {
-    showLoading(true);
-    showError('');
-    fetch(scriptURL + '?action=getSongs')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(loadedSongs => {
-            songs = loadedSongs;
-            renderSongs();
-            showLoading(false);
-        })
-        .catch(error => {
-            console.error('Error loading songs:', error);
-            showError('Error al cargar las canciones: ' + error.message);
-            showLoading(false);
-        });
-}
+            showLoading(true);
+            showError('');
+            fetch(scriptURL + '?action=getSongs')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(loadedSongs => {
+                    songs = loadedSongs;
+                    renderSongs();
+                    showLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error loading songs:', error);
+                    showError('Error al cargar las canciones: ' + error.message);
+                    showLoading(false);
+                });
+        }
 
         function renderSongs() {
             const tableBody = document.querySelector("#songTable tbody");
@@ -267,7 +275,12 @@
                         song: newSong
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(loadedSongs => {
                     songs = loadedSongs;
                     renderSongs();
@@ -281,7 +294,7 @@
                 })
                 .catch(error => {
                     console.error('Error adding song:', error);
-                    showError('Error al añadir la canción. Por favor, intente de nuevo.');
+                    showError('Error al añadir la canción: ' + error.message);
                     showLoading(false);
                 });
             } else {
@@ -319,7 +332,12 @@
                     index: index
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(loadedSongs => {
                 songs = loadedSongs;
                 renderSongs();
@@ -327,7 +345,7 @@
             })
             .catch(error => {
                 console.error('Error removing song:', error);
-                showError('Error al eliminar la canción. Por favor, intente de nuevo.');
+                showError('Error al eliminar la canción: ' + error.message);
                 showLoading(false);
             });
         }
@@ -359,6 +377,19 @@
             });
 
             renderSongs();
+        }
+
+        function testConnection() {
+            fetch(scriptURL + '?action=test')
+                .then(response => response.text())
+                .then(data => {
+                    console.log('Connection test response:', data);
+                    alert('Prueba de conexión exitosa. Revisa la consola para más detalles.');
+                })
+                .catch(error => {
+                    console.error('Connection test failed:', error);
+                    alert('Prueba de conexión fallida. Revisa la consola para más detalles.');
+                });
         }
 
         // Load songs when the page is ready
