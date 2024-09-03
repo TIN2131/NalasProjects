@@ -165,16 +165,18 @@
     </div>
 
     <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxl4c6gKSUIp_Qk4mK4J-OFy06Dm3s_EmOBtxeKYHfllIfnpS0EBT4QePUwVHlpdCpH/exec';
         let songs = [];
         let currentSort = { column: -1, asc: true };
 
         function loadSongs() {
-            google.script.run.withSuccessHandler(onSongsLoaded).getSongs();
-        }
-
-        function onSongsLoaded(loadedSongs) {
-            songs = loadedSongs;
-            renderSongs();
+            fetch(scriptURL + '?action=getSongs')
+                .then(response => response.json())
+                .then(loadedSongs => {
+                    songs = loadedSongs;
+                    renderSongs();
+                })
+                .catch(error => console.error('Error loading songs:', error));
         }
 
         function renderSongs() {
@@ -208,12 +210,22 @@
 
             if (name && artist) {
                 const newSong = { name, artist, youtubeLink, for: forWhom };
-                google.script.run.withSuccessHandler(onSongsLoaded).addSong(newSong);
-                // Clear input fields
-                document.getElementById("songName").value = "";
-                document.getElementById("artist").value = "";
-                document.getElementById("youtubeLink").value = "";
-                document.getElementById("for").value = "";
+                fetch(scriptURL + '?action=addSong', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newSong)
+                })
+                .then(response => response.json())
+                .then(loadedSongs => {
+                    songs = loadedSongs;
+                    renderSongs();
+                    // Clear input fields
+                    document.getElementById("songName").value = "";
+                    document.getElementById("artist").value = "";
+                    document.getElementById("youtubeLink").value = "";
+                    document.getElementById("for").value = "";
+                })
+                .catch(error => console.error('Error adding song:', error));
             } else {
                 alert("Por favor, ingrese al menos el nombre de la canción y el artista.");
             }
@@ -226,7 +238,15 @@
         }
 
         function removeSong(index) {
-            google.script.run.withSuccessHandler(onSongsLoaded).removeSong(index);
+            fetch(scriptURL + '?action=removeSong&index=' + index, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(loadedSongs => {
+                songs = loadedSongs;
+                renderSongs();
+            })
+            .catch(error => console.error('Error removing song:', error));
         }
 
         function sortTable(column) {
