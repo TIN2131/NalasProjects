@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -210,13 +210,14 @@
 
             if (name && artist) {
                 const newSong = { name, artist, youtubeLink, for: forWhom };
-                const formData = new FormData();
-                formData.append('action', 'addSong');
-                formData.append('song', JSON.stringify(newSong));
 
                 fetch(scriptURL, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'addSong',
+                        song: newSong
+                    })
                 })
                 .then(response => response.json())
                 .then(loadedSongs => {
@@ -241,13 +242,13 @@
         }
 
         function removeSong(index) {
-            const formData = new FormData();
-            formData.append('action', 'removeSong');
-            formData.append('index', index.toString());
-
             fetch(scriptURL, {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'removeSong',
+                    index: index
+                })
             })
             .then(response => response.json())
             .then(loadedSongs => {
