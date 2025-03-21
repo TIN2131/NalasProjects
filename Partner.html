@@ -1,140 +1,691 @@
-import React, { useState } from 'react';
-import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Leaderboard</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #f39c12;
+            --light: #ecf0f1;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --bronze: #e67e22;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--primary);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .period-selector {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .period-selector select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding-right: 20px;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+        }
+        
+        .period-selector i {
+            margin-left: 10px;
+        }
+        
+        .bd-codes {
+            background-color: var(--light);
+            padding: 15px 30px;
+            border-left: 5px solid var(--accent);
+        }
+        
+        .bd-codes h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .codes-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .code-item {
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .code-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .leaderboard-section {
+            padding: 30px;
+        }
+        
+        .section-header {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .section-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: inline-block;
+            position: relative;
+        }
+        
+        .section-header h2:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary) 0%, transparent 100%);
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .leaderboard-table thead {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .leaderboard-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .leaderboard-table th.sortable:after {
+            content: '↕';
+            margin-left: 5px;
+            opacity: 0.7;
+        }
+        
+        .leaderboard-table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-table tbody tr:nth-child(even) {
+            background-color: rgba(236, 240, 241, 0.5);
+        }
+        
+        .leaderboard-table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .leaderboard-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .medal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            margin: 0 auto;
+        }
+        
+        .medal.gold {
+            background: linear-gradient(145deg, #f1c40f, #f39c12);
+            box-shadow: 0 3px 8px rgba(243, 156, 18, 0.3);
+        }
+        
+        .medal.silver {
+            background: linear-gradient(145deg, #bdc3c7, #95a5a6);
+            box-shadow: 0 3px 8px rgba(149, 165, 166, 0.3);
+        }
+        
+        .medal.bronze {
+            background: linear-gradient(145deg, #e67e22, #d35400);
+            box-shadow: 0 3px 8px rgba(211, 84, 0, 0.3);
+        }
+        
+        .medal.rank {
+            background-color: var(--primary);
+            box-shadow: 0 3px 8px rgba(44, 62, 80, 0.3);
+        }
+        
+        .trending {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-weight: 500;
+        }
+        
+        .trending.up {
+            color: var(--success);
+        }
+        
+        .trending.down {
+            color: var(--danger);
+        }
+        
+        .trending i {
+            margin-right: 5px;
+        }
+        
+        .hours-value {
+            font-weight: 700;
+            text-align: right;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--accent) 100%);
+        }
+        
+        .name-cell {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            margin-right: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
 
-// Sample data - replace with your actual data
-const partners = [
-  { name: "Partner A", primaryService: "Audit" },
-  { name: "Partner B", primaryService: "Tax" },
-  { name: "Partner C", primaryService: "Business Management" },
-  { name: "Partner D", primaryService: "Bankruptcy" },
-  { name: "Partner E", primaryService: "Informatics" },
-];
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
 
-const services = ["Audit", "Tax", "Business Management", "Business Solutions", "Bankruptcy", "Informatics"];
-
-const generateData = (partner) => {
-  const data = services.map(service => ({
-    name: service,
-    size: Math.random() * 100,
-    color: service === partner.primaryService ? '#4CAF50' : '#2196F3'
-  }));
-  return [{ name: 'services', children: data }];
-};
-
-const generateCrossSellData = (partner) => {
-  return services.map(service => ({
-    name: service,
-    crossSellPercentage: Math.random() * 100
-  }));
-};
-
-const ServiceDistribution = () => {
-  const [selectedPartner, setSelectedPartner] = useState(partners[0]);
-  const [treeMapData, setTreeMapData] = useState(generateData(selectedPartner));
-  const [crossSellData, setCrossSellData] = useState(generateCrossSellData(selectedPartner));
-
-  const handlePartnerChange = (partnerName) => {
-    const partner = partners.find(p => p.name === partnerName);
-    setSelectedPartner(partner);
-    setTreeMapData(generateData(partner));
-    setCrossSellData(generateCrossSellData(partner));
-  };
-
-  return (
-    <Card className="w-full max-w-3xl mx-auto">
-      <CardHeader>
-        <h2 className="text-2xl font-bold">Partner Service Distribution</h2>
-        <Select onValueChange={handlePartnerChange} defaultValue={selectedPartner.name}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a partner" />
-          </SelectTrigger>
-          <SelectContent>
-            {partners.map((partner) => (
-              <SelectItem key={partner.name} value={partner.name}>
-                {partner.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">Service Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <Treemap
-              data={treeMapData}
-              dataKey="size"
-              ratio={4/3}
-              stroke="#fff"
-              fill="#8884d8"
-              content={<CustomizedContent colors={treeMapData[0].children.map(item => item.color)} />}
-            >
-              <Tooltip content={<CustomTooltip />} />
-            </Treemap>
-          </ResponsiveContainer>
-        </div>
-        <div>
-          <h3 className="text-xl font-semibold mb-2">Cross-Selling Opportunities</h3>
-          <div className="grid grid-cols-3 gap-4">
-            {crossSellData.map((item) => (
-              <div key={item.name} className="bg-gray-100 p-4 rounded">
-                <h4 className="font-semibold">{item.name}</h4>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2">
-                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${item.crossSellPercentage}%` }}></div>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container fade-in">
+        <header>
+            <h1>Marketing Performance Dashboard</h1>
+            <div class="period-selector">
+                <select>
+                    <option>March 1, 2025</option>
+                    <option>February 1, 2025</option>
+                    <option>January 1, 2025</option>
+                </select>
+                <i>▼</i>
+            </div>
+        </header>
+        
+        <div class="bd-codes">
+            <h3>Business Development Activity Codes</h3>
+            <div class="codes-list">
+                <div class="code-item tooltip">
+                    03.01 Proposal Meeting
+                    <span class="tooltip-text">Client meetings to discuss proposals</span>
                 </div>
-                <p className="text-sm mt-1">{item.crossSellPercentage.toFixed(1)}% Cross-sold</p>
-              </div>
-            ))}
-          </div>
+                <div class="code-item tooltip">
+                    03.02 Proposal Preparation
+                    <span class="tooltip-text">Time spent preparing proposals</span>
+                </div>
+                <div class="code-item tooltip">
+                    03.03 Content Preparation
+                    <span class="tooltip-text">Creating marketing content</span>
+                </div>
+                <div class="code-item tooltip">
+                    03.04 BD Presentation
+                    <span class="tooltip-text">Giving business development presentations</span>
+                </div>
+                <div class="code-item tooltip">
+                    03.05 Networking Meeting
+                    <span class="tooltip-text">Industry and networking events</span>
+                </div>
+                <div class="code-item tooltip">
+                    03.06 Event Attendance
+                    <span class="tooltip-text">Attending conferences and events</span>
+                </div>
+                <div class="code-item tooltip">
+                    03.07 Other BD Activity
+                    <span class="tooltip-text">Miscellaneous BD activities</span>
+                </div>
+                <div class="code-item tooltip">
+                    03.08 CSG Meeting
+                    <span class="tooltip-text">Client strategy group meetings</span>
+                </div>
+            </div>
         </div>
-      </CardContent>
-    </Card>
-  );
-};
+        
+        <div class="leaderboard-section">
+            <div class="section-header">
+                <h2>Executive Leadership</h2>
+                <p>Top performers in business development hours for the current period</p>
+            </div>
+            
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th class="sortable">Name</th>
+                        <th class="sortable">BD Hours</th>
+                        <th class="sortable">YTD</th>
+                        <th>Progress</th>
+                        <th>Trending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="medal gold">1</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">CF</div>
+                            Chenying Fan
+                        </td>
+                        <td class="hours-value">30.70</td>
+                        <td>157.05</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal silver">2</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">JD</div>
+                            Jeremy Dillard
+                        </td>
+                        <td class="hours-value">30.50</td>
+                        <td>173.00</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 83%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending up">
+                            <i>↑</i> Upward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal bronze">3</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">DH</div>
+                            Daniel Hunter
+                        </td>
+                        <td class="hours-value">27.50</td>
+                        <td>164.75</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending up">
+                            <i>↑</i> Upward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">4</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">OT</div>
+                            Orlando Torres
+                        </td>
+                        <td class="hours-value">25.00</td>
+                        <td>174.00</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 68%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">5</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">SA</div>
+                            Sally Aubury
+                        </td>
+                        <td class="hours-value">24.90</td>
+                        <td>159.30</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 67%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">6</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">BG</div>
+                            Bob Green
+                        </td>
+                        <td class="hours-value">21.50</td>
+                        <td>166.50</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 58%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">7</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">JB</div>
+                            Jason Borkes
+                        </td>
+                        <td class="hours-value">21.20</td>
+                        <td>139.85</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 57%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="leaderboard-section">
+            <div class="section-header">
+                <h2>Professional Staff</h2>
+                <p>Top performers in business development hours for the current period</p>
+            </div>
+            
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th class="sortable">Name</th>
+                        <th class="sortable">BD Hours</th>
+                        <th class="sortable">YTD</th>
+                        <th>Progress</th>
+                        <th>Trending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="medal gold">1</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">CS</div>
+                            Christopher Stone
+                        </td>
+                        <td class="hours-value">18.60</td>
+                        <td>160.65</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 95%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal silver">2</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">SB</div>
+                            Stephen Bolt
+                        </td>
+                        <td class="hours-value">17.10</td>
+                        <td>185.20</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 87%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal bronze">3</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">MT</div>
+                            Masa Tanaka
+                        </td>
+                        <td class="hours-value">14.50</td>
+                        <td>58.00</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 74%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">4</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">KW</div>
+                            Kathy Wilson
+                        </td>
+                        <td class="hours-value">11.90</td>
+                        <td>48.95</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 61%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending up">
+                            <i>↑</i> Upward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">5</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">LC</div>
+                            Lydia Clowney
+                        </td>
+                        <td class="hours-value">10.70</td>
+                        <td>53.20</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 55%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending down">
+                            <i>↓</i> Downward
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="medal rank">6</div>
+                        </td>
+                        <td class="name-cell">
+                            <div class="avatar">TP</div>
+                            Terrance Pak
+                        </td>
+                        <td class="hours-value">10.10</td>
+                        <td>36.40</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 51%;"></div>
+                            </div>
+                        </td>
+                        <td class="trending up">
+                            <i>↑</i> Upward
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-const CustomizedContent = (props) => {
-  const { root, depth, x, y, width, height, index, colors, name } = props;
+    <script>
+        // Add simple sorting functionality
+        document.querySelectorAll('th.sortable').forEach(headerCell => {
+            headerCell.addEventListener('click', () => {
+                const tableElement = headerCell.parentElement.parentElement.parentElement;
+                const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+                const currentIsAscending = headerCell.classList.contains('th-sort-asc');
 
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        style={{
-          fill: depth < 2 ? colors[index] : 'none',
-          stroke: '#fff',
-          strokeWidth: 2 / (depth + 1e-10),
-          strokeOpacity: 1 / (depth + 1e-10),
-        }}
-      />
-      {depth === 1 && (
-        <text
-          x={x + width / 2}
-          y={y + height / 2 + 7}
-          textAnchor="middle"
-          fill="#fff"
-          fontSize={14}
-        >
-          {name}
-        </text>
-      )}
-    </g>
-  );
-};
+                sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+            });
+        });
 
-const CustomTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border p-2 shadow-md">
-        <p>{`${payload[0].name} : ${payload[0].value.toFixed(2)}%`}</p>
-      </div>
-    );
-  }
-  return null;
-};
+        function sortTableByColumn(table, column, asc = true) {
+            const dirModifier = asc ? 1 : -1;
+            const tBody = table.tBodies[0];
+            const rows = Array.from(tBody.querySelectorAll('tr'));
 
-export default ServiceDistribution;
+            // Sort each row
+            const sortedRows = rows.sort((a, b) => {
+                const aColText = a.querySelector(`td:nth-child(${column + 1})`).textContent.trim();
+                const bColText = b.querySelector(`td:nth-child(${column + 1})`).textContent.trim();
+
+                const aValue = isNaN(parseFloat(aColText)) ? aColText : parseFloat(aColText);
+                const bValue = isNaN(parseFloat(bColText)) ? bColText : parseFloat(bColText);
+
+                return aValue > bValue ? (1 * dirModifier) : (-1 * dirModifier);
+            });
+
+            // Remove all existing TRs from the table
+            while (tBody.firstChild) {
+                tBody.removeChild(tBody.firstChild);
+            }
+
+            // Re-add the newly sorted rows
+            tBody.append(...sortedRows);
+
+            // Remember how the column is currently sorted
+            table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+            table.querySelector(`th:nth-child(${column + 1})`).classList.toggle('th-sort-asc', asc);
+            table.querySelector(`th:nth-child(${column + 1})`).classList.toggle('th-sort-desc', !asc);
+        }
+    </script>
+</body>
+</html>
