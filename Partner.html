@@ -1,691 +1,247 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Leaderboard</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #f39c12;
-            --light: #ecf0f1;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --gold: #f1c40f;
-            --silver: #bdc3c7;
-            --bronze: #e67e22;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f7fa;
-            color: var(--primary);
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 25px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .period-selector {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 8px 15px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .period-selector select {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 16px;
-            padding-right: 20px;
-            cursor: pointer;
-            appearance: none;
-            outline: none;
-        }
-        
-        .period-selector i {
-            margin-left: 10px;
-        }
-        
-        .bd-codes {
-            background-color: var(--light);
-            padding: 15px 30px;
-            border-left: 5px solid var(--accent);
-        }
-        
-        .bd-codes h3 {
-            margin-bottom: 15px;
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        .codes-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .code-item {
-            background-color: white;
-            padding: 10px 15px;
-            border-radius: 6px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-        
-        .code-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .leaderboard-section {
-            padding: 30px;
-        }
-        
-        .section-header {
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .section-header h2 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 10px;
-            display: inline-block;
-            position: relative;
-        }
-        
-        .section-header h2:after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--secondary) 0%, transparent 100%);
-        }
-        
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .leaderboard-table thead {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .leaderboard-table th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            position: relative;
-        }
-        
-        .leaderboard-table th.sortable:after {
-            content: '↕';
-            margin-left: 5px;
-            opacity: 0.7;
-        }
-        
-        .leaderboard-table tbody tr {
-            transition: all 0.3s ease;
-        }
-        
-        .leaderboard-table tbody tr:nth-child(even) {
-            background-color: rgba(236, 240, 241, 0.5);
-        }
-        
-        .leaderboard-table tbody tr:hover {
-            background-color: rgba(52, 152, 219, 0.1);
-        }
-        
-        .leaderboard-table td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .medal {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            color: white;
-            font-weight: bold;
-            margin: 0 auto;
-        }
-        
-        .medal.gold {
-            background: linear-gradient(145deg, #f1c40f, #f39c12);
-            box-shadow: 0 3px 8px rgba(243, 156, 18, 0.3);
-        }
-        
-        .medal.silver {
-            background: linear-gradient(145deg, #bdc3c7, #95a5a6);
-            box-shadow: 0 3px 8px rgba(149, 165, 166, 0.3);
-        }
-        
-        .medal.bronze {
-            background: linear-gradient(145deg, #e67e22, #d35400);
-            box-shadow: 0 3px 8px rgba(211, 84, 0, 0.3);
-        }
-        
-        .medal.rank {
-            background-color: var(--primary);
-            box-shadow: 0 3px 8px rgba(44, 62, 80, 0.3);
-        }
-        
-        .trending {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            font-weight: 500;
-        }
-        
-        .trending.up {
-            color: var(--success);
-        }
-        
-        .trending.down {
-            color: var(--danger);
-        }
-        
-        .trending i {
-            margin-right: 5px;
-        }
-        
-        .hours-value {
-            font-weight: 700;
-            text-align: right;
-        }
-        
-        .progress-bar {
-            height: 6px;
-            background-color: #eee;
-            border-radius: 3px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            border-radius: 3px;
-            background: linear-gradient(90deg, var(--secondary) 0%, var(--accent) 100%);
-        }
-        
-        .name-cell {
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-        }
-        
-        .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: var(--secondary);
-            margin-right: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 120px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body>
-    <div class="container fade-in">
-        <header>
-            <h1>Marketing Performance Dashboard</h1>
-            <div class="period-selector">
-                <select>
-                    <option>March 1, 2025</option>
-                    <option>February 1, 2025</option>
-                    <option>January 1, 2025</option>
-                </select>
-                <i>▼</i>
-            </div>
-        </header>
-        
-        <div class="bd-codes">
-            <h3>Business Development Activity Codes</h3>
-            <div class="codes-list">
-                <div class="code-item tooltip">
-                    03.01 Proposal Meeting
-                    <span class="tooltip-text">Client meetings to discuss proposals</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.02 Proposal Preparation
-                    <span class="tooltip-text">Time spent preparing proposals</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.03 Content Preparation
-                    <span class="tooltip-text">Creating marketing content</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.04 BD Presentation
-                    <span class="tooltip-text">Giving business development presentations</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.05 Networking Meeting
-                    <span class="tooltip-text">Industry and networking events</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.06 Event Attendance
-                    <span class="tooltip-text">Attending conferences and events</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.07 Other BD Activity
-                    <span class="tooltip-text">Miscellaneous BD activities</span>
-                </div>
-                <div class="code-item tooltip">
-                    03.08 CSG Meeting
-                    <span class="tooltip-text">Client strategy group meetings</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="leaderboard-section">
-            <div class="section-header">
-                <h2>Executive Leadership</h2>
-                <p>Top performers in business development hours for the current period</p>
-            </div>
-            
-            <table class="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th class="sortable">Name</th>
-                        <th class="sortable">BD Hours</th>
-                        <th class="sortable">YTD</th>
-                        <th>Progress</th>
-                        <th>Trending</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="medal gold">1</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">CF</div>
-                            Chenying Fan
-                        </td>
-                        <td class="hours-value">30.70</td>
-                        <td>157.05</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 85%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal silver">2</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">JD</div>
-                            Jeremy Dillard
-                        </td>
-                        <td class="hours-value">30.50</td>
-                        <td>173.00</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 83%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending up">
-                            <i>↑</i> Upward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal bronze">3</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">DH</div>
-                            Daniel Hunter
-                        </td>
-                        <td class="hours-value">27.50</td>
-                        <td>164.75</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending up">
-                            <i>↑</i> Upward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">4</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">OT</div>
-                            Orlando Torres
-                        </td>
-                        <td class="hours-value">25.00</td>
-                        <td>174.00</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 68%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">5</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">SA</div>
-                            Sally Aubury
-                        </td>
-                        <td class="hours-value">24.90</td>
-                        <td>159.30</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 67%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">6</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">BG</div>
-                            Bob Green
-                        </td>
-                        <td class="hours-value">21.50</td>
-                        <td>166.50</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 58%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">7</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">JB</div>
-                            Jason Borkes
-                        </td>
-                        <td class="hours-value">21.20</td>
-                        <td>139.85</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 57%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="leaderboard-section">
-            <div class="section-header">
-                <h2>Professional Staff</h2>
-                <p>Top performers in business development hours for the current period</p>
-            </div>
-            
-            <table class="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th class="sortable">Name</th>
-                        <th class="sortable">BD Hours</th>
-                        <th class="sortable">YTD</th>
-                        <th>Progress</th>
-                        <th>Trending</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="medal gold">1</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">CS</div>
-                            Christopher Stone
-                        </td>
-                        <td class="hours-value">18.60</td>
-                        <td>160.65</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 95%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal silver">2</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">SB</div>
-                            Stephen Bolt
-                        </td>
-                        <td class="hours-value">17.10</td>
-                        <td>185.20</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 87%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal bronze">3</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">MT</div>
-                            Masa Tanaka
-                        </td>
-                        <td class="hours-value">14.50</td>
-                        <td>58.00</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 74%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">4</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">KW</div>
-                            Kathy Wilson
-                        </td>
-                        <td class="hours-value">11.90</td>
-                        <td>48.95</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 61%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending up">
-                            <i>↑</i> Upward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">5</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">LC</div>
-                            Lydia Clowney
-                        </td>
-                        <td class="hours-value">10.70</td>
-                        <td>53.20</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 55%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending down">
-                            <i>↓</i> Downward
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="medal rank">6</div>
-                        </td>
-                        <td class="name-cell">
-                            <div class="avatar">TP</div>
-                            Terrance Pak
-                        </td>
-                        <td class="hours-value">10.10</td>
-                        <td>36.40</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 51%;"></div>
-                            </div>
-                        </td>
-                        <td class="trending up">
-                            <i>↑</i> Upward
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <script>
-        // Add simple sorting functionality
-        document.querySelectorAll('th.sortable').forEach(headerCell => {
-            headerCell.addEventListener('click', () => {
-                const tableElement = headerCell.parentElement.parentElement.parentElement;
-                const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
-                const currentIsAscending = headerCell.classList.contains('th-sort-asc');
-
-                sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
-            });
-        });
-
-        function sortTableByColumn(table, column, asc = true) {
-            const dirModifier = asc ? 1 : -1;
-            const tBody = table.tBodies[0];
-            const rows = Array.from(tBody.querySelectorAll('tr'));
-
-            // Sort each row
-            const sortedRows = rows.sort((a, b) => {
-                const aColText = a.querySelector(`td:nth-child(${column + 1})`).textContent.trim();
-                const bColText = b.querySelector(`td:nth-child(${column + 1})`).textContent.trim();
-
-                const aValue = isNaN(parseFloat(aColText)) ? aColText : parseFloat(aColText);
-                const bValue = isNaN(parseFloat(bColText)) ? bColText : parseFloat(bColText);
-
-                return aValue > bValue ? (1 * dirModifier) : (-1 * dirModifier);
-            });
-
-            // Remove all existing TRs from the table
-            while (tBody.firstChild) {
-                tBody.removeChild(tBody.firstChild);
-            }
-
-            // Re-add the newly sorted rows
-            tBody.append(...sortedRows);
-
-            // Remember how the column is currently sorted
-            table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
-            table.querySelector(`th:nth-child(${column + 1})`).classList.toggle('th-sort-asc', asc);
-            table.querySelector(`th:nth-child(${column + 1})`).classList.toggle('th-sort-desc', !asc);
-        }
-    </script>
-</body>
-</html>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1650 1100" width="1650" height="1100">
+  <!-- Background -->
+  <rect width="1650" height="1100" fill="#f9f9f9"/>
+  
+  <!-- Page 1: Statement of Account -->
+  <rect x="50" y="50" width="700" height="1000" rx="8" ry="8" fill="white" stroke="#dddddd" stroke-width="1"/>
+  
+  <!-- Header Section - Page 1 -->
+  <rect x="50" y="50" width="700" height="100" fill="white" rx="8" ry="8"/>
+  
+  <!-- Logo - Page 1 -->
+  <rect x="80" y="75" width="20" height="20" fill="#edc22e"/>
+  <rect x="100" y="75" width="20" height="20" fill="#14513b"/>
+  <text x="130" y="90" font-family="Arial" font-size="22" font-weight="bold">
+    <tspan fill="#14513b">Singer</tspan><tspan fill="#edc22e">Lewak</tspan>
+  </text>
+  <text x="130" y="105" font-family="Arial" font-size="12" fill="#777777">Accountants &amp; Consultants</text>
+  
+  <!-- Document Type Badge - Page 1 -->
+  <rect x="550" y="75" width="160" height="35" rx="4" ry="4" fill="#14513b"/>
+  <text x="630" y="98" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">STATEMENT OF ACCOUNT</text>
+  <text x="630" y="120" font-family="Arial" font-size="14" fill="#777777" text-anchor="middle">March 27, 2025</text>
+  
+  <!-- Divider -->
+  <line x1="50" y1="150" x2="750" y2="150" stroke="#dddddd" stroke-width="1"/>
+  
+  <!-- Client Section - Page 1 -->
+  <rect x="50" y="150" width="700" height="150" fill="#f5f5f5"/>
+  
+  <!-- Client Info - Page 1 -->
+  <text x="80" y="180" font-family="Arial" font-size="14" fill="#777777" font-weight="bold">CLIENT INFORMATION</text>
+  <text x="80" y="205" font-family="Arial" font-size="18" font-weight="bold" fill="#333333">ELMA ELECTRONIC INC.</text>
+  <text x="80" y="225" font-family="Arial" font-size="14" fill="#333333">44350 S. Grimmer Blvd.</text>
+  <text x="80" y="245" font-family="Arial" font-size="14" fill="#333333">Fremont, California 94538</text>
+  <text x="80" y="265" font-family="Arial" font-size="14" fill="#333333">United States</text>
+  <text x="80" y="285" font-family="Arial" font-size="14" fill="#777777">CLIENT NO.: ACC-23228</text>
+  
+  <!-- Account Summary - Page 1 -->
+  <rect x="400" y="180" width="310" height="90" rx="4" ry="4" fill="white" stroke="#dddddd" stroke-width="1"/>
+  <text x="420" y="205" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">ACCOUNT SUMMARY</text>
+  <line x1="400" y1="215" x2="710" y2="215" stroke="#dddddd" stroke-width="1"/>
+  <text x="420" y="235" font-family="Arial" font-size="14" fill="#777777">Total Outstanding:</text>
+  <text x="680" y="235" font-family="Arial" font-size="14" font-weight="bold" fill="#333333" text-anchor="end">$10,424.00</text>
+  <text x="420" y="255" font-family="Arial" font-size="14" fill="#777777">Overdue Amount:</text>
+  <text x="680" y="255" font-family="Arial" font-size="14" font-weight="bold" fill="#d9534f" text-anchor="end">$302.50</text>
+  
+  <!-- Summary Section - Page 1 -->
+  <rect x="50" y="300" width="700" height="300" fill="white"/>
+  
+  <!-- Due Date Badge - Page 1 -->
+  <rect x="80" y="320" width="190" height="30" rx="4" ry="4" fill="#14513b"/>
+  <text x="175" y="340" font-family="Arial" font-size="14" fill="white" text-anchor="middle">Payment is due within 30 days</text>
+  
+  <!-- Transactions Header - Page 1 -->
+  <text x="80" y="360" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">Transaction History</text>
+  
+  <!-- Table Headers - Page 1 -->
+  <rect x="80" y="370" width="640" height="40" fill="#f5f5f5"/>
+  <text x="100" y="395" font-family="Arial" font-size="14" fill="#777777">Date</text>
+  <text x="180" y="395" font-family="Arial" font-size="14" fill="#777777">Type</text>
+  <text x="260" y="395" font-family="Arial" font-size="14" fill="#777777">Reference</text>
+  <text x="350" y="395" font-family="Arial" font-size="14" fill="#777777">Amount</text>
+  <text x="450" y="395" font-family="Arial" font-size="14" fill="#777777">Payment</text>
+  <text x="550" y="395" font-family="Arial" font-size="14" fill="#777777">Adjustment</text>
+  <text x="670" y="395" font-family="Arial" font-size="14" fill="#777777" text-anchor="end">Balance</text>
+  
+  <!-- Table Row 1 - Page 1 -->
+  <line x1="80" y1="410" x2="720" y2="410" stroke="#dddddd" stroke-width="1"/>
+  <text x="100" y="435" font-family="Arial" font-size="14" fill="#333333">12/5/2024</text>
+  <text x="180" y="435" font-family="Arial" font-size="14" fill="#333333">Invoice</text>
+  <text x="260" y="435" font-family="Arial" font-size="14" fill="#333333">504198</text>
+  <text x="380" y="435" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$302.50</text>
+  <text x="480" y="435" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">—</text>
+  <text x="580" y="435" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">—</text>
+  <text x="670" y="435" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$302.50</text>
+  
+  <!-- Table Row 2 - Page 1 -->
+  <line x1="80" y1="450" x2="720" y2="450" stroke="#dddddd" stroke-width="1"/>
+  <text x="100" y="475" font-family="Arial" font-size="14" fill="#333333">1/31/2025</text>
+  <text x="180" y="475" font-family="Arial" font-size="14" fill="#333333">Invoice</text>
+  <text x="260" y="475" font-family="Arial" font-size="14" fill="#333333">INV600976</text>
+  <text x="380" y="475" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$10,121.50</text>
+  <text x="480" y="475" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">—</text>
+  <text x="580" y="475" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">—</text>
+  <text x="670" y="475" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$10,121.50</text>
+  
+  <!-- Aging Table - Page 1 -->
+  <text x="80" y="520" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">Aging Summary</text>
+  
+  <!-- Aging Table Headers - Page 1 -->
+  <rect x="80" y="535" width="640" height="30" fill="#f5f5f5"/>
+  <text x="140" y="555" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Outstanding</text>
+  <text x="230" y="555" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Current</text>
+  <text x="320" y="555" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Over 30</text>
+  <text x="410" y="555" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Over 60</text>
+  <text x="500" y="555" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Over 90</text>
+  <text x="590" y="555" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Over 180</text>
+  
+  <!-- Aging Table Values - Page 1 -->
+  <line x1="80" y1="565" x2="720" y2="565" stroke="#dddddd" stroke-width="1"/>
+  <text x="140" y="585" font-family="Arial" font-size="13" fill="#333333" text-anchor="middle">$10,424.00</text>
+  <text x="230" y="585" font-family="Arial" font-size="13" fill="#333333" text-anchor="middle">$10,121.50</text>
+  <text x="320" y="585" font-family="Arial" font-size="13" fill="#333333" text-anchor="middle">$0.00</text>
+  <text x="410" y="585" font-family="Arial" font-size="13" fill="#d9534f" font-weight="bold" text-anchor="middle">$302.50</text>
+  <text x="500" y="585" font-family="Arial" font-size="13" fill="#333333" text-anchor="middle">$0.00</text>
+  <text x="590" y="585" font-family="Arial" font-size="13" fill="#333333" text-anchor="middle">$0.00</text>
+  
+  <!-- Total Section - Page 1 -->
+  <rect x="50" y="610" width="700" height="90" fill="white"/>
+  
+  <!-- Total Due - Page 1 -->
+  <text x="530" y="660" font-family="Arial" font-size="16" font-weight="bold" fill="#333333" text-anchor="end">Total Amount Due:</text>
+  <rect x="550" y="645" width="150" height="30" rx="4" ry="4" fill="#14513b"/>
+  <text x="680" y="665" font-family="Arial" font-size="16" font-weight="bold" fill="white" text-anchor="end">$10,424.00</text>
+  
+  <!-- Payment Options - Page 1 -->
+  <rect x="50" y="700" width="700" height="220" fill="#f5f5f5"/>
+  <text x="80" y="730" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">Payment Options</text>
+  
+  <!-- Online Payment - Page 1 -->
+  <circle cx="95" cy="760" r="4" fill="#edc22e"/>
+  <text x="110" y="765" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">ONLINE</text>
+  <text x="110" y="785" font-family="Arial" font-size="14" fill="#14513b">https://singerlewak.com/pay-your-bill-online</text>
+  
+  <!-- Check Payment - Page 1 -->
+  <circle cx="95" cy="815" r="4" fill="#edc22e"/>
+  <text x="110" y="820" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">CHECK</text>
+  <text x="110" y="840" font-family="Arial" font-size="13" fill="#777777">SingerLewak LLP | P.O. Box 80602 City of Industry, CA 91716-8602</text>
+  
+  <!-- Wire Payment - Page 1 -->
+  <circle cx="95" cy="870" r="4" fill="#edc22e"/>
+  <text x="110" y="875" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">WIRE or ACH</text>
+  <text x="110" y="895" font-family="Arial" font-size="13" fill="#777777">Citizens Business Bank</text>
+  <text x="110" y="915" font-family="Arial" font-size="13" fill="#777777">4900 South Eastern Avenue Suite 200 Commerce CA 90040</text>
+  <text x="110" y="935" font-family="Arial" font-size="13" fill="#777777">ABA: 122234149 | Acct: 0104002395 | Swift: CBBKUS6L</text>
+  
+  <!-- Footer - Page 1 -->
+  <rect x="50" y="920" width="700" height="130" fill="white"/>
+  <text x="400" y="970" font-family="Arial" font-size="14" font-weight="bold" fill="#333333" text-anchor="middle">Thank you for your business!</text>
+  <text x="400" y="990" font-family="Arial" font-size="13" fill="#777777" text-anchor="middle">Please contact our office with any questions regarding this statement.</text>
+  <text x="400" y="1025" font-family="Arial" font-size="12" fill="#777777" text-anchor="middle">Page 1 of 2</text>
+  
+  <!-- PAGE 2: DETAILED INVOICE -->
+  
+  <!-- Main Container - Page 2 -->
+  <rect x="900" y="50" width="700" height="1000" rx="8" ry="8" fill="white" stroke="#dddddd" stroke-width="1"/>
+  
+  <!-- Header Section - Page 2 -->
+  <rect x="900" y="50" width="700" height="100" fill="white" rx="8" ry="8"/>
+  
+  <!-- Logo - Page 2 -->
+  <rect x="930" y="75" width="20" height="20" fill="#edc22e"/>
+  <rect x="950" y="75" width="20" height="20" fill="#14513b"/>
+  <text x="980" y="90" font-family="Arial" font-size="22" font-weight="bold">
+    <tspan fill="#14513b">Singer</tspan><tspan fill="#edc22e">Lewak</tspan>
+  </text>
+  <text x="980" y="105" font-family="Arial" font-size="12" fill="#777777">Accountants &amp; Consultants</text>
+  
+  <!-- Invoice Details - Page 2 -->
+  <rect x="1400" y="75" width="160" height="35" rx="4" ry="4" fill="#edc22e"/>
+  <text x="1480" y="98" font-family="Arial" font-size="14" font-weight="bold" fill="#333333" text-anchor="middle">INVOICE</text>
+  <text x="1480" y="120" font-family="Arial" font-size="14" fill="#777777" text-anchor="middle">January 31, 2025</text>
+  
+  <!-- Divider -->
+  <line x1="900" y1="150" x2="1600" y2="150" stroke="#dddddd" stroke-width="1"/>
+  
+  <!-- Client Section - Page 2 -->
+  <rect x="900" y="150" width="700" height="150" fill="#f5f5f5"/>
+  
+  <!-- Client Info - Page 2 -->
+  <text x="930" y="180" font-family="Arial" font-size="14" fill="#777777" font-weight="bold">BILLED TO</text>
+  <text x="930" y="205" font-family="Arial" font-size="18" font-weight="bold" fill="#333333">ELMA ELECTRONIC INC.</text>
+  <text x="930" y="225" font-family="Arial" font-size="14" fill="#333333">44350 S. Grimmer Blvd.</text>
+  <text x="930" y="245" font-family="Arial" font-size="14" fill="#333333">Fremont, California 94538</text>
+  <text x="930" y="265" font-family="Arial" font-size="14" fill="#333333">United States</text>
+  
+  <!-- Invoice Details Box - Page 2 -->
+  <rect x="1250" y="180" width="310" height="90" rx="4" ry="4" fill="white" stroke="#dddddd" stroke-width="1"/>
+  <text x="1270" y="205" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">INVOICE DETAILS</text>
+  <line x1="1250" y1="215" x2="1560" y2="215" stroke="#dddddd" stroke-width="1"/>
+  <text x="1270" y="235" font-family="Arial" font-size="14" fill="#777777">Invoice Number:</text>
+  <text x="1530" y="235" font-family="Arial" font-size="14" font-weight="bold" fill="#333333" text-anchor="end">INV600976</text>
+  <text x="1270" y="255" font-family="Arial" font-size="14" fill="#777777">Client Number:</text>
+  <text x="1530" y="255" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">ACC-23228</text>
+  
+  <!-- Invoice Content - Page 2 -->
+  <rect x="900" y="300" width="700" height="300" fill="white"/>
+  
+  <!-- Due Date Badge - Page 2 -->
+  <rect x="930" y="320" width="190" height="30" rx="4" ry="4" fill="#14513b"/>
+  <text x="1025" y="340" font-family="Arial" font-size="14" fill="white" text-anchor="middle">Payment is due within 30 days</text>
+  
+  <!-- Services Header - Page 2 -->
+  <text x="930" y="380" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">Professional Services</text>
+  
+  <!-- Service Description Box - Page 2 -->
+  <rect x="930" y="400" width="640" height="120" rx="4" ry="4" fill="#f5f5f5" stroke="#dddddd" stroke-width="1"/>
+  <text x="950" y="430" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">2024 Q4 tax provision preparation</text>
+  <text x="950" y="460" font-family="Arial" font-size="14" fill="#777777">Professional services rendered and expenses incurred through January 31, 2025</text>
+  <text x="950" y="490" font-family="Arial" font-size="14" fill="#777777">Services include tax provision calculation, analysis, and documentation.</text>
+  
+  <!-- Payment Breakdown - Page 2 -->
+  <text x="930" y="560" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">Payment Details</text>
+  
+  <!-- Breakdown Table - Page 2 -->
+  <rect x="930" y="580" width="640" height="40" fill="#f5f5f5"/>
+  <text x="950" y="605" font-family="Arial" font-size="14" fill="#777777">Description</text>
+  <text x="1520" y="605" font-family="Arial" font-size="14" fill="#777777" text-anchor="end">Amount</text>
+  
+  <!-- Breakdown Row - Page 2 -->
+  <line x1="930" y1="620" x2="1570" y2="620" stroke="#dddddd" stroke-width="1"/>
+  <text x="950" y="645" font-family="Arial" font-size="14" fill="#333333">2024 Q4 tax provision preparation</text>
+  <text x="1520" y="645" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$10,121.50</text>
+  
+  <!-- Totals Section - Page 2 -->
+  <rect x="900" y="700" width="700" height="150" fill="white"/>
+  
+  <!-- Subtotal - Page 2 -->
+  <text x="1380" y="730" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">Current Invoice Total:</text>
+  <rect x="1400" y="715" width="150" height="30" rx="4" ry="4" fill="#f5f5f5"/>
+  <text x="1530" y="735" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$10,121.50</text>
+  
+  <!-- Previous Due - Page 2 -->
+  <text x="1380" y="770" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">Previous Amount Due:</text>
+  <rect x="1400" y="755" width="150" height="30" rx="4" ry="4" fill="#f5f5f5"/>
+  <text x="1530" y="775" font-family="Arial" font-size="14" fill="#333333" text-anchor="end">$302.50</text>
+  
+  <!-- Total Due - Page 2 -->
+  <text x="1380" y="810" font-family="Arial" font-size="16" font-weight="bold" fill="#333333" text-anchor="end">Total Amount Due:</text>
+  <rect x="1400" y="795" width="150" height="30" rx="4" ry="4" fill="#14513b"/>
+  <text x="1530" y="815" font-family="Arial" font-size="16" font-weight="bold" fill="white" text-anchor="end">$10,424.00</text>
+  
+  <!-- Payment Reminder - Page 2 -->
+  <rect x="900" y="850" width="700" height="150" fill="#f5f5f5"/>
+  <text x="1250" y="880" font-family="Arial" font-size="14" font-weight="bold" fill="#333333" text-anchor="middle">REMITTANCE ADVICE</text>
+  <line x1="900" y1="890" x2="1600" y2="890" stroke="#dddddd" stroke-width="1"/>
+  <text x="930" y="910" font-family="Arial" font-size="13" fill="#777777">Please include your invoice number INV600976 with your payment</text>
+  <text x="930" y="935" font-family="Arial" font-size="13" fill="#777777">For questions about this invoice, please contact your account manager</text>
+  <text x="930" y="960" font-family="Arial" font-size="13" fill="#777777">Pay online at: https://singerlewak.com/pay-your-bill-online</text>
+  
+  <!-- Footer - Page 2 -->
+  <rect x="900" y="1000" width="700" height="50" fill="white"/>
+  <text x="1250" y="1025" font-family="Arial" font-size="12" fill="#777777" text-anchor="middle">Page 2 of 2</text>
+  
+  <!-- Page Separator -->
+  <line x1="825" y1="50" x2="825" y2="1050" stroke="#dddddd" stroke-width="1" stroke-dasharray="10,5"/>
+</svg>
