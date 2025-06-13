@@ -3,243 +3,530 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAICS 2022 Lookup Tool</title>
-    <!-- SheetJS for parsing the official Excel file at runtime -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <title>NAICS Code Lookup Tool</title>
     <style>
-        :root {
-            --primary: #2196f3;
-            --primary-dark: #1976d2;
-            --success: #2e7d32;
-            --danger: #d32f2f;
-            --bg: #f5f5f5;
-            --panel-bg: #ffffff;
-        }
-        * { box-sizing: border-box; }
         body {
-            margin: 0; padding: 20px;
-            font-family: "Inter", Arial, sans-serif;
-            background: var(--bg);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
-        h1 { margin: 0 0 4px 0; font-size: 24px; color: #333; }
-        .subtitle { margin: 0 0 16px 0; color: #666; font-size: 14px; }
         .container {
-            max-width: 1400px; margin: 0 auto; background: var(--panel-bg);
-            padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
-        .selected-info { background:#e8f5e9; padding: 12px 16px; border-radius: 6px; min-width: 260px; }
-        .selected-info h3 { margin: 0 0 8px 0; color: var(--success); font-size: 16px; }
-        .button-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+        }
+        .subtitle {
+            color: #666;
+            margin: 0;
+            font-size: 14px;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .left-panel, .middle-panel, .right-panel {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            padding-top: 45px;
+            height: 450px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .middle-panel {
+            border: 2px solid #2196F3;
+            background-color: #f0f8ff;
+        }
+        .option-number {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            background-color: #2196F3;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .option-label {
+            background-color: #2196F3;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            position: absolute;
+            top: 15px;
+            left: 50px;
+            font-weight: normal;
+        }
+        .search-section {
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .category-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background-color: #f8f8f8;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .category-btn:hover {
+            background-color: #e8e8e8;
+            border-color: #999;
+        }
+        .result-item, .common-code-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .result-item:hover, .common-code-item:hover {
+            background-color: #f0f8ff;
+            border-color: #4CAF50;
+        }
+        .result-item.selected {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+            border-width: 2px;
+        }
+        .code {
+            font-weight: bold;
+            color: #2196F3;
+            margin-right: 8px;
+        }
+        .description {
+            color: #333;
+        }
+        .selected-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .selected-info h3 {
+            margin-top: 0;
+            color: #2e7d32;
+            font-size: 16px;
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
         .action-btn {
-            border: none; border-radius: 4px; cursor: pointer; font-size: 13px;
-            padding: 8px 14px; color: #fff; transition: background .2s;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
         }
-        .copy-btn { background: var(--success); }
-        .copy-btn:hover { background: #1b5e20; }
-        .clear-btn { background: var(--danger); }
-        .clear-btn:hover { background: #b71c1c; }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .panel {
-            border: 1px solid #e0e0e0; border-radius: 6px; height: 450px; overflow: hidden; position: relative;
-            display: flex; flex-direction: column; background: var(--panel-bg);
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
         }
-        .panel.middle { border: 2px solid var(--primary); background:#f0f8ff; }
-        .panel-header {
-            padding: 10px 15px; background: var(--primary); color:#fff; font-weight:600; font-size:14px;
-            display:flex; align-items:center; gap:10px;
+        .copy-btn:hover {
+            background-color: #45a049;
         }
-        .panel-content { padding: 15px; overflow-y: auto; flex:1; }
-        input[type="text"]{ width: 100%; padding: 10px; font-size: 14px; border:2px solid #ddd; border-radius:4px; }
-        input[type="text"]:focus{ outline:none; border-color: var(--primary); }
-        .category-grid{ display:grid; gap:8px; grid-template-columns: 1fr 1fr; }
-        .category-btn{ padding:8px 12px; font-size:13px; background:#f8f8f8; border:1px solid #ddd; border-radius:4px; cursor:pointer; }
-        .category-btn:hover{ background:#e8e8e8; }
-        .result-item{ padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; font-size:13px; cursor:pointer; }
-        .result-item:hover{ background:#f0f8ff; border-color: var(--primary); }
-        .result-item.selected{ background:#e8f5e9; border:2px solid var(--success); }
-        .code{ font-weight:600; color: var(--primary); margin-right:6px; }
-        .no-results{ color:#666; text-align:center; padding:20px; }
-        #loading{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.8); font-size:18px; z-index:9999; }
-        @media(max-width:900px){ .main-layout{ grid-template-columns:1fr; } }
+        .clear-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .clear-btn:hover {
+            background-color: #da190b;
+        }
+        .results-container {
+            height: 350px;
+            overflow-y: auto;
+        }
+        .no-results {
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+        .stats {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
-    <div id="loading">Loading NAICS data…</div>
-
-    <div class="container" style="display:none" id="app">
+    <div class="container">
         <div class="header">
             <div>
                 <h1>NAICS Code Lookup Tool</h1>
-                <p class="subtitle">North American Industry Classification System – 2022 Version</p>
+                <p class="subtitle">North American Industry Classification System</p>
             </div>
-            <div class="selected-info" id="selectedInfo" style="display:none">
+            <div class="selected-info" id="selectedInfo" style="display: none;">
                 <h3>Selected Code</h3>
                 <div id="selectedDetails"></div>
                 <div class="button-row">
-                    <button class="action-btn copy-btn" id="copyBtn">Copy</button>
-                    <button class="action-btn clear-btn" id="clearBtn">Clear</button>
+                    <button class="action-btn copy-btn" onclick="copyToClipboard()">Copy Code</button>
+                    <button class="action-btn clear-btn" onclick="clearSelection()">Clear</button>
                 </div>
             </div>
         </div>
 
         <div class="main-layout">
-            <!-- Categories -->
-            <div class="panel" id="categoryPanel">
-                <div class="panel-header">Browse by Sector</div>
-                <div class="panel-content">
-                    <p style="font-size:12px;color:#666;margin-top:0;">Don't know the code? Start here!</p>
-                    <div class="category-grid" id="categoryGrid"></div>
+            <!-- Left Panel - Categories -->
+            <div class="left-panel">
+                <div class="option-number">1</div>
+                <div class="option-label">OPTION 1</div>
+                <div class="section-title" style="margin-top: 5px;">Browse by Industry Category</div>
+                <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">Don't know the code? Start here!</p>
+                <div class="category-grid">
+                    <button class="category-btn" onclick="filterByCategory('54')">Professional Services</button>
+                    <button class="category-btn" onclick="filterByCategory('31-33')">Manufacturing</button>
+                    <button class="category-btn" onclick="filterByCategory('44-45')">Retail Trade</button>
+                    <button class="category-btn" onclick="filterByCategory('62')">Health Care</button>
+                    <button class="category-btn" onclick="filterByCategory('72')">Food Services</button>
+                    <button class="category-btn" onclick="filterByCategory('23')">Construction</button>
+                    <button class="category-btn" onclick="filterByCategory('52')">Finance & Insurance</button>
+                    <button class="category-btn" onclick="filterByCategory('51')">Information</button>
+                    <button class="category-btn" onclick="filterByCategory('53')">Real Estate</button>
+                    <button class="category-btn" onclick="filterByCategory('11')">Agriculture</button>
+                    <button class="category-btn" onclick="filterByCategory('48-49')">Transportation</button>
+                    <button class="category-btn" onclick="filterByCategory('81')">Other Services</button>
+                </div>
+                
+                <div class="section-title" style="margin-top: 20px;">🔥 Top 5 CPA Client Codes</div>
+                <div class="stats">💡 These codes cover 60% of typical CPA clients</div>
+                <div class="common-code-item" onclick="selectCode('541211', 'Offices of Certified Public Accountants')">
+                    <span class="code">541211</span><br>Offices of CPAs
+                </div>
+                <div class="common-code-item" onclick="selectCode('541110', 'Offices of Lawyers')">
+                    <span class="code">541110</span><br>Offices of Lawyers
+                </div>
+                <div class="common-code-item" onclick="selectCode('531210', 'Offices of Real Estate Agents and Brokers')">
+                    <span class="code">531210</span><br>Real Estate Agents
+                </div>
+                <div class="common-code-item" onclick="selectCode('621111', 'Offices of Physicians (except Mental Health Specialists)')">
+                    <span class="code">621111</span><br>Physicians Offices
+                </div>
+                <div class="common-code-item" onclick="selectCode('236220', 'Commercial and Institutional Building Construction')">
+                    <span class="code">236220</span><br>Commercial Construction
                 </div>
             </div>
-            <!-- Search -->
-            <div class="panel middle">
-                <div class="panel-header">Search by Keyword or Code</div>
-                <div class="panel-content">
-                    <input type="text" id="searchInput" placeholder="Type keywords (e.g., lawyer, restaurant) or codes…" />
-                    <div id="searchResults" style="margin-top:12px;"></div>
+
+            <!-- Middle Panel - Search -->
+            <div class="middle-panel">
+                <div class="option-number">2</div>
+                <div class="option-label">OPTION 2</div>
+                <div class="section-title" style="margin-top: 5px;">Search by Keyword</div>
+                <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">Know the business type? Search here!</p>
+                <div class="search-section">
+                    <input type="text" id="searchInput" placeholder="Type keywords (e.g., 'accounting', 'restaurant', 'dentist')..." />
+                </div>
+                <div class="results-container" id="results">
+                    <div class="no-results">
+                        <p style="font-size: 16px; margin-bottom: 10px;">📝 How to search:</p>
+                        <ul style="text-align: left; color: #666; font-size: 13px;">
+                            <li>Type business keywords (e.g., "lawyer")</li>
+                            <li>Or partial NAICS codes (e.g., "5412")</li>
+                            <li>At least 3 characters to start search</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <!-- Results -->
-            <div class="panel">
-                <div class="panel-header" id="resultsHeader">Results</div>
-                <div class="panel-content" id="categoryResults">
-                    <div class="no-results">Choose a sector or start typing to see matches.</div>
+
+            <!-- Right Panel - Category Results -->
+            <div class="right-panel">
+                <div class="section-title" id="categoryTitle">Your Results Will Appear Here</div>
+                <div class="results-container" id="categoryResults">
+                    <div class="no-results">
+                        <p style="font-size: 16px; margin-bottom: 10px;">👈 Start by choosing:</p>
+                        <p style="color: #666; font-size: 14px;"><strong>Option 1:</strong> Click a category button</p>
+                        <p style="color: #666; font-size: 14px;"><strong>Option 2:</strong> Type in the search box</p>
+                        <p style="color: #666; font-size: 14px; margin-top: 15px;">Then click any result to select it!</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-<script>
-(()=>{
-    // ======= CONFIG =======
-    const EXCEL_URL = './2022_NAICS_Structure.xlsx';
-    const STORAGE_KEY = 'naics2022';
-    const sectorNames = {
-        '11':'Agriculture, Forestry, Fishing & Hunting', '21':'Mining, Quarrying, Oil & Gas', '22':'Utilities', '23':'Construction',
-        '31':'Manufacturing', '32':'Manufacturing', '33':'Manufacturing', '42':'Wholesale Trade',
-        '44':'Retail Trade', '45':'Retail Trade', '48':'Transportation & Warehousing', '49':'Transportation & Warehousing',
-        '51':'Information', '52':'Finance & Insurance', '53':'Real Estate & Leasing', '54':'Professional, Scientific & Technical',
-        '55':'Management of Companies', '56':'Admin, Support & Waste Mgmt', '61':'Educational Services', '62':'Health Care & Social Assistance',
-        '71':'Arts, Entertainment & Recreation', '72':'Accommodation & Food Services', '81':'Other Services', '92':'Public Administration'
-    };
+    <script>
+        // Sample NAICS codes database
+        const naicsCodes = [
+            // Professional Services
+            { code: "541110", description: "Offices of Lawyers" },
+            { code: "541211", description: "Offices of Certified Public Accountants" },
+            { code: "541213", description: "Tax Preparation Services" },
+            { code: "541214", description: "Payroll Services" },
+            { code: "541219", description: "Other Accounting Services" },
+            { code: "541310", description: "Architectural Services" },
+            { code: "541330", description: "Engineering Services" },
+            { code: "541511", description: "Custom Computer Programming Services" },
+            { code: "541611", description: "Administrative Management and General Management Consulting Services" },
+            { code: "541810", description: "Advertising Agencies" },
+            { code: "541820", description: "Public Relations Agencies" },
+            
+            // Healthcare
+            { code: "621111", description: "Offices of Physicians (except Mental Health Specialists)" },
+            { code: "621112", description: "Offices of Physicians, Mental Health Specialists" },
+            { code: "621210", description: "Offices of Dentists" },
+            { code: "621310", description: "Offices of Chiropractors" },
+            { code: "621320", description: "Offices of Optometrists" },
+            { code: "621330", description: "Offices of Mental Health Practitioners" },
+            { code: "621340", description: "Offices of Physical, Occupational and Speech Therapists" },
+            { code: "621610", description: "Home Health Care Services" },
+            { code: "623110", description: "Nursing Care Facilities (Skilled Nursing Facilities)" },
+            
+            // Retail
+            { code: "441110", description: "New Car Dealers" },
+            { code: "441120", description: "Used Car Dealers" },
+            { code: "444110", description: "Home Centers" },
+            { code: "445110", description: "Supermarkets and Other Grocery (except Convenience) Stores" },
+            { code: "445120", description: "Convenience Stores" },
+            { code: "446110", description: "Pharmacies and Drug Stores" },
+            { code: "448140", description: "Family Clothing Stores" },
+            { code: "452210", description: "Department Stores" },
+            
+            // Food Services
+            { code: "722511", description: "Full-Service Restaurants" },
+            { code: "722513", description: "Limited-Service Restaurants" },
+            { code: "722514", description: "Cafeterias, Grill Buffets, and Buffets" },
+            { code: "722515", description: "Snack and Nonalcoholic Beverage Bars" },
+            { code: "722310", description: "Food Service Contractors" },
+            { code: "722320", description: "Caterers" },
+            
+            // Construction
+            { code: "236115", description: "New Single-Family Housing Construction" },
+            { code: "236116", description: "New Multifamily Housing Construction" },
+            { code: "236117", description: "New Housing For-Sale Builders" },
+            { code: "236118", description: "Residential Remodelers" },
+            { code: "236220", description: "Commercial and Institutional Building Construction" },
+            { code: "237110", description: "Water and Sewer Line and Related Structures Construction" },
+            { code: "238110", description: "Poured Concrete Foundation and Structure Contractors" },
+            { code: "238210", description: "Electrical Contractors and Other Wiring Installation Contractors" },
+            { code: "238220", description: "Plumbing, Heating, and Air-Conditioning Contractors" },
+            { code: "238310", description: "Drywall and Insulation Contractors" },
+            { code: "238320", description: "Painting and Wall Covering Contractors" },
+            { code: "238910", description: "Site Preparation Contractors" },
+            
+            // Manufacturing
+            { code: "311611", description: "Animal (except Poultry) Slaughtering" },
+            { code: "311812", description: "Commercial Bakeries" },
+            { code: "311920", description: "Coffee and Tea Manufacturing" },
+            { code: "312120", description: "Breweries" },
+            { code: "321912", description: "Cut Stock, Resawing Lumber, and Planing" },
+            { code: "323111", description: "Commercial Printing (except Screen and Books)" },
+            { code: "332710", description: "Machine Shops" },
+            { code: "333415", description: "Air-Conditioning and Warm Air Heating Equipment Manufacturing" },
+            { code: "336111", description: "Automobile Manufacturing" },
+            { code: "336411", description: "Aircraft Manufacturing" },
+            { code: "339910", description: "Jewelry and Silverware Manufacturing" },
+            
+            // Real Estate
+            { code: "531110", description: "Lessors of Residential Buildings and Dwellings" },
+            { code: "531120", description: "Lessors of Nonresidential Buildings (except Miniwarehouses)" },
+            { code: "531130", description: "Lessors of Miniwarehouses and Self-Storage Units" },
+            { code: "531210", description: "Offices of Real Estate Agents and Brokers" },
+            { code: "531311", description: "Residential Property Managers" },
+            { code: "531312", description: "Nonresidential Property Managers" },
+            { code: "531320", description: "Offices of Real Estate Appraisers" },
+            
+            // Finance & Insurance
+            { code: "522110", description: "Commercial Banking" },
+            { code: "522120", description: "Savings Institutions" },
+            { code: "522130", description: "Credit Unions" },
+            { code: "522220", description: "Sales Financing" },
+            { code: "522291", description: "Consumer Lending" },
+            { code: "522310", description: "Mortgage and Nonmortgage Loan Brokers" },
+            { code: "523110", description: "Investment Banking and Securities Dealing" },
+            { code: "523120", description: "Securities Brokerage" },
+            { code: "524113", description: "Direct Life Insurance Carriers" },
+            { code: "524114", description: "Direct Health and Medical Insurance Carriers" },
+            { code: "524126", description: "Direct Property and Casualty Insurance Carriers" },
+            { code: "524210", description: "Insurance Agencies and Brokerages" }
+        ];
 
-    // ======= STATE =======
-    let naics = [], selected = null;
+        let selectedNAICS = null;
 
-    // ======= DOM REFS =======
-    const app = document.getElementById('app');
-    const loadingScreen = document.getElementById('loading');
-    const categoryGrid = document.getElementById('categoryGrid');
-    const categoryResults = document.getElementById('categoryResults');
-    const searchInput = document.getElementById('searchInput');
-    const searchResults = document.getElementById('searchResults');
-    const resultsHeader = document.getElementById('resultsHeader');
-    const selectedInfo = document.getElementById('selectedInfo');
-    const selectedDetails = document.getElementById('selectedDetails');
-    const copyBtn = document.getElementById('copyBtn');
-    const clearBtn = document.getElementById('clearBtn');
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const resultsDiv = document.getElementById('results');
+            
+            if (searchTerm.length > 2) {
+                const filtered = naicsCodes.filter(item => 
+                    item.description.toLowerCase().includes(searchTerm) || 
+                    item.code.includes(searchTerm)
+                );
+                displaySearchResults(filtered);
+            } else if (searchTerm.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results"><p style="font-size: 16px; margin-bottom: 10px;">📝 How to search:</p><ul style="text-align: left; color: #666; font-size: 13px;"><li>Type business keywords (e.g., "lawyer")</li><li>Or partial NAICS codes (e.g., "5412")</li><li>At least 3 characters to start search</li></ul></div>';
+            }
+        });
 
-    // ======= HELPERS =======
-    const debounce=(fn,ms=300)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms)}};
-    const renderCodeItem=(item)=>`<span class="code">${item.code}</span>${item.description}`;
-
-    // ======= LOAD DATA =======
-    async function loadData(){
-        // cache first
-        const cached = localStorage.getItem(STORAGE_KEY);
-        if(cached){ naics = JSON.parse(cached); return; }
-        try{
-            const ab = await fetch(EXCEL_URL).then(r=>r.arrayBuffer());
-            const wb = XLSX.read(ab,{type:'array'});
-            const sheet = wb.Sheets[wb.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet,{header:1});
-            naics = rows
-                .filter(r=>/^[0-9]{6}$/.test(r[0]))
-                .map(r=>({code:String(r[0]),description:r[1]}));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(naics));
-        }catch(e){
-            console.error('Failed to fetch NAICS file',e);
-            alert('Could not download NAICS list automatically. Falling back to a limited in‑memory list. Download 2022_NAICS_Structure.xlsx and place it next to this file for full functionality.');
-            naics = [
-                {code:'541211',description:'Offices of Certified Public Accountants'},
-                {code:'541110',description:'Offices of Lawyers'},
-                {code:'531210',description:'Offices of Real Estate Agents and Brokers'},
-                {code:'621111',description:'Offices of Physicians (except Mental Health Specialists)'},
-                {code:'236220',description:'Commercial and Institutional Building Construction'}];
+        // Filter by category
+        function filterByCategory(categoryPrefix) {
+            const filtered = naicsCodes.filter(item => {
+                if (categoryPrefix.includes('-')) {
+                    const [start, end] = categoryPrefix.split('-');
+                    const codePrefix = parseInt(item.code.substring(0, 2));
+                    return codePrefix >= parseInt(start) && codePrefix <= parseInt(end);
+                }
+                return item.code.startsWith(categoryPrefix);
+            });
+            
+            // Update category title
+            const categoryNames = {
+                '54': 'Professional Services',
+                '31-33': 'Manufacturing',
+                '44-45': 'Retail Trade',
+                '62': 'Health Care',
+                '72': 'Food Services',
+                '23': 'Construction',
+                '52': 'Finance & Insurance',
+                '51': 'Information',
+                '53': 'Real Estate',
+                '11': 'Agriculture',
+                '48-49': 'Transportation',
+                '81': 'Other Services'
+            };
+            
+            document.getElementById('categoryTitle').textContent = categoryNames[categoryPrefix] || 'Category Results';
+            displayCategoryResults(filtered);
         }
-    }
 
-    // ======= UI BUILDERS =======
-    function buildSectorButtons(){
-        // unique 2‑digit prefixes present in data
-        const prefixes = [...new Set(naics.map(n=>n.code.slice(0,2)))].sort();
-        prefixes.forEach(pref=>{
-            const btn=document.createElement('button');
-            btn.className='category-btn';
-            btn.textContent=sectorNames[pref]||`Sector ${pref}`;
-            btn.dataset.prefix=pref;
-            categoryGrid.appendChild(btn);
-        });
-    }
+        // Display search results
+        function displaySearchResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">No results found. Try different keywords.</div>';
+                return;
+            }
+            
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                if (selectedNAICS && selectedNAICS.code === item.code) {
+                    div.classList.add('selected');
+                }
+                div.innerHTML = `<span class="code">${item.code}</span><br><span class="description">${item.description}</span>`;
+                div.onclick = () => selectCode(item.code, item.description);
+                resultsDiv.appendChild(div);
+            });
+        }
 
-    function listToContainer(list,target){
-        target.innerHTML='';
-        if(!list.length){ target.innerHTML='<div class="no-results">No results found.</div>'; return; }
-        list.forEach(item=>{
-            const div=document.createElement('div');
-            div.className='result-item';
-            if(selected && selected.code===item.code) div.classList.add('selected');
-            div.innerHTML = renderCodeItem(item);
-            div.onclick=()=>select(item);
-            target.appendChild(div);
-        });
-    }
+        // Display category results
+        function displayCategoryResults(results) {
+            const resultsDiv = document.getElementById('categoryResults');
+            resultsDiv.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">No codes in this category.</div>';
+                return;
+            }
+            
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                if (selectedNAICS && selectedNAICS.code === item.code) {
+                    div.classList.add('selected');
+                }
+                div.innerHTML = `<span class="code">${item.code}</span><br><span class="description">${item.description}</span>`;
+                div.onclick = () => selectCode(item.code, item.description);
+                resultsDiv.appendChild(div);
+            });
+        }
 
-    // ======= INTERACTIONS =======
-    function select(item){
-        selected = item;
-        document.querySelectorAll('.result-item').forEach(el=>el.classList.remove('selected'));
-        [...searchResults.children, ...categoryResults.children].forEach(el=>{
-            if(el.innerText.startsWith(item.code)) el.classList.add('selected');
-        });
-        selectedDetails.textContent=`${item.code} – ${item.description}`;
-        selectedInfo.style.display='block';
-    }
+        // Select a code
+        function selectCode(code, description) {
+            selectedNAICS = { code, description };
+            
+            // Update all result items
+            document.querySelectorAll('.result-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.innerHTML.includes(code)) {
+                    item.classList.add('selected');
+                }
+            });
+            
+            // Update selected info
+            document.getElementById('selectedInfo').style.display = 'block';
+            document.getElementById('selectedDetails').innerHTML = 
+                `<strong>${code}</strong> - ${description}`;
+            
+            // Auto-fill if integrated with form
+            if (window.parent && window.parent.setNAICSCode) {
+                window.parent.setNAICSCode(code, description);
+            }
+        }
 
-    copyBtn.addEventListener('click',()=>{
-        if(!selected) return;
-        navigator.clipboard.writeText(`${selected.code} - ${selected.description}`).then(()=>alert('Copied to clipboard!'));
-    });
-    clearBtn.addEventListener('click',()=>{
-        selected=null;selectedInfo.style.display='none';
-        document.querySelectorAll('.result-item').forEach(el=>el.classList.remove('selected'));
-    });
+        // Copy to clipboard
+        function copyToClipboard() {
+            if (selectedNAICS) {
+                const textToCopy = `${selectedNAICS.code} - ${selectedNAICS.description}`;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert('NAICS code and description copied to clipboard!');
+                });
+            }
+        }
 
-    categoryGrid.addEventListener('click',e=>{
-        const btn=e.target.closest('.category-btn');
-        if(!btn) return;
-        const prefix=btn.dataset.prefix;
-        const matches = naics.filter(n=>n.code.startsWith(prefix));
-        resultsHeader.textContent = sectorNames[prefix]||`Sector ${prefix}`;
-        listToContainer(matches,categoryResults);
-    });
-
-    searchInput.addEventListener('input',debounce(e=>{
-        const q=e.target.value.trim().toLowerCase();
-        if(q.length<3){ searchResults.innerHTML=''; return; }
-        const matches = naics.filter(n=> n.description.toLowerCase().includes(q) || n.code.startsWith(q));
-        listToContainer(matches,searchResults);
-    },250));
-
-    // ======= INIT =======
-    (async ()=>{
-        await loadData();
-        buildSectorButtons();
-        loadingScreen.style.display='none';
-        app.style.display='block';
-    })();
-})();
-</script>
+        // Clear selection
+        function clearSelection() {
+            selectedNAICS = null;
+            document.getElementById('selectedInfo').style.display = 'none';
+            document.querySelectorAll('.result-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+    </script>
 </body>
 </html>
