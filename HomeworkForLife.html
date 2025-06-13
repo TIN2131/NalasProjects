@@ -860,3 +860,588 @@
                                     <div class="entry-label">
                                         <i class="fas fa-sticky-note"></i> Reminders
                                     </div>
+                                    <div class="entry-content">${entry.reminders}</div>
+                                    ${entry.remindersImageUrl ? `<img src="${entry.remindersImageUrl}" alt="Reminders" class="entry-image">` : ''}
+                                </div>
+                            ` : ''}
+                            ${entry.recipe ? `
+                                <div class="entry-section">
+                                    <div class="entry-label">
+                                        <i class="fas fa-utensils"></i> Recipe
+                                    </div>
+                                    <div class="entry-content">${entry.recipe}</div>
+                                    ${entry.recipeImageUrl ? `<img src="${entry.recipeImageUrl}" alt="Recipe" class="entry-image">` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async function fetchHistory() {
+                try {
+                    loading.style.display = 'block';
+                    historyContent.innerHTML = '';
+                    
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbyhW5ivPlx4gCvCRU78gTK2v5VmUW_Id3oHP8PuVloaW7hdpYJNPjZazy-SDBmC3mh8Xw/exec', {
+                        method: 'GET',
+                        mode: 'cors',
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const text = await response.text();
+                    const data = JSON.parse(text);
+                    
+                    if (!Array.isArray(data)) {
+                        throw new Error('Unexpected data format');
+                    }
+                    
+                    entries = data;
+                    renderEntries(entries);
+                    mainView.style.display = 'none';
+                    historyView.style.display = 'block';
+                } catch (error) {
+                    console.error('Error fetching history:', error);
+                    showNotification('Failed to load history. Please try again.', 'error');
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+
+            function getBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
+            }
+
+            function showNotification(message, type = 'success') {
+                notification.innerHTML = `
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} notification-icon"></i>
+                    <span>${message}</span>
+                `;
+                notification.style.background = type === 'success' ? 'var(--success-color)' : 'var(--accent-color)';
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            // Auto-save draft
+            let autoSaveTimer;
+            function autoSaveDraft() {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(() => {
+                    const draft = {
+                        date: dateInput.value,
+                        moment: momentInput.value,
+                        reminders: remindersInput.value,
+                        recipe: recipeInput.value
+                    };
+                    localStorage.setItem('homeworkForLifeDraft', JSON.stringify(draft));
+                }, 1000);
+            }
+
+            // Load draft on page load
+            const savedDraft = localStorage.getItem('homeworkForLifeDraft');
+            if (savedDraft) {
+                try {
+                    const draft = JSON.parse(savedDraft);
+                    if (draft.date === dateInput.value) {
+                        momentInput.value = draft.moment || '';
+                        remindersInput.value = draft.reminders || '';
+                        recipeInput.value = draft.recipe || '';
+                    }
+                } catch (e) {
+                    console.error('Error loading draft:', e);
+                }
+            }
+
+            // Add auto-save listeners
+            [momentInput, remindersInput, recipeInput].forEach(input => {
+                input.addEventListener('input', autoSaveDraft);
+            });
+
+            // Clear draft after successful submission
+            const originalResetInputs = resetInputs;
+            resetInputs = function() {
+                originalResetInputs();
+                localStorage.removeItem('homeworkForLifeDraft');
+            };
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + S to save
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+                // Ctrl/Cmd + H to view history
+                if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+                    e.preventDefault();
+                    if (historyView.style.display === 'none') {
+                        viewHistoryBtn.click();
+                    } else {
+                        backToMainBtn.click();
+                    }
+                }
+            });
+
+            // Add character counter for textareas
+            [momentInput, remindersInput, recipeInput].forEach(textarea => {
+                const wrapper = textarea.parentElement;
+                const counter = document.createElement('div');
+                counter.style.cssText = 'text-align: right; font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;';
+                wrapper.appendChild(counter);
+                
+                function updateCounter() {
+                    const length = textarea.value.length;
+                    counter.textContent = `${length} characters`;
+                }
+                
+                textarea.addEventListener('input', updateCounter);
+                updateCounter();
+            });
+        });
+    </style>
+</head>
+<body>
+    <div id="main-view" class="container">
+        <h1><i class="fas fa-book-open"></i> Homework for Life</h1>
+        <p class="tagline">Capture life's meaningful moments, one day at a time</p>
+        
+        <div class="date-selector">
+            <div class="date-input-wrapper">
+                <label for="date-input"><i class="fas fa-calendar-alt"></i> Select Date:</label>
+                <input type="date" id="date-input">
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-star section-icon"></i>
+                    Moment of the Day
+                </h2>
+            </div>
+            <textarea id="moment-input" placeholder="What was the most meaningful moment of your day? What made you smile, think, or feel grateful?"></textarea>
+            <div class="image-upload-wrapper">
+                <label for="moment-image" class="image-upload-label">
+                    <i class="fas fa-camera"></i> Add Photo
+                </label>
+                <input type="file" class="image-upload" id="moment-image" accept="image/*">
+                <img class="image-preview" id="moment-preview">
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-sticky-note section-icon"></i>
+                    Reminders & Reflections
+                </h2>
+            </div>
+            <textarea id="reminders-input" placeholder="What did you learn today? What do you want to remember? Any goals or thoughts for tomorrow?"></textarea>
+            <div class="image-upload-wrapper">
+                <label for="reminders-image" class="image-upload-label">
+                    <i class="fas fa-camera"></i> Add Photo
+                </label>
+                <input type="file" class="image-upload" id="reminders-image" accept="image/*">
+                <img class="image-preview" id="reminders-preview">
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-utensils section-icon"></i>
+                    Recipe of the Day
+                </h2>
+            </div>
+            <textarea id="recipe-input" placeholder="What delicious meal did you enjoy today? Share a recipe, restaurant discovery, or cooking adventure!"></textarea>
+            <div class="image-upload-wrapper">
+                <label for="recipe-image" class="image-upload-label">
+                    <i class="fas fa-camera"></i> Add Photo
+                </label>
+                <input type="file" class="image-upload" id="recipe-image" accept="image/*">
+                <img class="image-preview" id="recipe-preview">
+            </div>
+        </div>
+
+        <button id="submit-btn" class="btn primary">
+            <i class="fas fa-check-circle"></i> Save This Memory
+        </button>
+        
+        <div class="button-group">
+            <button id="reset-btn" class="btn secondary">
+                <i class="fas fa-undo"></i> Clear All
+            </button>
+            <button id="view-history-btn" class="btn secondary">
+                <i class="fas fa-history"></i> View History
+            </button>
+        </div>
+    </div>
+
+    <div id="history-view" class="history-view">
+        <div class="history-header">
+            <div class="history-header-content">
+                <h1 class="history-title"><i class="fas fa-book-open"></i> Your Life's Journey</h1>
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Search your memories...">
+                    <button id="back-to-main" class="btn secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color: white; margin-top: 1rem;">Loading your memories...</p>
+        </div>
+        <div id="history-content" class="history-content"></div>
+    </div>
+
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle notification-icon"></i>
+        <span>Memory saved successfully!</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const dateInput = document.getElementById('date-input');
+            const momentInput = document.getElementById('moment-input');
+            const remindersInput = document.getElementById('reminders-input');
+            const recipeInput = document.getElementById('recipe-input');
+            const momentImage = document.getElementById('moment-image');
+            const remindersImage = document.getElementById('reminders-image');
+            const recipeImage = document.getElementById('recipe-image');
+            const momentPreview = document.getElementById('moment-preview');
+            const remindersPreview = document.getElementById('reminders-preview');
+            const recipePreview = document.getElementById('recipe-preview');
+            const submitBtn = document.getElementById('submit-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const viewHistoryBtn = document.getElementById('view-history-btn');
+            const backToMainBtn = document.getElementById('back-to-main');
+            const searchInput = document.getElementById('search-input');
+            const mainView = document.getElementById('main-view');
+            const historyView = document.getElementById('history-view');
+            const historyContent = document.getElementById('history-content');
+            const notification = document.getElementById('notification');
+            const loading = document.getElementById('loading');
+
+            let entries = [];
+
+            // Set default date to today
+            dateInput.valueAsDate = new Date();
+
+            // Image preview handlers
+            momentImage.addEventListener('change', function() {
+                handleImagePreview(this, momentPreview);
+            });
+
+            remindersImage.addEventListener('change', function() {
+                handleImagePreview(this, remindersPreview);
+            });
+
+            recipeImage.addEventListener('change', function() {
+                handleImagePreview(this, recipePreview);
+            });
+
+            function handleImagePreview(input, preview) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+
+            // Submit handler
+            submitBtn.addEventListener('click', async function() {
+                // Validate inputs
+                if (!momentInput.value.trim() && !remindersInput.value.trim() && !recipeInput.value.trim()) {
+                    showNotification('Please fill in at least one field!', 'error');
+                    return;
+                }
+
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                try {
+                    const momentImageData = momentImage.files[0] ? await getBase64(momentImage.files[0]) : null;
+                    const remindersImageData = remindersImage.files[0] ? await getBase64(remindersImage.files[0]) : null;
+                    const recipeImageData = recipeImage.files[0] ? await getBase64(recipeImage.files[0]) : null;
+
+                    const data = {
+                        date: dateInput.value,
+                        moment: momentInput.value,
+                        reminders: remindersInput.value,
+                        recipe: recipeInput.value,
+                        momentImage: momentImageData,
+                        remindersImage: remindersImageData,
+                        recipeImage: recipeImageData
+                    };
+
+                    // Send data to Google Sheets
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbyhW5ivPlx4gCvCRU78gTK2v5VmUW_Id3oHP8PuVloaW7hdpYJNPjZazy-SDBmC3mh8Xw/exec', {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'text/plain',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    showNotification('Memory saved successfully!', 'success');
+                    entries.unshift(data);
+                    resetInputs();
+                } catch (error) {
+                    console.error('Error sending data to Google Sheets:', error);
+                    showNotification('Failed to save. Please try again.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save This Memory';
+                }
+            });
+
+            resetBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all fields?')) {
+                    resetInputs();
+                }
+            });
+
+            viewHistoryBtn.addEventListener('click', function() {
+                fetchHistory();
+            });
+
+            backToMainBtn.addEventListener('click', function() {
+                historyView.style.display = 'none';
+                mainView.style.display = 'block';
+            });
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredEntries = entries.filter(entry => 
+                    entry.date.includes(searchTerm) ||
+                    entry.moment.toLowerCase().includes(searchTerm) ||
+                    entry.reminders.toLowerCase().includes(searchTerm) ||
+                    entry.recipe.toLowerCase().includes(searchTerm)
+                );
+                renderEntries(filteredEntries);
+            });
+
+            function resetInputs() {
+                momentInput.value = '';
+                remindersInput.value = '';
+                recipeInput.value = '';
+                dateInput.valueAsDate = new Date();
+                momentImage.value = '';
+                remindersImage.value = '';
+                recipeImage.value = '';
+                momentPreview.style.display = 'none';
+                remindersPreview.style.display = 'none';
+                recipePreview.style.display = 'none';
+            }
+
+            function renderEntries(entriesToRender) {
+                if (entriesToRender.length === 0) {
+                    historyContent.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>No memories found</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyContent.innerHTML = entriesToRender.map(entry => {
+                    const date = new Date(entry.date + 'T00:00:00');
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+
+                    return `
+                        <div class="history-entry">
+                            <div class="entry-date">
+                                <i class="fas fa-calendar"></i>
+                                ${formattedDate}
+                            </div>
+                            ${entry.moment ? `
+                                <div class="entry-section">
+                                    <div class="entry-label">
+                                        <i class="fas fa-star"></i> Moment
+                                    </div>
+                                    <div class="entry-content">${entry.moment}</div>
+                                    ${entry.momentImageUrl ? `<img src="${entry.momentImageUrl}" alt="Moment" class="entry-image">` : ''}
+                                </div>
+                            ` : ''}
+                            ${entry.reminders ? `
+                                <div class="entry-section">
+                                    <div class="entry-label">
+                                        <i class="fas fa-sticky-note"></i> Reminders
+                                    </div>
+                                    <div class="entry-content">${entry.reminders}</div>
+                                    ${entry.remindersImageUrl ? `<img src="${entry.remindersImageUrl}" alt="Reminders" class="entry-image">` : ''}
+                                </div>
+                            ` : ''}
+                            ${entry.recipe ? `
+                                <div class="entry-section">
+                                    <div class="entry-label">
+                                        <i class="fas fa-utensils"></i> Recipe
+                                    </div>
+                                    <div class="entry-content">${entry.recipe}</div>
+                                    ${entry.recipeImageUrl ? `<img src="${entry.recipeImageUrl}" alt="Recipe" class="entry-image">` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async function fetchHistory() {
+                try {
+                    loading.style.display = 'block';
+                    historyContent.innerHTML = '';
+                    
+                    const response = await fetch('https://script.google.com/macros/s/AKfycbyhW5ivPlx4gCvCRU78gTK2v5VmUW_Id3oHP8PuVloaW7hdpYJNPjZazy-SDBmC3mh8Xw/exec', {
+                        method: 'GET',
+                        mode: 'cors',
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const text = await response.text();
+                    const data = JSON.parse(text);
+                    
+                    if (!Array.isArray(data)) {
+                        throw new Error('Unexpected data format');
+                    }
+                    
+                    entries = data;
+                    renderEntries(entries);
+                    mainView.style.display = 'none';
+                    historyView.style.display = 'block';
+                } catch (error) {
+                    console.error('Error fetching history:', error);
+                    showNotification('Failed to load history. Please try again.', 'error');
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+
+            function getBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
+            }
+
+            function showNotification(message, type = 'success') {
+                notification.innerHTML = `
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} notification-icon"></i>
+                    <span>${message}</span>
+                `;
+                notification.style.background = type === 'success' ? 'var(--success-color)' : 'var(--accent-color)';
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            // Auto-save draft
+            let autoSaveTimer;
+            function autoSaveDraft() {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(() => {
+                    const draft = {
+                        date: dateInput.value,
+                        moment: momentInput.value,
+                        reminders: remindersInput.value,
+                        recipe: recipeInput.value
+                    };
+                    localStorage.setItem('homeworkForLifeDraft', JSON.stringify(draft));
+                }, 1000);
+            }
+
+            // Load draft on page load
+            const savedDraft = localStorage.getItem('homeworkForLifeDraft');
+            if (savedDraft) {
+                try {
+                    const draft = JSON.parse(savedDraft);
+                    if (draft.date === dateInput.value) {
+                        momentInput.value = draft.moment || '';
+                        remindersInput.value = draft.reminders || '';
+                        recipeInput.value = draft.recipe || '';
+                    }
+                } catch (e) {
+                    console.error('Error loading draft:', e);
+                }
+            }
+
+            // Add auto-save listeners
+            [momentInput, remindersInput, recipeInput].forEach(input => {
+                input.addEventListener('input', autoSaveDraft);
+            });
+
+            // Clear draft after successful submission
+            const originalResetInputs = resetInputs;
+            resetInputs = function() {
+                originalResetInputs();
+                localStorage.removeItem('homeworkForLifeDraft');
+            };
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + S to save
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+                // Ctrl/Cmd + H to view history
+                if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+                    e.preventDefault();
+                    if (historyView.style.display === 'none') {
+                        viewHistoryBtn.click();
+                    } else {
+                        backToMainBtn.click();
+                    }
+                }
+            });
+
+            // Add character counter for textareas
+            [momentInput, remindersInput, recipeInput].forEach(textarea => {
+                const wrapper = textarea.parentElement;
+                const counter = document.createElement('div');
+                counter.style.cssText = 'text-align: right; font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;';
+                wrapper.appendChild(counter);
+                
+                function updateCounter() {
+                    const length = textarea.value.length;
+                    counter.textContent = `${length} characters`;
+                }
+                
+                textarea.addEventListener('input', updateCounter);
+                updateCounter();
+            });
+        });
+    </script>
+</body>
+</html>
