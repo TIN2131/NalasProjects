@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tax Deliverable Category Mapping</title>
+    <title>Tax Deliverable Category Mapping - All 1,371 Items</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,6 +38,7 @@
         .filter-group {
             display: inline-block;
             margin-right: 20px;
+            margin-bottom: 10px;
         }
         select, input {
             padding: 8px;
@@ -108,15 +109,21 @@
         .export-btn:hover {
             background-color: #2c5282;
         }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Tax Deliverable Category Mapping</h1>
+        <h1>Tax Deliverable Category Mapping - Complete Dataset</h1>
         
         <div class="summary">
             <h3>Summary Statistics</h3>
-            <p>Total Deliverables: <strong>1,371</strong></p>
+            <p>Total Deliverables: <strong id="totalCount">1,371</strong></p>
             <div id="categorySummary"></div>
         </div>
         
@@ -129,10 +136,10 @@
             </div>
             <div class="filter-group">
                 <label for="searchFilter">Search Deliverables:</label>
-                <input type="text" id="searchFilter" placeholder="Type to search...">
+                <input type="text" id="searchFilter" placeholder="Type to search..." size="30">
             </div>
             <div class="filter-group">
-                <span id="recordCount">Showing 1,371 records</span>
+                <span id="recordCount">Loading...</span>
             </div>
             <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
         </div>
@@ -149,14 +156,14 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <!-- Table rows will be inserted here by JavaScript -->
+                    <tr><td colspan="5" class="loading">Loading deliverables...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Deliverable data will be loaded dynamically
+        // Initialize variables
         let deliverables = [];
         let filteredDeliverables = [];
 
@@ -245,37 +252,80 @@
             return 'Tax Compliance - Other';
         }
 
-        // Load deliverable data
+        // Load deliverables from file
         async function loadDeliverables() {
             try {
                 const response = await window.fs.readFile('Tax Project Names.csv', { encoding: 'utf8' });
+                
+                // Parse CSV manually to handle potential issues
                 const lines = response.split('\n');
-                const headers = lines[0].split(',');
+                const headers = lines[0].split(',').map(h => h.trim());
                 
                 deliverables = [];
                 for (let i = 1; i < lines.length; i++) {
                     if (lines[i].trim()) {
-                        const values = lines[i].split(',');
-                        const deliverable = {
-                            name: values[0] || '',
-                            altName: values[1] || '',
-                            code: values[2] || '',
-                            category: ''
-                        };
-                        deliverable.category = categorizeDeliverable(deliverable.name, deliverable.altName, deliverable.code);
-                        deliverables.push(deliverable);
+                        // Handle potential commas within quoted fields
+                        const row = parseCSVLine(lines[i]);
+                        if (row.length >= 3) {
+                            const deliverable = {
+                                name: row[0] || '',
+                                altName: row[1] || '',
+                                code: row[2] || '',
+                                category: ''
+                            };
+                            deliverable.category = categorizeDeliverable(deliverable.name, deliverable.altName, deliverable.code);
+                            deliverables.push(deliverable);
+                        }
                     }
                 }
                 
+                console.log('Loaded deliverables:', deliverables.length);
                 filteredDeliverables = [...deliverables];
                 updateDisplay();
                 updateFilters();
                 updateSummary();
+                
             } catch (error) {
                 console.error('Error loading file:', error);
-                // Use sample data if file can't be loaded
-                useSampleData();
+                // Try to use data from the REPL if available
+                if (window.fullDeliverableData) {
+                    deliverables = window.fullDeliverableData.map(item => ({
+                        name: item.name,
+                        altName: item.altName,
+                        code: item.code,
+                        category: item.category
+                    }));
+                    filteredDeliverables = [...deliverables];
+                    updateDisplay();
+                    updateFilters();
+                    updateSummary();
+                } else {
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Error loading data. Please refresh the page.</td></tr>';
+                }
             }
+        }
+
+        // Parse CSV line handling quoted fields
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
         }
 
         // Update table display
@@ -283,24 +333,36 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
+            // Add all filtered rows
             filteredDeliverables.forEach((item, index) => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${index + 1}</td>
-                    <td>${item.name}</td>
-                    <td>${item.altName}</td>
-                    <td>${item.code}</td>
-                    <td><span class="category-badge ${categoryClasses[item.category]}">${item.category}</span></td>
+                    <td>${escapeHtml(item.name)}</td>
+                    <td>${escapeHtml(item.altName)}</td>
+                    <td>${escapeHtml(item.code)}</td>
+                    <td><span class="category-badge ${categoryClasses[item.category] || 'tax-compliance'}">${item.category}</span></td>
                 `;
             });
             
-            document.getElementById('recordCount').textContent = `Showing ${filteredDeliverables.length} records`;
+            document.getElementById('recordCount').textContent = `Showing ${filteredDeliverables.length} of ${deliverables.length} records`;
+            document.getElementById('totalCount').textContent = deliverables.length;
+        }
+
+        // Escape HTML to prevent injection
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Update filter options
         function updateFilters() {
             const categories = [...new Set(deliverables.map(d => d.category))].sort();
             const categoryFilter = document.getElementById('categoryFilter');
+            
+            // Clear existing options except "All"
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
             
             categories.forEach(cat => {
                 const option = document.createElement('option');
@@ -321,11 +383,14 @@
             const sortedCategories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
             
             summaryDiv.innerHTML = sortedCategories
-                .map(([cat, count]) => `<span class="category-badge ${categoryClasses[cat]}">${cat}: ${count}</span>`)
+                .map(([cat, count]) => {
+                    const percentage = ((count / deliverables.length) * 100).toFixed(1);
+                    return `<span class="category-badge ${categoryClasses[cat] || 'tax-compliance'}">${cat}: ${count} (${percentage}%)</span>`;
+                })
                 .join(' ');
         }
 
-        // Filter functionality
+        // Apply filters
         function applyFilters() {
             const categoryFilter = document.getElementById('categoryFilter').value;
             const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
@@ -347,58 +412,26 @@
         function exportToCSV() {
             let csv = 'Deliverable Name,Alternative Name,Code,Suggested Category\n';
             filteredDeliverables.forEach(item => {
-                csv += `"${item.name}","${item.altName}","${item.code}","${item.category}"\n`;
+                csv += `"${item.name.replace(/"/g, '""')}","${item.altName.replace(/"/g, '""')}","${item.code.replace(/"/g, '""')}","${item.category}"\n`;
             });
             
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'deliverable_category_mapping.csv');
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'tax_deliverable_category_mapping.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Event listeners
         document.getElementById('categoryFilter').addEventListener('change', applyFilters);
         document.getElementById('searchFilter').addEventListener('input', applyFilters);
 
-        // Use sample data if file loading fails
-        function useSampleData() {
-            // This function will populate with sample data from the analysis
-            deliverables = [
-                {name: "Alabama 20 ES Q1", altName: "Alabama DoR Corporation Estimated Tax Q1", code: "AL20ESQ2", category: "Estimated Payments"},
-                {name: "Alabama 20C 0315", altName: "Alabama Corporation Income Tax Return 0315", code: "AL20C_0315", category: "Tax Returns"},
-                {name: "Federal 1120", altName: "U.S. Corporation Income Tax Return", code: "1120", category: "Tax Returns"},
-                {name: "Tax Provision", altName: "Annual Tax Provision Calculation", code: "PROV", category: "Tax Provisions"},
-                {name: "Federal 7004", altName: "Application for Automatic Extension", code: "7004", category: "Extensions"},
-                {name: "Federal 1120X", altName: "Amended U.S. Corporation Income Tax Return", code: "1120X", category: "Amended Returns"},
-                {name: "R&D Credit Study", altName: "Research & Development Tax Credit Analysis", code: "RDCREDIT", category: "Tax Planning & Studies"},
-                {name: "Form 5471", altName: "Information Return of U.S. Persons - Foreign Corp", code: "5471", category: "International Tax"},
-                {name: "IRS Notice Response", altName: "Response to IRS CP2000 Notice", code: "IRSRESP", category: "Tax Notices & Correspondence"},
-                {name: "Sales Tax Return", altName: "Multi-State Sales Tax Compliance", code: "SALES", category: "Tax Compliance - Other"}
-            ];
-            
-            // Add more sample entries to demonstrate the full range
-            for (let i = 0; i < 50; i++) {
-                deliverables.push({
-                    name: `State ${i} Tax Return`,
-                    altName: `State Income Tax Return`,
-                    code: `ST${i}`,
-                    category: "Tax Returns"
-                });
-            }
-            
-            filteredDeliverables = [...deliverables];
-            updateDisplay();
-            updateFilters();
-            updateSummary();
-        }
-
         // Initialize on page load
-        loadDeliverables();
+        window.addEventListener('load', loadDeliverables);
     </script>
 </body>
 </html>
