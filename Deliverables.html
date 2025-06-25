@@ -173,7 +173,14 @@
         .instructions li {
             margin: 5px 0;
         }
+        .preview-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -182,8 +189,8 @@
         <div class="instructions">
             <h3>How to Use This Tool</h3>
             <ol>
-                <li>Click "Choose File" and select your Tax Project Names CSV file</li>
-                <li>The tool will automatically categorize all 1,371 deliverables</li>
+                <li>Click "Choose File" and select your Tax Project Names Excel file (.xlsx)</li>
+                <li>The tool will automatically categorize all deliverables based on their names</li>
                 <li>Review the category summary and preview</li>
                 <li>Click "Export to CSV" to download the categorized data</li>
                 <li>Import the exported CSV into your CRM system</li>
@@ -191,11 +198,11 @@
         </div>
         
         <div class="upload-section">
-            <h2>Upload Your Tax Project Names CSV File</h2>
-            <p>Select the CSV file containing your tax deliverables</p>
+            <h2>Upload Your Tax Project Names Excel File</h2>
+            <p>Select the Excel file (.xlsx) containing your tax deliverables</p>
             <div class="file-input-wrapper">
                 <button class="file-input-button">Choose File</button>
-                <input type="file" id="fileInput" accept=".csv">
+                <input type="file" id="fileInput" accept=".xlsx,.xls">
             </div>
             <div class="loading">Processing file...</div>
         </div>
@@ -211,22 +218,24 @@
         <div class="export-section" id="exportSection">
             <h2>Export Options</h2>
             <button class="export-button" onclick="exportToCSV()">Export to CSV</button>
+            <button class="export-button" onclick="exportToExcel()">Export to Excel</button>
             <button class="export-button" onclick="copyToClipboard()">Copy to Clipboard</button>
         </div>
         
         <div class="preview-section" id="previewSection">
-            <h2>Preview (First 50 Records)</h2>
-            <table class="preview-table">
-                <thead>
-                    <tr>
-                        <th>Deliverable Name</th>
-                        <th>Alternative Name</th>
-                        <th>Code</th>
-                        <th>Suggested Category</th>
-                    </tr>
-                </thead>
-                <tbody id="previewTableBody"></tbody>
-            </table>
+            <h2>Preview (First 100 Records)</h2>
+            <div class="preview-container">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="60%">Deliverable Name</th>
+                            <th width="35%">Suggested Category</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTableBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -234,70 +243,84 @@
         let processedData = [];
         
         // Categorization function
-        function categorizeDeliverable(name, altName, code) {
-            const fullText = `${name} ${altName || ''} ${code || ''}`.toLowerCase();
+        function categorizeDeliverable(name) {
+            const fullText = (name || '').toLowerCase();
             
             // Tax Provisions
-            if (fullText.includes('provision') || fullText.includes('asc 740')) {
+            if (fullText.includes('provision') || fullText.includes('asc 740') || fullText.includes('tax rate rec')) {
                 return 'Tax Provisions';
             }
             
             // Amended Returns
             if (fullText.includes('amend') || fullText.includes('1120x') || fullText.includes('1040x') || 
-                fullText.match(/\d+x\b/) || fullText.includes('-x')) {
+                fullText.includes('1120-x') || fullText.includes('1040-x') ||
+                fullText.match(/\d+x\b/) || fullText.includes('-x') || fullText.includes('correction')) {
                 return 'Amended Returns';
             }
             
             // Extensions
-            if (fullText.includes('extension') || fullText.includes('7004') || fullText.includes('ext')) {
+            if (fullText.includes('extension') || fullText.includes('7004') || fullText.includes('form 8868') ||
+                fullText.includes('automatic filing') || fullText.includes('ext ')) {
                 return 'Extensions';
             }
             
             // Estimated Payments
             if (fullText.includes(' es ') || fullText.includes('-es') || fullText.includes('estimated') || 
-                fullText.match(/es\s?q[1-4]/) || fullText.includes('estimate')) {
+                fullText.match(/es\s?q[1-4]/) || fullText.includes('estimate') || fullText.includes('quarterly payment') ||
+                fullText.includes('safe harbor')) {
                 return 'Estimated Payments';
             }
             
             // International Tax
             if (fullText.includes('5471') || fullText.includes('8865') || fullText.includes('fincen') || 
                 fullText.includes('foreign') || fullText.includes('treaty') || fullText.includes('gilti') ||
-                fullText.includes('international') || fullText.includes('8858') || fullText.includes('8938')) {
+                fullText.includes('international') || fullText.includes('8858') || fullText.includes('8938') ||
+                fullText.includes('form 926') || fullText.includes('8833') || fullText.includes('country-by-country') ||
+                fullText.includes('cbc') || fullText.includes('transfer pricing')) {
                 return 'International Tax';
             }
             
             // Tax Planning & Studies
             if (fullText.includes('study') || fullText.includes('planning') || fullText.includes('analysis') ||
-                fullText.includes('strategy') || fullText.includes('r&d') || fullText.includes('research')) {
+                fullText.includes('strategy') || fullText.includes('r&d') || fullText.includes('research') ||
+                fullText.includes('cost segregation') || fullText.includes('sec 199a') || fullText.includes('optimization')) {
                 return 'Tax Planning & Studies';
             }
             
             // Elections & Disclosures
             if (fullText.includes('election') || fullText.includes('disclosure') || fullText.includes('8832') ||
-                fullText.includes('2553') || fullText.includes('check-the-box')) {
+                fullText.includes('2553') || fullText.includes('check-the-box') || fullText.includes('s-corp election') ||
+                fullText.includes('accounting method') || fullText.includes('utp') || fullText.includes('schedule utp')) {
                 return 'Elections & Disclosures';
             }
             
             // Tax Notices & Correspondence
             if (fullText.includes('notice') || fullText.includes('letter') || fullText.includes('response') ||
-                fullText.includes('audit') || fullText.includes('correspondence')) {
+                fullText.includes('audit') || fullText.includes('correspondence') || fullText.includes('cp2000') ||
+                fullText.includes('revenue agent') || fullText.includes('information request')) {
                 return 'Tax Notices & Correspondence';
             }
             
             // Credits & Incentives
-            if (fullText.includes('credit') && !fullText.includes('fincen')) {
+            if ((fullText.includes('credit') && !fullText.includes('fincen')) || fullText.includes('incentive') ||
+                fullText.includes('work opportunity') || fullText.includes('wotc') || fullText.includes('ertc') ||
+                fullText.includes('investment tax')) {
                 return 'Credits & Incentives';
             }
             
             // Tax Compliance - Other
-            if (fullText.includes('sales tax') || fullText.includes('property tax') || fullText.includes('payroll') ||
-                fullText.includes('1099') || fullText.includes('w-2') || fullText.includes('license') ||
-                fullText.includes('registration') || fullText.includes('unemployment') || fullText.includes('ui-') ||
-                fullText.includes('suta') || fullText.includes('futa') || fullText.includes('workers comp') ||
-                fullText.includes('franchise tax') || fullText.includes('gross receipts') || fullText.includes('cat ') ||
-                fullText.includes('business tax') || fullText.includes('excise') || fullText.includes('fuel tax') ||
-                fullText.includes('tangible') || fullText.includes('intangible') || fullText.includes('ppd') ||
-                fullText.includes('charity') || fullText.includes('nonprofit') || fullText.includes('bpt')) {
+            if (fullText.includes('sales tax') || fullText.includes('sales and use') || fullText.includes('property tax') || 
+                fullText.includes('payroll') || fullText.includes('941') || fullText.includes('940') ||
+                fullText.includes('1099') || fullText.includes('w-2') || fullText.includes('w-3') ||
+                fullText.includes('license') || fullText.includes('registration') || fullText.includes('unemployment') || 
+                fullText.includes('ui-') || fullText.includes('suta') || fullText.includes('futa') || 
+                fullText.includes('workers comp') || fullText.includes('franchise tax') || fullText.includes('gross receipts') || 
+                fullText.includes('cat ') || fullText.includes('commercial activity') || fullText.includes('business tax') || 
+                fullText.includes('excise') || fullText.includes('fuel tax') || fullText.includes('tangible') || 
+                fullText.includes('intangible') || fullText.includes('personal property') || fullText.includes('ppd') ||
+                fullText.includes('charity') || fullText.includes('nonprofit') || fullText.includes('bpt') ||
+                fullText.includes('privilege tax') || fullText.includes('annual report') || fullText.includes('franchise report') ||
+                fullText.includes('withholding')) {
                 return 'Tax Compliance - Other';
             }
             
@@ -305,59 +328,13 @@
             if (fullText.includes('return') || fullText.includes('1040') || fullText.includes('1120') || 
                 fullText.includes('1065') || fullText.includes('1041') || fullText.includes('990') ||
                 fullText.includes('form') || fullText.match(/\b\d{3,4}[a-z]?\b/) ||
-                fullText.includes(' 20c') || fullText.includes(' 40') || fullText.includes(' 20s') ||
-                fullText.includes('individual') || fullText.includes('corporation') || fullText.includes('partnership') ||
-                fullText.includes('fiduciary') || fullText.includes('s corp')) {
+                fullText.includes('individual income') || fullText.includes('corporation income') || 
+                fullText.includes('partnership') || fullText.includes('fiduciary') || fullText.includes('s corp') ||
+                fullText.includes('c corp') || fullText.includes('exempt organization') || fullText.includes('composite')) {
                 return 'Tax Returns';
             }
             
             return 'Tax Compliance - Other';
-        }
-        
-        // Parse CSV
-        function parseCSV(text) {
-            const lines = text.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim()) {
-                    const values = parseCSVLine(lines[i]);
-                    if (values.length >= 3) {
-                        data.push({
-                            name: values[0] || '',
-                            altName: values[1] || '',
-                            code: values[2] || '',
-                            category: categorizeDeliverable(values[0], values[1], values[2])
-                        });
-                    }
-                }
-            }
-            
-            return data;
-        }
-        
-        // Parse CSV line handling quoted fields
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            
-            result.push(current.trim());
-            return result;
         }
         
         // File input handler
@@ -371,23 +348,41 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const text = e.target.result;
-                    processedData = parseCSV(text);
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Get the first sheet
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    // Process the data
+                    processedData = [];
+                    jsonData.forEach((row, index) => {
+                        const name = row['Alternative Name'] || row['Name'] || Object.values(row)[0] || '';
+                        if (name && name.trim()) {
+                            processedData.push({
+                                index: index + 1,
+                                name: name.trim(),
+                                category: categorizeDeliverable(name)
+                            });
+                        }
+                    });
                     
                     if (processedData.length === 0) {
-                        throw new Error('No valid data found in the CSV file');
+                        throw new Error('No valid data found in the Excel file');
                     }
                     
                     displayResults();
                     showStatus(`Successfully processed ${processedData.length} deliverables!`, 'success');
                 } catch (error) {
                     showStatus(`Error processing file: ${error.message}`, 'error');
+                    console.error('Error details:', error);
                 } finally {
                     document.querySelector('.loading').style.display = 'none';
                 }
             };
             
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
         });
         
         // Display results
@@ -419,16 +414,15 @@
                     summaryContainer.appendChild(div);
                 });
             
-            // Display preview
+            // Display preview (first 100 rows)
             const previewBody = document.getElementById('previewTableBody');
             previewBody.innerHTML = '';
             
-            processedData.slice(0, 50).forEach(item => {
+            processedData.slice(0, 100).forEach((item, idx) => {
                 const row = previewBody.insertRow();
                 row.innerHTML = `
+                    <td>${item.index}</td>
                     <td>${escapeHtml(item.name)}</td>
-                    <td>${escapeHtml(item.altName)}</td>
-                    <td>${escapeHtml(item.code)}</td>
                     <td><span class="category-badge">${item.category}</span></td>
                 `;
             });
@@ -441,10 +435,10 @@
         
         // Export to CSV
         function exportToCSV() {
-            let csv = 'Deliverable Name,Alternative Name,Code,Suggested Category\n';
+            let csv = 'Deliverable Name,Suggested Category\n';
             
             processedData.forEach(item => {
-                csv += `"${item.name.replace(/"/g, '""')}","${item.altName.replace(/"/g, '""')}","${item.code.replace(/"/g, '""')}","${item.category}"\n`;
+                csv += `"${item.name.replace(/"/g, '""')}","${item.category}"\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -462,18 +456,60 @@
             showStatus('CSV file downloaded successfully!', 'success');
         }
         
+        // Export to Excel
+        function exportToExcel() {
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Convert data to worksheet format
+            const wsData = [['Deliverable Name', 'Suggested Category']];
+            processedData.forEach(item => {
+                wsData.push([item.name, item.category]);
+            });
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 60 },  // Deliverable Name column
+                { wch: 30 }   // Category column
+            ];
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Categorized Deliverables');
+            
+            // Write the file
+            XLSX.writeFile(wb, 'tax_deliverable_category_mapping.xlsx');
+            
+            showStatus('Excel file downloaded successfully!', 'success');
+        }
+        
         // Copy to clipboard
         function copyToClipboard() {
-            let csv = 'Deliverable Name,Alternative Name,Code,Suggested Category\n';
+            let csv = 'Deliverable Name\tSuggested Category\n';
             
             processedData.forEach(item => {
-                csv += `"${item.name.replace(/"/g, '""')}","${item.altName.replace(/"/g, '""')}","${item.code.replace(/"/g, '""')}","${item.category}"\n`;
+                csv += `${item.name}\t${item.category}\n`;
             });
             
             navigator.clipboard.writeText(csv).then(() => {
-                showStatus('Data copied to clipboard!', 'success');
+                showStatus('Data copied to clipboard! You can paste it directly into Excel.', 'success');
             }).catch(() => {
-                showStatus('Failed to copy to clipboard', 'error');
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = csv;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showStatus('Data copied to clipboard!', 'success');
+                } catch (err) {
+                    showStatus('Failed to copy to clipboard', 'error');
+                }
+                document.body.removeChild(textArea);
             });
         }
         
