@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tax Deliverable Category Mapping - All 1,371 Items</title>
+    <title>Tax Deliverable Category Mapping Tool</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,7 +11,7 @@
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: white;
             padding: 30px;
@@ -21,214 +21,275 @@
         h1 {
             color: #1a5490;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            background-color: #e8f4f8;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .file-input-button {
+            background-color: #1a5490;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-input-button:hover {
+            background-color: #2c5282;
+        }
+        input[type="file"] {
+            position: absolute;
+            left: -9999px;
         }
         .summary {
-            background-color: #e8f4f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .filters {
-            margin-bottom: 20px;
-            padding: 15px;
             background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .category-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .category-item {
+            background-color: white;
+            padding: 15px;
             border-radius: 5px;
+            border: 1px solid #e0e0e0;
         }
-        .filter-group {
-            display: inline-block;
-            margin-right: 20px;
-            margin-bottom: 10px;
+        .category-name {
+            font-weight: bold;
+            color: #1a5490;
+            margin-bottom: 5px;
         }
-        select, input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+        .category-count {
+            color: #666;
+            font-size: 24px;
+            font-weight: bold;
         }
-        .table-container {
-            max-height: 600px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
+        .export-section {
+            text-align: center;
+            margin: 30px 0;
+            display: none;
+        }
+        .export-button {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 40px;
+            border: none;
             border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s;
         }
-        table {
+        .export-button:hover {
+            background-color: #218838;
+        }
+        .preview-section {
+            display: none;
+            margin-top: 30px;
+        }
+        .preview-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
-        th {
+        .preview-table th {
             background-color: #1a5490;
             color: white;
             padding: 12px;
             text-align: left;
-            font-weight: bold;
             position: sticky;
             top: 0;
-            z-index: 10;
         }
-        td {
+        .preview-table td {
             padding: 10px;
             border-bottom: 1px solid #e0e0e0;
         }
-        tr:hover {
+        .preview-table tr:hover {
             background-color: #f8f9fa;
         }
         .category-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 4px 12px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: bold;
-            white-space: nowrap;
+            background-color: #e3f2fd;
+            color: #1565c0;
         }
-        .tax-returns { background-color: #e3f2fd; color: #1565c0; }
-        .tax-provisions { background-color: #f3e5f5; color: #6a1b9a; }
-        .estimated-payments { background-color: #e8f5e9; color: #2e7d32; }
-        .extensions { background-color: #fff3e0; color: #e65100; }
-        .amended-returns { background-color: #fce4ec; color: #c2185b; }
-        .tax-planning { background-color: #e0f2f1; color: #00695c; }
-        .tax-compliance { background-color: #f5f5f5; color: #424242; }
-        .international-tax { background-color: #e8eaf6; color: #283593; }
-        .tax-notices { background-color: #ffebee; color: #b71c1c; }
-        .elections { background-color: #f1f8e9; color: #33691e; }
-        .credits { background-color: #fffde7; color: #f57f17; }
-        #recordCount {
-            font-weight: bold;
-            color: #1a5490;
+        .status-message {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
         }
-        .export-btn {
-            background-color: #1a5490;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 10px;
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
-        .export-btn:hover {
-            background-color: #2c5282;
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 18px;
+            display: none;
             color: #666;
+            font-style: italic;
+        }
+        .instructions {
+            background-color: #f1f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1a5490;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #1a5490;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Tax Deliverable Category Mapping - Complete Dataset</h1>
+        <h1>Tax Deliverable Category Mapping Tool</h1>
         
-        <div class="summary">
-            <h3>Summary Statistics</h3>
-            <p>Total Deliverables: <strong id="totalCount">1,371</strong></p>
-            <div id="categorySummary"></div>
+        <div class="instructions">
+            <h3>How to Use This Tool</h3>
+            <ol>
+                <li>Click "Choose File" and select your Tax Project Names CSV file</li>
+                <li>The tool will automatically categorize all 1,371 deliverables</li>
+                <li>Review the category summary and preview</li>
+                <li>Click "Export to CSV" to download the categorized data</li>
+                <li>Import the exported CSV into your CRM system</li>
+            </ol>
         </div>
         
-        <div class="filters">
-            <div class="filter-group">
-                <label for="categoryFilter">Filter by Category:</label>
-                <select id="categoryFilter">
-                    <option value="">All Categories</option>
-                </select>
+        <div class="upload-section">
+            <h2>Upload Your Tax Project Names CSV File</h2>
+            <p>Select the CSV file containing your tax deliverables</p>
+            <div class="file-input-wrapper">
+                <button class="file-input-button">Choose File</button>
+                <input type="file" id="fileInput" accept=".csv">
             </div>
-            <div class="filter-group">
-                <label for="searchFilter">Search Deliverables:</label>
-                <input type="text" id="searchFilter" placeholder="Type to search..." size="30">
-            </div>
-            <div class="filter-group">
-                <span id="recordCount">Loading...</span>
-            </div>
-            <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+            <div class="loading">Processing file...</div>
         </div>
         
-        <div class="table-container">
-            <table id="mappingTable">
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="summary" id="summarySection">
+            <h2>Category Summary</h2>
+            <p>Total Deliverables Processed: <strong id="totalCount">0</strong></p>
+            <div class="category-summary" id="categorySummary"></div>
+        </div>
+        
+        <div class="export-section" id="exportSection">
+            <h2>Export Options</h2>
+            <button class="export-button" onclick="exportToCSV()">Export to CSV</button>
+            <button class="export-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+        
+        <div class="preview-section" id="previewSection">
+            <h2>Preview (First 50 Records)</h2>
+            <table class="preview-table">
                 <thead>
                     <tr>
-                        <th width="5%">#</th>
-                        <th width="25%">Deliverable Name</th>
-                        <th width="30%">Alternative Name</th>
-                        <th width="15%">Code</th>
-                        <th width="25%">Suggested Category</th>
+                        <th>Deliverable Name</th>
+                        <th>Alternative Name</th>
+                        <th>Code</th>
+                        <th>Suggested Category</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
-                    <tr><td colspan="5" class="loading">Loading deliverables...</td></tr>
-                </tbody>
+                <tbody id="previewTableBody"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Initialize variables
-        let deliverables = [];
-        let filteredDeliverables = [];
-
-        // Category CSS class mapping
-        const categoryClasses = {
-            'Tax Returns': 'tax-returns',
-            'Tax Provisions': 'tax-provisions',
-            'Estimated Payments': 'estimated-payments',
-            'Extensions': 'extensions',
-            'Amended Returns': 'amended-returns',
-            'Tax Planning & Studies': 'tax-planning',
-            'Tax Compliance - Other': 'tax-compliance',
-            'International Tax': 'international-tax',
-            'Tax Notices & Correspondence': 'tax-notices',
-            'Elections & Disclosures': 'elections',
-            'Credits & Incentives': 'credits'
-        };
-
-        // Function to categorize deliverables
+        let processedData = [];
+        
+        // Categorization function
         function categorizeDeliverable(name, altName, code) {
             const fullText = `${name} ${altName || ''} ${code || ''}`.toLowerCase();
             
+            // Tax Provisions
             if (fullText.includes('provision') || fullText.includes('asc 740')) {
                 return 'Tax Provisions';
             }
             
+            // Amended Returns
             if (fullText.includes('amend') || fullText.includes('1120x') || fullText.includes('1040x') || 
                 fullText.match(/\d+x\b/) || fullText.includes('-x')) {
                 return 'Amended Returns';
             }
             
+            // Extensions
             if (fullText.includes('extension') || fullText.includes('7004') || fullText.includes('ext')) {
                 return 'Extensions';
             }
             
+            // Estimated Payments
             if (fullText.includes(' es ') || fullText.includes('-es') || fullText.includes('estimated') || 
                 fullText.match(/es\s?q[1-4]/) || fullText.includes('estimate')) {
                 return 'Estimated Payments';
             }
             
+            // International Tax
             if (fullText.includes('5471') || fullText.includes('8865') || fullText.includes('fincen') || 
                 fullText.includes('foreign') || fullText.includes('treaty') || fullText.includes('gilti') ||
                 fullText.includes('international') || fullText.includes('8858') || fullText.includes('8938')) {
                 return 'International Tax';
             }
             
+            // Tax Planning & Studies
             if (fullText.includes('study') || fullText.includes('planning') || fullText.includes('analysis') ||
                 fullText.includes('strategy') || fullText.includes('r&d') || fullText.includes('research')) {
                 return 'Tax Planning & Studies';
             }
             
+            // Elections & Disclosures
             if (fullText.includes('election') || fullText.includes('disclosure') || fullText.includes('8832') ||
                 fullText.includes('2553') || fullText.includes('check-the-box')) {
                 return 'Elections & Disclosures';
             }
             
+            // Tax Notices & Correspondence
             if (fullText.includes('notice') || fullText.includes('letter') || fullText.includes('response') ||
                 fullText.includes('audit') || fullText.includes('correspondence')) {
                 return 'Tax Notices & Correspondence';
             }
             
+            // Credits & Incentives
             if (fullText.includes('credit') && !fullText.includes('fincen')) {
                 return 'Credits & Incentives';
             }
             
+            // Tax Compliance - Other
             if (fullText.includes('sales tax') || fullText.includes('property tax') || fullText.includes('payroll') ||
                 fullText.includes('1099') || fullText.includes('w-2') || fullText.includes('license') ||
                 fullText.includes('registration') || fullText.includes('unemployment') || fullText.includes('ui-') ||
@@ -240,6 +301,7 @@
                 return 'Tax Compliance - Other';
             }
             
+            // Tax Returns - most general category
             if (fullText.includes('return') || fullText.includes('1040') || fullText.includes('1120') || 
                 fullText.includes('1065') || fullText.includes('1041') || fullText.includes('990') ||
                 fullText.includes('form') || fullText.match(/\b\d{3,4}[a-z]?\b/) ||
@@ -251,60 +313,30 @@
             
             return 'Tax Compliance - Other';
         }
-
-        // Load deliverables from file
-        async function loadDeliverables() {
-            try {
-                const response = await window.fs.readFile('Tax Project Names.csv', { encoding: 'utf8' });
-                
-                // Parse CSV manually to handle potential issues
-                const lines = response.split('\n');
-                const headers = lines[0].split(',').map(h => h.trim());
-                
-                deliverables = [];
-                for (let i = 1; i < lines.length; i++) {
-                    if (lines[i].trim()) {
-                        // Handle potential commas within quoted fields
-                        const row = parseCSVLine(lines[i]);
-                        if (row.length >= 3) {
-                            const deliverable = {
-                                name: row[0] || '',
-                                altName: row[1] || '',
-                                code: row[2] || '',
-                                category: ''
-                            };
-                            deliverable.category = categorizeDeliverable(deliverable.name, deliverable.altName, deliverable.code);
-                            deliverables.push(deliverable);
-                        }
+        
+        // Parse CSV
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = parseCSVLine(lines[i]);
+                    if (values.length >= 3) {
+                        data.push({
+                            name: values[0] || '',
+                            altName: values[1] || '',
+                            code: values[2] || '',
+                            category: categorizeDeliverable(values[0], values[1], values[2])
+                        });
                     }
                 }
-                
-                console.log('Loaded deliverables:', deliverables.length);
-                filteredDeliverables = [...deliverables];
-                updateDisplay();
-                updateFilters();
-                updateSummary();
-                
-            } catch (error) {
-                console.error('Error loading file:', error);
-                // Try to use data from the REPL if available
-                if (window.fullDeliverableData) {
-                    deliverables = window.fullDeliverableData.map(item => ({
-                        name: item.name,
-                        altName: item.altName,
-                        code: item.code,
-                        category: item.category
-                    }));
-                    filteredDeliverables = [...deliverables];
-                    updateDisplay();
-                    updateFilters();
-                    updateSummary();
-                } else {
-                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Error loading data. Please refresh the page.</td></tr>';
-                }
             }
+            
+            return data;
         }
-
+        
         // Parse CSV line handling quoted fields
         function parseCSVLine(line) {
             const result = [];
@@ -327,111 +359,147 @@
             result.push(current.trim());
             return result;
         }
-
-        // Update table display
-        function updateDisplay() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
             
-            // Add all filtered rows
-            filteredDeliverables.forEach((item, index) => {
-                const row = tbody.insertRow();
+            document.querySelector('.loading').style.display = 'block';
+            document.getElementById('statusMessage').style.display = 'none';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    processedData = parseCSV(text);
+                    
+                    if (processedData.length === 0) {
+                        throw new Error('No valid data found in the CSV file');
+                    }
+                    
+                    displayResults();
+                    showStatus(`Successfully processed ${processedData.length} deliverables!`, 'success');
+                } catch (error) {
+                    showStatus(`Error processing file: ${error.message}`, 'error');
+                } finally {
+                    document.querySelector('.loading').style.display = 'none';
+                }
+            };
+            
+            reader.readAsText(file);
+        });
+        
+        // Display results
+        function displayResults() {
+            // Update total count
+            document.getElementById('totalCount').textContent = processedData.length;
+            
+            // Calculate category counts
+            const categoryCounts = {};
+            processedData.forEach(item => {
+                categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+            });
+            
+            // Display category summary
+            const summaryContainer = document.getElementById('categorySummary');
+            summaryContainer.innerHTML = '';
+            
+            Object.entries(categoryCounts)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([category, count]) => {
+                    const percentage = ((count / processedData.length) * 100).toFixed(1);
+                    const div = document.createElement('div');
+                    div.className = 'category-item';
+                    div.innerHTML = `
+                        <div class="category-name">${category}</div>
+                        <div class="category-count">${count}</div>
+                        <div>${percentage}% of total</div>
+                    `;
+                    summaryContainer.appendChild(div);
+                });
+            
+            // Display preview
+            const previewBody = document.getElementById('previewTableBody');
+            previewBody.innerHTML = '';
+            
+            processedData.slice(0, 50).forEach(item => {
+                const row = previewBody.insertRow();
                 row.innerHTML = `
-                    <td>${index + 1}</td>
                     <td>${escapeHtml(item.name)}</td>
                     <td>${escapeHtml(item.altName)}</td>
                     <td>${escapeHtml(item.code)}</td>
-                    <td><span class="category-badge ${categoryClasses[item.category] || 'tax-compliance'}">${item.category}</span></td>
+                    <td><span class="category-badge">${item.category}</span></td>
                 `;
             });
             
-            document.getElementById('recordCount').textContent = `Showing ${filteredDeliverables.length} of ${deliverables.length} records`;
-            document.getElementById('totalCount').textContent = deliverables.length;
+            // Show sections
+            document.getElementById('summarySection').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
+            document.getElementById('previewSection').style.display = 'block';
         }
-
-        // Escape HTML to prevent injection
+        
+        // Export to CSV
+        function exportToCSV() {
+            let csv = 'Deliverable Name,Alternative Name,Code,Suggested Category\n';
+            
+            processedData.forEach(item => {
+                csv += `"${item.name.replace(/"/g, '""')}","${item.altName.replace(/"/g, '""')}","${item.code.replace(/"/g, '""')}","${item.category}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'tax_deliverable_category_mapping.csv');
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus('CSV file downloaded successfully!', 'success');
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard() {
+            let csv = 'Deliverable Name,Alternative Name,Code,Suggested Category\n';
+            
+            processedData.forEach(item => {
+                csv += `"${item.name.replace(/"/g, '""')}","${item.altName.replace(/"/g, '""')}","${item.code.replace(/"/g, '""')}","${item.category}"\n`;
+            });
+            
+            navigator.clipboard.writeText(csv).then(() => {
+                showStatus('Data copied to clipboard!', 'success');
+            }).catch(() => {
+                showStatus('Failed to copy to clipboard', 'error');
+            });
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-
-        // Update filter options
-        function updateFilters() {
-            const categories = [...new Set(deliverables.map(d => d.category))].sort();
-            const categoryFilter = document.getElementById('categoryFilter');
-            
-            // Clear existing options except "All"
-            categoryFilter.innerHTML = '<option value="">All Categories</option>';
-            
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                categoryFilter.appendChild(option);
-            });
-        }
-
-        // Update summary statistics
-        function updateSummary() {
-            const categoryCounts = {};
-            deliverables.forEach(d => {
-                categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
-            });
-            
-            const summaryDiv = document.getElementById('categorySummary');
-            const sortedCategories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
-            
-            summaryDiv.innerHTML = sortedCategories
-                .map(([cat, count]) => {
-                    const percentage = ((count / deliverables.length) * 100).toFixed(1);
-                    return `<span class="category-badge ${categoryClasses[cat] || 'tax-compliance'}">${cat}: ${count} (${percentage}%)</span>`;
-                })
-                .join(' ');
-        }
-
-        // Apply filters
-        function applyFilters() {
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-            
-            filteredDeliverables = deliverables.filter(item => {
-                const matchesCategory = !categoryFilter || item.category === categoryFilter;
-                const matchesSearch = !searchFilter || 
-                    item.name.toLowerCase().includes(searchFilter) ||
-                    item.altName.toLowerCase().includes(searchFilter) ||
-                    item.code.toLowerCase().includes(searchFilter);
-                
-                return matchesCategory && matchesSearch;
-            });
-            
-            updateDisplay();
-        }
-
-        // Export to CSV
-        function exportToCSV() {
-            let csv = 'Deliverable Name,Alternative Name,Code,Suggested Category\n';
-            filteredDeliverables.forEach(item => {
-                csv += `"${item.name.replace(/"/g, '""')}","${item.altName.replace(/"/g, '""')}","${item.code.replace(/"/g, '""')}","${item.category}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'tax_deliverable_category_mapping.csv');
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Event listeners
-        document.getElementById('categoryFilter').addEventListener('change', applyFilters);
-        document.getElementById('searchFilter').addEventListener('input', applyFilters);
-
-        // Initialize on page load
-        window.addEventListener('load', loadDeliverables);
+        
+        // File button click handler
+        document.querySelector('.file-input-button').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
     </script>
 </body>
 </html>
