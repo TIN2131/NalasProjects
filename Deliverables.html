@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Deliverable Category Mapping Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a5490;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            background-color: #e8f4f8;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .file-input-button {
+            background-color: #1a5490;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-input-button:hover {
+            background-color: #2c5282;
+        }
+        input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+        .summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .category-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .category-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        .category-name {
+            font-weight: bold;
+            color: #1a5490;
+            margin-bottom: 5px;
+        }
+        .category-count {
+            color: #666;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .export-section {
+            text-align: center;
+            margin: 30px 0;
+            display: none;
+        }
+        .export-button {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        .export-button:hover {
+            background-color: #218838;
+        }
+        .preview-section {
+            display: none;
+            margin-top: 30px;
+        }
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .preview-table th {
+            background-color: #1a5490;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+        .preview-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .preview-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        .status-message {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+        .instructions {
+            background-color: #f1f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1a5490;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #1a5490;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 5px 0;
+        }
+        .preview-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Tax Deliverable Category Mapping Tool</h1>
+        
+        <div class="instructions">
+            <h3>How to Use This Tool</h3>
+            <ol>
+                <li>Click "Choose File" and select your Tax Project Names Excel file (.xlsx)</li>
+                <li>The tool will automatically categorize all deliverables based on their names</li>
+                <li>Review the category summary and preview</li>
+                <li>Click "Export to CSV" to download the categorized data</li>
+                <li>Import the exported CSV into your CRM system</li>
+            </ol>
+        </div>
+        
+        <div class="upload-section">
+            <h2>Upload Your Tax Project Names Excel File</h2>
+            <p>Select the Excel file (.xlsx) containing your tax deliverables</p>
+            <div class="file-input-wrapper">
+                <button class="file-input-button">Choose File</button>
+                <input type="file" id="fileInput" accept=".xlsx,.xls">
+            </div>
+            <div class="loading">Processing file...</div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="summary" id="summarySection">
+            <h2>Category Summary</h2>
+            <p>Total Deliverables Processed: <strong id="totalCount">0</strong></p>
+            <div class="category-summary" id="categorySummary"></div>
+        </div>
+        
+        <div class="export-section" id="exportSection">
+            <h2>Export Options</h2>
+            <button class="export-button" onclick="exportToCSV()">Export to CSV</button>
+            <button class="export-button" onclick="exportToExcel()">Export to Excel</button>
+            <button class="export-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+        
+        <div class="preview-section" id="previewSection">
+            <h2>Preview (First 100 Records)</h2>
+            <div class="preview-container">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="60%">Deliverable Name</th>
+                            <th width="35%">Suggested Category</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let processedData = [];
+        
+        // Categorization function
+        function categorizeDeliverable(name) {
+            const fullText = (name || '').toLowerCase();
+            
+            // Tax Provisions
+            if (fullText.includes('provision') || fullText.includes('asc 740') || fullText.includes('tax rate rec')) {
+                return 'Tax Provisions';
+            }
+            
+            // Amended Returns
+            if (fullText.includes('amend') || fullText.includes('1120x') || fullText.includes('1040x') || 
+                fullText.includes('1120-x') || fullText.includes('1040-x') ||
+                fullText.match(/\d+x\b/) || fullText.includes('-x') || fullText.includes('correction')) {
+                return 'Amended Returns';
+            }
+            
+            // Extensions
+            if (fullText.includes('extension') || fullText.includes('7004') || fullText.includes('form 8868') ||
+                fullText.includes('automatic filing') || fullText.includes('ext ')) {
+                return 'Extensions';
+            }
+            
+            // Estimated Payments
+            if (fullText.includes(' es ') || fullText.includes('-es') || fullText.includes('estimated') || 
+                fullText.match(/es\s?q[1-4]/) || fullText.includes('estimate') || fullText.includes('quarterly payment') ||
+                fullText.includes('safe harbor')) {
+                return 'Estimated Payments';
+            }
+            
+            // International Tax
+            if (fullText.includes('5471') || fullText.includes('8865') || fullText.includes('fincen') || 
+                fullText.includes('foreign') || fullText.includes('treaty') || fullText.includes('gilti') ||
+                fullText.includes('international') || fullText.includes('8858') || fullText.includes('8938') ||
+                fullText.includes('form 926') || fullText.includes('8833') || fullText.includes('country-by-country') ||
+                fullText.includes('cbc') || fullText.includes('transfer pricing')) {
+                return 'International Tax';
+            }
+            
+            // Tax Planning & Studies
+            if (fullText.includes('study') || fullText.includes('planning') || fullText.includes('analysis') ||
+                fullText.includes('strategy') || fullText.includes('r&d') || fullText.includes('research') ||
+                fullText.includes('cost segregation') || fullText.includes('sec 199a') || fullText.includes('optimization')) {
+                return 'Tax Planning & Studies';
+            }
+            
+            // Elections & Disclosures
+            if (fullText.includes('election') || fullText.includes('disclosure') || fullText.includes('8832') ||
+                fullText.includes('2553') || fullText.includes('check-the-box') || fullText.includes('s-corp election') ||
+                fullText.includes('accounting method') || fullText.includes('utp') || fullText.includes('schedule utp')) {
+                return 'Elections & Disclosures';
+            }
+            
+            // Tax Notices & Correspondence
+            if (fullText.includes('notice') || fullText.includes('letter') || fullText.includes('response') ||
+                fullText.includes('audit') || fullText.includes('correspondence') || fullText.includes('cp2000') ||
+                fullText.includes('revenue agent') || fullText.includes('information request')) {
+                return 'Tax Notices & Correspondence';
+            }
+            
+            // Credits & Incentives
+            if ((fullText.includes('credit') && !fullText.includes('fincen')) || fullText.includes('incentive') ||
+                fullText.includes('work opportunity') || fullText.includes('wotc') || fullText.includes('ertc') ||
+                fullText.includes('investment tax')) {
+                return 'Credits & Incentives';
+            }
+            
+            // Tax Compliance - Other
+            if (fullText.includes('sales tax') || fullText.includes('sales and use') || fullText.includes('property tax') || 
+                fullText.includes('payroll') || fullText.includes('941') || fullText.includes('940') ||
+                fullText.includes('1099') || fullText.includes('w-2') || fullText.includes('w-3') ||
+                fullText.includes('license') || fullText.includes('registration') || fullText.includes('unemployment') || 
+                fullText.includes('ui-') || fullText.includes('suta') || fullText.includes('futa') || 
+                fullText.includes('workers comp') || fullText.includes('franchise tax') || fullText.includes('gross receipts') || 
+                fullText.includes('cat ') || fullText.includes('commercial activity') || fullText.includes('business tax') || 
+                fullText.includes('excise') || fullText.includes('fuel tax') || fullText.includes('tangible') || 
+                fullText.includes('intangible') || fullText.includes('personal property') || fullText.includes('ppd') ||
+                fullText.includes('charity') || fullText.includes('nonprofit') || fullText.includes('bpt') ||
+                fullText.includes('privilege tax') || fullText.includes('annual report') || fullText.includes('franchise report') ||
+                fullText.includes('withholding')) {
+                return 'Tax Compliance - Other';
+            }
+            
+            // Tax Returns - most general category
+            if (fullText.includes('return') || fullText.includes('1040') || fullText.includes('1120') || 
+                fullText.includes('1065') || fullText.includes('1041') || fullText.includes('990') ||
+                fullText.includes('form') || fullText.match(/\b\d{3,4}[a-z]?\b/) ||
+                fullText.includes('individual income') || fullText.includes('corporation income') || 
+                fullText.includes('partnership') || fullText.includes('fiduciary') || fullText.includes('s corp') ||
+                fullText.includes('c corp') || fullText.includes('exempt organization') || fullText.includes('composite')) {
+                return 'Tax Returns';
+            }
+            
+            return 'Tax Compliance - Other';
+        }
+        
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.querySelector('.loading').style.display = 'block';
+            document.getElementById('statusMessage').style.display = 'none';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Get the first sheet
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    // Process the data
+                    processedData = [];
+                    jsonData.forEach((row, index) => {
+                        const name = row['Alternative Name'] || row['Name'] || Object.values(row)[0] || '';
+                        if (name && name.trim()) {
+                            processedData.push({
+                                index: index + 1,
+                                name: name.trim(),
+                                category: categorizeDeliverable(name)
+                            });
+                        }
+                    });
+                    
+                    if (processedData.length === 0) {
+                        throw new Error('No valid data found in the Excel file');
+                    }
+                    
+                    displayResults();
+                    showStatus(`Successfully processed ${processedData.length} deliverables!`, 'success');
+                } catch (error) {
+                    showStatus(`Error processing file: ${error.message}`, 'error');
+                    console.error('Error details:', error);
+                } finally {
+                    document.querySelector('.loading').style.display = 'none';
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+        
+        // Display results
+        function displayResults() {
+            // Update total count
+            document.getElementById('totalCount').textContent = processedData.length;
+            
+            // Calculate category counts
+            const categoryCounts = {};
+            processedData.forEach(item => {
+                categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+            });
+            
+            // Display category summary
+            const summaryContainer = document.getElementById('categorySummary');
+            summaryContainer.innerHTML = '';
+            
+            Object.entries(categoryCounts)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([category, count]) => {
+                    const percentage = ((count / processedData.length) * 100).toFixed(1);
+                    const div = document.createElement('div');
+                    div.className = 'category-item';
+                    div.innerHTML = `
+                        <div class="category-name">${category}</div>
+                        <div class="category-count">${count}</div>
+                        <div>${percentage}% of total</div>
+                    `;
+                    summaryContainer.appendChild(div);
+                });
+            
+            // Display preview (first 100 rows)
+            const previewBody = document.getElementById('previewTableBody');
+            previewBody.innerHTML = '';
+            
+            processedData.slice(0, 100).forEach((item, idx) => {
+                const row = previewBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.index}</td>
+                    <td>${escapeHtml(item.name)}</td>
+                    <td><span class="category-badge">${item.category}</span></td>
+                `;
+            });
+            
+            // Show sections
+            document.getElementById('summarySection').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
+            document.getElementById('previewSection').style.display = 'block';
+        }
+        
+        // Export to CSV
+        function exportToCSV() {
+            let csv = 'Deliverable Name,Suggested Category\n';
+            
+            processedData.forEach(item => {
+                csv += `"${item.name.replace(/"/g, '""')}","${item.category}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'tax_deliverable_category_mapping.csv');
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus('CSV file downloaded successfully!', 'success');
+        }
+        
+        // Export to Excel
+        function exportToExcel() {
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Convert data to worksheet format
+            const wsData = [['Deliverable Name', 'Suggested Category']];
+            processedData.forEach(item => {
+                wsData.push([item.name, item.category]);
+            });
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 60 },  // Deliverable Name column
+                { wch: 30 }   // Category column
+            ];
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Categorized Deliverables');
+            
+            // Write the file
+            XLSX.writeFile(wb, 'tax_deliverable_category_mapping.xlsx');
+            
+            showStatus('Excel file downloaded successfully!', 'success');
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard() {
+            let csv = 'Deliverable Name\tSuggested Category\n';
+            
+            processedData.forEach(item => {
+                csv += `${item.name}\t${item.category}\n`;
+            });
+            
+            navigator.clipboard.writeText(csv).then(() => {
+                showStatus('Data copied to clipboard! You can paste it directly into Excel.', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = csv;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showStatus('Data copied to clipboard!', 'success');
+                } catch (err) {
+                    showStatus('Failed to copy to clipboard', 'error');
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // File button click handler
+        document.querySelector('.file-input-button').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+    </script>
+</body>
+</html>
+
