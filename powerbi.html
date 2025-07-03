@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Predictive Headcount Model - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .nav-tab {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.4);
+        }
+        
+        .help-button {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .help-button:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231,76,60,0.4);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .dashboard-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px dashed #ddd;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .guide-section {
+            margin-bottom: 30px;
+        }
+        
+        .guide-section h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .guide-section .icon {
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .guide-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .guide-section li {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+            border-radius: 0 6px 6px 0;
+            line-height: 1.6;
+        }
+        
+        .guide-section li strong {
+            color: #2c3e50;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .warning-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .definitions-preview {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .definitions-preview h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quick-reference {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .implementation-note {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .implementation-note h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .implementation-note ul {
+            color: #2e7d32;
+            padding-left: 20px;
+        }
+        
+        .implementation-note li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Predictive Headcount Model</h1>
+            <div class="nav-tabs">
+                <a href="#" class="nav-tab active">Summary</a>
+                <a href="#" class="nav-tab">Definitions</a>
+                <a href="#" class="nav-tab">Partner Count</a>
+                <button class="help-button" onclick="openModal()">
+                    📖 Model Guide
+                </button>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="dashboard-preview">
+                <h3>Your Power BI Dashboard Content Goes Here</h3>
+                <p>This represents your existing Summary page with charts, tables, and KPIs</p>
+            </div>
+            
+            <div class="warning-box">
+                <div class="warning-icon">⚠️</div>
+                <div>
+                    <strong>Important:</strong> This model provides estimates for planning purposes. 
+                    Click the "Model Guide" button above for detailed explanation of calculations and assumptions.
+                </div>
+            </div>
+            
+            <div class="definitions-preview">
+                <h4>💡 Quick Reference for Definitions Page</h4>
+                <div class="quick-reference">
+                    <strong>Model Assumptions:</strong> All calculations use standard formulas with configurable parameters. 
+                    Results should guide decisions, not dictate them absolutely.
+                </div>
+            </div>
+            
+            <div class="implementation-note">
+                <h4>🔧 Implementation Options for Power BI:</h4>
+                <ul>
+                    <li><strong>Option 1:</strong> Add a button that opens a detailed text box or bookmark</li>
+                    <li><strong>Option 2:</strong> Create a dedicated "Guide" page with navigation buttons</li>
+                    <li><strong>Option 3:</strong> Add tooltips to key metrics with condensed explanations</li>
+                    <li><strong>Option 4:</strong> Use a combination: prominent button + enhanced Definitions page</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="guideModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 Predictive Headcount Model Guide</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="guide-section">
+                    <h3><span class="icon">1</span>Model Foundation</h3>
+                    <ul>
+                        <li><strong>Formula-Based Calculations:</strong> The Predictive Headcount Model uses standardized formulas to generate estimates</li>
+                        <li><strong>Reference the Definitions Tab:</strong> All calculation parameters and assumptions are detailed in the Definitions section</li>
+                        <li><strong>Guidance Tool:</strong> Numbers are estimates for planning - not definitive headcount determinations</li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section">
+                    <h3><span class="icon">2</span>Promotions In/Out</h3>
+                    <ul>
+                        <li><strong>Regional Variations:</strong> Your specific region may differ from model estimates based on current circumstances</li>
+                        <li><strong>Promotion In Assumption:</strong> Individuals promoted in are assumed to come from the direct prior level</li>
+                        <li><strong>Promotion Out Assumption:</strong> Individuals promoted out advance to the next direct level</li>
+                        <li><strong>Career Progression:</strong> The model assumes individuals continue progressing upward over time</li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section">
+                    <h3><span class="icon">3</span>Attrition Estimates</h3>
+                    <ul>
+                        <li><strong>Turnover Estimate:</strong> Includes both voluntary departures and firm-initiated terminations</li>
+                        <li><strong>Regional Adjustment:</strong> Your region's actual attrition may differ from the model percentage</li>
+                        <li><strong>Customization:</strong> Adjust percentages based on your regional knowledge and experience</li>
+                        <li><strong>Target Range:</strong> The firm recommends keeping estimated attrition between 5% and 10%</li>
+                        <li><strong>Industry Factors:</strong> Market trends may require adjustments to attrition estimates</li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section">
+                    <h3><span class="icon">4</span>Total Needed Column</h3>
+                    <ul>
+                        <li><strong>Calculation Method:</strong> Based on standard formulas and estimates from other columns</li>
+                        <li><strong>Decision Support:</strong> Use as a guide for budgeting, staffing, and recruiting decisions</li>
+                        <li><strong>Leadership Consultation:</strong> Check with your Practice Leader before making headcount decisions that significantly differ from model results</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box">
+                    <div class="warning-icon">🎯</div>
+                    <div>
+                        <strong>Key Takeaway:</strong> This model is a sophisticated planning tool that provides data-driven insights. 
+                        Use it as your starting point, then apply your regional knowledge and business judgment to make final decisions.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openModal() {
+            document.getElementById('guideModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('guideModal').classList.remove('active');
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('guideModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
