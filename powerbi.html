@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Line Performance Command Center</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <title>Service Line Performance Thermometer</title>
     <style>
         * {
             margin: 0;
@@ -13,665 +12,395 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #fff;
-            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-        }
-
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            background: linear-gradient(45deg, #0a0a0a, #1a1a2e, #16213e);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-        }
-
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
         }
 
-        /* Header */
         .header {
             text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-        }
-
-        .header h1 {
-            font-size: 3.5em;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #667eea; }
-            to { text-shadow: 0 0 20px #764ba2, 0 0 30px #764ba2; }
-        }
-
-        .header p {
-            font-size: 1.2em;
-            color: #888;
-            letter-spacing: 1px;
-        }
-
-        /* Service Line Cards Grid */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-
-        .service-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 30px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-        }
-
-        .service-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-        }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-            transform: rotate(45deg);
-            transition: all 0.6s;
-            opacity: 0;
-        }
-
-        .service-card:hover::before {
-            opacity: 1;
-            transform: rotate(45deg) translateY(-20px);
-        }
-
-        .service-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .service-name {
-            font-size: 1.4em;
-            font-weight: 600;
-        }
-
-        .service-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .badge-success {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
-            border: 1px solid #4CAF50;
-        }
-
-        .badge-warning {
-            background: rgba(255, 193, 7, 0.2);
-            color: #FFC107;
-            border: 1px solid #FFC107;
-        }
-
-        .badge-danger {
-            background: rgba(244, 67, 54, 0.2);
-            color: #F44336;
-            border: 1px solid #F44336;
-        }
-
-        /* Circular Progress */
-        .progress-circle {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 20px auto;
-        }
-
-        .progress-circle svg {
-            transform: rotate(-90deg);
-        }
-
-        .progress-circle .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2em;
-            font-weight: 700;
-        }
-
-        .metrics {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .metric {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .metric-label {
-            font-size: 0.8em;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .metric-value {
-            font-size: 1.4em;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-
-        /* Main Chart Container */
-        .chart-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 50px;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 30px;
         }
 
-        .chart-title {
-            font-size: 1.8em;
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
             font-weight: 600;
-        }
-
-        .view-selector {
-            display: flex;
-            gap: 10px;
-        }
-
-        .view-btn {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9em;
-        }
-
-        .view-btn:hover {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-
-        .view-btn.active {
-            background: #667eea;
-            border-color: #667eea;
-        }
-
-        .chart-wrapper {
-            height: 400px;
-            position: relative;
-        }
-
-        /* Summary Stats */
-        .summary-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 50px;
-        }
-
-        .summary-card {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .summary-icon {
-            font-size: 2em;
             margin-bottom: 10px;
         }
 
-        .summary-value {
-            font-size: 2.5em;
+        .goal-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .goal-amount {
+            font-size: 36px;
             font-weight: 700;
-            margin: 10px 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .thermometer-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .scale-left, .scale-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 350px;
+            font-size: 12px;
+            font-weight: 600;
+            padding-top: 20px;
+        }
+
+        .scale-left {
+            color: #475569;
+            text-align: right;
+            min-width: 40px;
+        }
+
+        .scale-right {
+            color: #667eea;
+            min-width: 40px;
+        }
+
+        .thermometer-container {
+            position: relative;
+            width: 120px;
+            height: 400px;
+        }
+
+        .thermometer {
+            position: relative;
+            width: 80px;
+            height: 350px;
+            background: #e0e5ec;
+            border-radius: 40px 40px 60px 60px;
+            margin: 0 auto;
+            box-shadow: 
+                inset 0 0 10px rgba(0, 0, 0, 0.1),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .mercury-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .service-segment {
+            position: absolute;
+            width: 100%;
+            transition: all 0.5s ease;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Service colors */
+        .segment-audit {
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .segment-tax {
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+        }
+
+        .segment-bsg {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .segment-bkcy {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .segment-business-solutions {
+            background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .bulb {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+            border-radius: 50%;
+            box-shadow: 
+                0 10px 30px rgba(71, 85, 105, 0.3),
+                inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 250px;
+        }
+
+        .legend h3 {
+            color: #334155;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .legend-name {
+            flex: 1;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .legend-amount {
+            font-weight: 700;
+            color: #334155;
+            margin-left: 10px;
+        }
+
+        .summary-section {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
         }
 
         .summary-label {
-            color: #888;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 5px;
         }
 
-        /* Floating Action Button */
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s;
-            font-size: 1.5em;
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+        .percentage-badge {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .summary-section {
-                grid-template-columns: 1fr;
-            }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .bulb.pulse {
+            animation: pulse 2s ease-in-out infinite;
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-    
     <div class="container">
         <div class="header">
-            <h1>New Business Pipeline</h1>
-            <p>Real-time Service Line Intelligence Dashboard</p>
+            <h1>New Business Performance by Service Line</h1>
+        </div>
+
+        <div class="goal-info">
+            <div>Firm Goal</div>
+            <div class="goal-amount">$10.0M</div>
+        </div>
+
+        <div class="main-content">
+            <div class="thermometer-wrapper">
+                <div class="scale-left">
+                    <div>$10M</div>
+                    <div>$8M</div>
+                    <div>$6M</div>
+                    <div>$4M</div>
+                    <div>$2M</div>
+                    <div>$0M</div>
+                </div>
+                
+                <div class="thermometer-container">
+                    <div class="percentage-badge">72%</div>
+                    <div class="thermometer">
+                        <div class="mercury-container" id="mercuryContainer"></div>
+                        <div class="bulb pulse"></div>
+                    </div>
+                </div>
+
+                <div class="scale-right">
+                    <div>100%</div>
+                    <div>80%</div>
+                    <div>60%</div>
+                    <div>40%</div>
+                    <div>20%</div>
+                    <div>0%</div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <h3>Service Line Breakdown</h3>
+                <div id="legendItems"></div>
+            </div>
         </div>
 
         <div class="summary-section">
-            <div class="summary-card">
-                <div class="summary-icon">💰</div>
-                <div class="summary-value" id="totalRevenue">$3.08M</div>
+            <div class="summary-item">
                 <div class="summary-label">Total New Business</div>
+                <div class="summary-value" id="totalAmount">$7.2M</div>
             </div>
-            <div class="summary-card">
-                <div class="summary-icon">🎯</div>
-                <div class="summary-value" id="overallGoal">91.8%</div>
-                <div class="summary-label">Overall Goal Achievement</div>
+            <div class="summary-item">
+                <div class="summary-label">Goal Achievement</div>
+                <div class="summary-value" id="percentageComplete">72%</div>
             </div>
-            <div class="summary-card">
-                <div class="summary-icon">📈</div>
-                <div class="summary-value" id="yoyGrowth">+10.4%</div>
-                <div class="summary-label">YoY Growth</div>
-            </div>
-            <div class="summary-card">
-                <div class="summary-icon">🏆</div>
-                <div class="summary-value" id="topPerformer">3 of 6</div>
-                <div class="summary-label">Services Above Goal</div>
-            </div>
-        </div>
-
-        <div class="cards-grid" id="serviceCards"></div>
-
-        <div class="chart-section">
-            <div class="chart-header">
-                <h2 class="chart-title">Performance Analytics</h2>
-                <div class="view-selector">
-                    <button class="view-btn active" onclick="updateChart('comparison')">Comparison</button>
-                    <button class="view-btn" onclick="updateChart('momentum')">Momentum</button>
-                    <button class="view-btn" onclick="updateChart('composition')">Composition</button>
-                </div>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="mainChart"></canvas>
+            <div class="summary-item">
+                <div class="summary-label">Remaining to Goal</div>
+                <div class="summary-value" id="remainingAmount">$2.8M</div>
             </div>
         </div>
     </div>
 
-    <div class="fab" onclick="exportData()">📊</div>
-
     <script>
-        // Data
-        const serviceData = {
-            'Tax': { actual: 850000, goal: 800000, lastYear: 780000, color: '#667eea' },
-            'Audit': { actual: 620000, goal: 700000, lastYear: 580000, color: '#764ba2' },
-            'BSG': { actual: 430000, goal: 400000, lastYear: 390000, color: '#4CAF50' },
-            'Business Management': { actual: 380000, goal: 450000, lastYear: 350000, color: '#FF6B6B' },
-            'SL Biggs': { actual: 290000, goal: 250000, lastYear: 270000, color: '#4ECDC4' },
-            'Specialty Tax': { actual: 510000, goal: 500000, lastYear: 480000, color: '#FFE66D' }
-        };
+        // Mock data - In Power BI, these would come from your measures
+        const goalAmount = 10000000; // $10M goal
+        const serviceLines = [
+            { name: "Audit", amount: 2500000, color: "segment-audit", displayColor: "#3b82f6" },
+            { name: "Tax", amount: 1800000, color: "segment-tax", displayColor: "#10b981" },
+            { name: "BSG", amount: 1200000, color: "segment-bsg", displayColor: "#f59e0b" },
+            { name: "BKCY", amount: 900000, color: "segment-bkcy", displayColor: "#ef4444" },
+            { name: "Business Solutions", amount: 800000, color: "segment-business-solutions", displayColor: "#8b5cf6" }
+        ];
 
-        let currentChart = null;
-        let currentView = 'comparison';
+        // Calculate totals
+        const totalAmount = serviceLines.reduce((sum, service) => sum + service.amount, 0);
+        const percentage = Math.round((totalAmount / goalAmount) * 100);
+        const remaining = goalAmount - totalAmount;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            createServiceCards();
-            updateChart('comparison');
-            updateSummaryStats();
+        // Format currency
+        function formatCurrency(amount) {
+            if (amount >= 1000000) {
+                return '$' + (amount / 1000000).toFixed(1) + 'M';
+            }
+            return '$' + (amount / 1000).toFixed(0) + 'K';
+        }
+
+        // Update summary
+        document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+        document.getElementById('percentageComplete').textContent = percentage + '%';
+        document.getElementById('remainingAmount').textContent = formatCurrency(remaining);
+        document.querySelector('.percentage-badge').textContent = percentage + '%';
+
+        // Create stacked segments in thermometer
+        const mercuryContainer = document.getElementById('mercuryContainer');
+        let cumulativePercentage = 0;
+
+        serviceLines.forEach((service, index) => {
+            const servicePercentage = (service.amount / goalAmount) * 100;
+            const segment = document.createElement('div');
+            segment.className = `service-segment ${service.color}`;
+            segment.style.bottom = cumulativePercentage + '%';
+            segment.style.height = servicePercentage + '%';
+            
+            mercuryContainer.appendChild(segment);
+            cumulativePercentage += servicePercentage;
         });
 
-        function createServiceCards() {
-            const container = document.getElementById('serviceCards');
-            container.innerHTML = '';
+        // Animate thermometer fill
+        setTimeout(() => {
+            mercuryContainer.style.height = Math.min(percentage, 100) + '%';
+        }, 500);
 
-            Object.entries(serviceData).forEach(([name, data], index) => {
-                const goalPercent = (data.actual / data.goal * 100);
-                const yoyGrowth = ((data.actual - data.lastYear) / data.lastYear * 100);
-                
-                const card = document.createElement('div');
-                card.className = 'service-card';
-                card.style.animationDelay = `${index * 0.1}s`;
-                
-                let badgeClass = 'badge-danger';
-                let status = 'Behind';
-                if (goalPercent >= 100) {
-                    badgeClass = 'badge-success';
-                    status = 'Exceeding';
-                } else if (goalPercent >= 90) {
-                    badgeClass = 'badge-warning';
-                    status = 'Close';
-                }
+        // Create legend
+        const legendContainer = document.getElementById('legendItems');
+        serviceLines.forEach(service => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+            legendItem.innerHTML = `
+                <div class="legend-info">
+                    <div class="legend-color" style="background: ${service.displayColor}"></div>
+                    <span class="legend-name">${service.name}</span>
+                </div>
+                <span class="legend-amount">${formatCurrency(service.amount)}</span>
+            `;
+            legendContainer.appendChild(legendItem);
+        });
 
-                card.innerHTML = `
-                    <div class="service-header">
-                        <div class="service-name">${name}</div>
-                        <div class="service-badge ${badgeClass}">${status}</div>
-                    </div>
-                    
-                    <div class="progress-circle">
-                        <svg width="150" height="150">
-                            <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
-                            <circle cx="75" cy="75" r="65" fill="none" stroke="${data.color}" stroke-width="10"
-                                    stroke-dasharray="${goalPercent * 4.08} 408" stroke-linecap="round"/>
-                        </svg>
-                        <div class="progress-text" style="color: ${data.color}">${goalPercent.toFixed(0)}%</div>
-                    </div>
-                    
-                    <div class="metrics">
-                        <div class="metric">
-                            <div class="metric-label">Actual</div>
-                            <div class="metric-value">$${(data.actual / 1000).toFixed(0)}K</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Goal</div>
-                            <div class="metric-value">$${(data.goal / 1000).toFixed(0)}K</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">YoY Growth</div>
-                            <div class="metric-value" style="color: ${yoyGrowth > 0 ? '#4CAF50' : '#FF6B6B'}">
-                                ${yoyGrowth > 0 ? '+' : ''}${yoyGrowth.toFixed(1)}%
-                            </div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Gap</div>
-                            <div class="metric-value">
-                                ${data.actual >= data.goal ? '+' : ''}$${((data.actual - data.goal) / 1000).toFixed(0)}K
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                container.appendChild(card);
-            });
-        }
-
-        function updateChart(view) {
-            currentView = view;
-            
-            // Update button states
-            document.querySelectorAll('.view-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            
-            if (currentChart) {
-                currentChart.destroy();
-            }
-
-            const serviceNames = Object.keys(serviceData);
-            
-            switch(view) {
-                case 'comparison':
-                    createComparisonChart(ctx, serviceNames);
-                    break;
-                case 'momentum':
-                    createMomentumChart(ctx, serviceNames);
-                    break;
-                case 'composition':
-                    createCompositionChart(ctx, serviceNames);
-                    break;
-            }
-        }
-
-        function createComparisonChart(ctx, serviceNames) {
-            currentChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: serviceNames,
-                    datasets: [
-                        {
-                            label: 'Actual',
-                            data: serviceNames.map(s => serviceData[s].actual),
-                            backgroundColor: serviceNames.map(s => serviceData[s].color),
-                            borderRadius: 10,
-                            barThickness: 30
-                        },
-                        {
-                            label: 'Goal',
-                            data: serviceNames.map(s => serviceData[s].goal),
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                            borderColor: 'rgba(255, 255, 255, 0.3)',
-                            borderWidth: 2,
-                            borderRadius: 10,
-                            barThickness: 30
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            labels: { color: '#fff' }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#888',
-                                callback: function(value) {
-                                    return '$' + (value / 1000) + 'K';
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: { color: '#888' },
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        function createMomentumChart(ctx, serviceNames) {
-            const growthData = serviceNames.map(s => {
-                const data = serviceData[s];
-                return ((data.actual - data.lastYear) / data.lastYear * 100).toFixed(1);
-            });
-
-            currentChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: serviceNames,
-                    datasets: [{
-                        label: 'YoY Growth %',
-                        data: growthData,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            ticks: {
-                                color: '#888',
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: { color: '#888' },
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        function createCompositionChart(ctx, serviceNames) {
-            currentChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: serviceNames,
-                    datasets: [{
-                        data: serviceNames.map(s => serviceData[s].actual),
-                        backgroundColor: serviceNames.map(s => serviceData[s].color),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#fff',
-                                padding: 20,
-                                font: { size: 14 }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return context.label + ': $' + (context.parsed / 1000).toFixed(0) + 'K (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateSummaryStats() {
-            const totals = Object.values(serviceData).reduce((acc, data) => {
-                acc.actual += data.actual;
-                acc.goal += data.goal;
-                acc.lastYear += data.lastYear;
-                return acc;
-            }, { actual: 0, goal: 0, lastYear: 0 });
-
-            document.getElementById('totalRevenue').textContent = '$' + (totals.actual / 1000000).toFixed(2) + 'M';
-            document.getElementById('overallGoal').textContent = (totals.actual / totals.goal * 100).toFixed(1) + '%';
-            document.getElementById('yoyGrowth').textContent = '+' + ((totals.actual - totals.lastYear) / totals.lastYear * 100).toFixed(1) + '%';
-            
-            const servicesAboveGoal = Object.values(serviceData).filter(d => d.actual >= d.goal).length;
-            document.getElementById('topPerformer').textContent = servicesAboveGoal + ' of 6';
-        }
-
-        function exportData() {
-            alert('Export functionality would download a detailed report of all service line performance metrics.');
+        // Update bulb color based on performance
+        const bulb = document.querySelector('.bulb');
+        if (percentage >= 90) {
+            bulb.style.background = 'linear-gradient(180deg, #4ade80 0%, #22c55e 100%)';
+        } else if (percentage >= 70) {
+            bulb.style.background = 'linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%)';
+        } else if (percentage >= 50) {
+            bulb.style.background = 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)';
         }
     </script>
 </body>
