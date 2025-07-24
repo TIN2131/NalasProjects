@@ -53,12 +53,12 @@
             font-weight: bold;
         }
         
-        .good { 
+        .secure { 
             background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             border: 2px solid #4caf50;
         }
         
-        .bad { 
+        .not-secure { 
             background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
             border: 2px solid #f44336;
         }
@@ -68,37 +68,46 @@
             justify-content: space-around;
             flex-wrap: wrap;
             margin: 20px 0;
+            align-items: flex-start;
         }
         
-        .account-box {
+        .account-container {
             background: white;
             border-radius: 15px;
             padding: 20px;
             margin: 10px;
-            text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
-            min-width: 200px;
+            flex: 1;
+            min-width: 300px;
         }
         
-        .account-box:hover {
+        .account-container:hover {
             transform: translateY(-5px);
         }
         
-        .parent-account {
+        .single-account {
+            border: 3px solid #ff9800;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+        
+        .parent-account-box {
             border: 3px solid #3f51b5;
             background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
         }
         
-        .child-account {
+        .child-account-box {
             border: 3px solid #2196f3;
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
         }
         
-        .no-account {
-            border: 3px dashed #9e9e9e;
-            background: #f5f5f5;
-            opacity: 0.7;
+        .engagement-folder {
+            background: #ffd54f;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+            position: relative;
         }
         
         .emoji-large {
@@ -108,32 +117,67 @@
         
         .account-name {
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.2em;
             margin-bottom: 5px;
+            text-align: center;
         }
         
         .account-type {
             color: #666;
             font-size: 0.9em;
+            text-align: center;
+            margin-bottom: 15px;
         }
         
         .file-icon {
-            font-size: 2em;
-            margin: 10px;
+            font-size: 1.5em;
+            margin: 5px;
             display: inline-block;
-            animation: float 2s ease-in-out infinite;
         }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+        .visibility-line {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            height: 3px;
+            background: repeating-linear-gradient(
+                90deg,
+                #f44336,
+                #f44336 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .arrow {
-            font-size: 2em;
-            color: #666;
+        .visibility-badge {
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 3px solid #f44336;
+            font-weight: bold;
+            color: #f44336;
+        }
+        
+        .wall-divider {
+            width: 3px;
+            background: #4caf50;
             margin: 0 20px;
-            display: inline-block;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wall-badge {
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+            border: 3px solid #4caf50;
+            font-size: 2em;
         }
         
         .result-box {
@@ -142,14 +186,15 @@
             padding: 20px;
             margin: 20px 0;
             text-align: center;
+            font-size: 1.1em;
         }
         
-        .result-good {
+        .result-secure {
             background: #e8f5e9;
             border: 2px solid #4caf50;
         }
         
-        .result-bad {
+        .result-not-secure {
             background: #ffebee;
             border: 2px solid #f44336;
         }
@@ -175,132 +220,147 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
-        .contact-box {
-            display: inline-block;
-            background: #ffd54f;
-            border-radius: 10px;
-            padding: 10px 20px;
-            margin: 5px;
-            font-weight: bold;
+        .arrow-indicator {
+            font-size: 2em;
+            color: #f44336;
+            text-align: center;
+            margin: 10px 0;
+            animation: pulse 2s ease-in-out infinite;
         }
         
-        .visibility-indicator {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            margin: 5px;
-            font-weight: bold;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
-        .can-see {
-            background: #4caf50;
-            color: white;
-        }
-        
-        .cannot-see {
-            background: #f44336;
-            color: white;
+        .separate-accounts {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔐 Security Portal Visual Guide</h1>
-        <p class="subtitle">Understanding Parent & Child Account Security</p>
+        <p class="subtitle">Understanding Account & Engagement Security</p>
         
         <div class="key-point">
-            <div class="emoji-large">⚠️</div>
-            <strong>Golden Rule:</strong> Real Child Accounts = Private Folders 🗂️<br>
-            Fake Child Accounts (just text) = Everyone can see! 👀
+            <div class="emoji-large">💡</div>
+            <strong>The Big Picture:</strong><br>
+            One Account + Multiple Engagements = No Privacy! 👀<br>
+            Separate Parent & Child Accounts = Total Privacy! 🔒
         </div>
         
-        <div class="scenario good">
+        <div class="scenario not-secure">
+            <div class="scenario-header">
+                <span style="color: #f44336; margin-right: 10px;">⚠️</span>
+                SCENARIO 1: NOT SECURE - Single Account with Multiple Engagements
+            </div>
+            
+            <div class="visual-box">
+                <div class="account-container single-account">
+                    <div class="emoji-large" style="text-align: center;">🏢</div>
+                    <div class="account-name">One Account</div>
+                    <div class="account-type">All engagements under same roof</div>
+                    
+                    <div class="engagement-folder">
+                        <strong>📁 Engagement ABC</strong><br>
+                        <span style="font-size: 0.9em;">(Child X)</span><br>
+                        <span class="file-icon">📄📄📄</span>
+                    </div>
+                    
+                    <div class="arrow-indicator">↕️ 👀 ↕️</div>
+                    
+                    <div class="engagement-folder">
+                        <strong>📁 Engagement XYZ</strong><br>
+                        <span style="font-size: 0.9em;">(Child Y)</span><br>
+                        <span class="file-icon">📄📄📄</span>
+                    </div>
+                    
+                    <div class="arrow-indicator">↕️ 👀 ↕️</div>
+                    
+                    <div class="engagement-folder">
+                        <strong>📁 Engagement 123</strong><br>
+                        <span style="font-size: 0.9em;">(Child Z)</span><br>
+                        <span class="file-icon">📄📄📄</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-box result-not-secure">
+                <strong>🚨 Problem:</strong> All engagements can see each other's files!<br>
+                It's like having different folders in the same open filing cabinet - everyone with access to the account can browse all folders! 📂👀
+            </div>
+        </div>
+        
+        <div class="scenario secure">
             <div class="scenario-header">
                 <span style="color: #4caf50; margin-right: 10px;">✅</span>
-                SCENARIO 1: The RIGHT Way (Using Real Child Account)
+                SCENARIO 2: SECURE - Separate Parent & Child Accounts
             </div>
             
-            <div class="visual-box">
-                <div class="account-box parent-account">
-                    <div class="emoji-large">🏢</div>
-                    <div class="account-name">Parent Y</div>
-                    <div class="account-type">Main Company Account</div>
+            <div class="separate-accounts">
+                <div class="account-container parent-account-box">
+                    <div class="emoji-large" style="text-align: center;">🏢</div>
+                    <div class="account-name">Parent Account</div>
+                    <div class="account-type">Main Company</div>
+                    
+                    <div class="engagement-folder" style="background: #c5cae9;">
+                        <strong>📁 Parent Files</strong><br>
+                        <span class="file-icon">📄📄📄</span>
+                    </div>
                 </div>
                 
-                <div class="account-box child-account">
-                    <div class="emoji-large">🔒</div>
-                    <div class="account-name">Child X</div>
-                    <div class="account-type">Real Account Record</div>
-                    <div class="file-icon">📄</div>
-                    <div style="color: #4caf50; font-weight: bold;">Files uploaded HERE</div>
+                <div class="wall-divider">
+                    <div class="wall-badge">🚧</div>
                 </div>
                 
-                <div class="account-box child-account">
-                    <div class="emoji-large">🚫</div>
-                    <div class="account-name">Child Z</div>
-                    <div class="account-type">Real Account Record</div>
-                    <div style="color: #f44336;">Cannot see files!</div>
+                <div class="account-container child-account-box">
+                    <div class="emoji-large" style="text-align: center;">🔒</div>
+                    <div class="account-name">Child Account</div>
+                    <div class="account-type">Separate Entity</div>
+                    
+                    <div class="engagement-folder" style="background: #bbdefb;">
+                        <strong>📁 Child Files</strong><br>
+                        <span class="file-icon">📄📄📄</span>
+                    </div>
                 </div>
             </div>
             
-            <div class="result-box result-good">
-                <strong>Result:</strong> <span class="contact-box">Contact 123</span> 
-                <span class="visibility-indicator cannot-see">CANNOT SEE</span> 
-                your files unless they have access to Child X specifically! 🎉
-            </div>
-        </div>
-        
-        <div class="scenario bad">
-            <div class="scenario-header">
-                <span style="color: #f44336; margin-right: 10px;">❌</span>
-                SCENARIO 2: The WRONG Way (No Real Child Account)
-            </div>
-            
-            <div class="visual-box">
-                <div class="account-box parent-account">
-                    <div class="emoji-large">🏢</div>
-                    <div class="account-name">Parent Y</div>
-                    <div class="account-type">Main Company Account</div>
-                    <div class="file-icon">📄</div>
-                    <div style="color: #f44336; font-weight: bold;">Files uploaded HERE</div>
-                </div>
-                
-                <div class="account-box no-account">
-                    <div class="emoji-large">👻</div>
-                    <div class="account-name">"Child X"</div>
-                    <div class="account-type">Just text - NOT a real account!</div>
-                </div>
-            </div>
-            
-            <div class="result-box result-bad">
-                <strong>Result:</strong> <span class="contact-box">Contact 123</span> 
-                <span class="visibility-indicator can-see">CAN SEE</span> 
-                everything! All children can see these files! 😱
+            <div class="result-box result-secure">
+                <strong>🎉 Success:</strong> Parent CANNOT see Child's files & Child CANNOT see Parent's files!<br>
+                It's like having separate locked offices - complete privacy between accounts! 🔐
             </div>
         </div>
         
         <div class="rule-box">
             <div class="emoji-large">🎯</div>
-            <strong>THE SIMPLE RULE:</strong><br>
-            Always upload to the REAL Child Account, never to the Parent!<br>
-            Think: "Put files in the private room, not the living room!"
+            <strong>THE GOLDEN RULE:</strong><br>
+            Want privacy between different groups?<br>
+            ➡️ Create SEPARATE Parent & Child Accounts!<br>
+            <span style="font-size: 0.9em; opacity: 0.9;">Don't just use different engagements under one account!</span>
         </div>
         
         <div class="key-point">
-            <strong>Quick Check Before Uploading:</strong><br>
-            <div style="margin-top: 15px; font-size: 1.1em;">
-                1️⃣ Is it a REAL Child Account? (Has its own record) ✅<br>
-                2️⃣ Am I uploading to the Child, not the Parent? ✅<br>
-                3️⃣ Will only the right people see this? ✅<br>
-                <div style="margin-top: 10px; color: #4caf50; font-weight: bold;">
-                    If all YES → You're good to go! 🚀
-                </div>
+            <strong>Quick Decision Guide:</strong><br>
+            <div style="margin-top: 15px; font-size: 1.1em; text-align: left; display: inline-block;">
+                ❓ <strong>Do these groups need to see each other's files?</strong><br>
+                ✅ YES → Use one account with multiple engagements<br>
+                ❌ NO → Create separate Parent & Child accounts<br><br>
+                
+                <strong>Remember:</strong><br>
+                📂 Same Account = Open filing cabinet (everyone sees everything)<br>
+                🏢🔒 Separate Accounts = Different locked offices (total privacy)
             </div>
         </div>
         
         <div style="text-align: center; margin-top: 40px; color: #666;">
-            <p><strong>Remember:</strong> When in doubt, ask! Better safe than sorry! 🤝</p>
+            <p><strong>Bottom Line:</strong> Engagement separation is just organization, not security.<br>
+            Real security requires separate accounts! 🛡️</p>
         </div>
     </div>
 </body>
 </html>
+
