@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Entry Action Center - Power Apps Concept</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #5b5fc7 0%, #7c7fdb 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .app-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #5b5fc7;
+        }
+
+        .stat-card.critical .stat-value {
+            color: #e74c3c;
+        }
+
+        .stat-card.warning .stat-value {
+            color: #f39c12;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        .action-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .filter-tab.active {
+            color: #5b5fc7;
+        }
+
+        .filter-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #5b5fc7;
+        }
+
+        .employee-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .employee-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .employee-item:hover {
+            background: #f8f9fa;
+            border-color: #5b5fc7;
+        }
+
+        .employee-item.selected {
+            background: #eef0ff;
+            border-color: #5b5fc7;
+        }
+
+        .employee-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #5b5fc7;
+        }
+
+        .employee-info {
+            flex: 1;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .employee-details {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .utilization-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .utilization-critical {
+            background: #fee;
+            color: #e74c3c;
+        }
+
+        .utilization-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .utilization-good {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .action-buttons {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #5b5fc7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4a4eb8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(91, 95, 199, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .template-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .template-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .template-cards {
+            display: grid;
+            gap: 15px;
+        }
+
+        .template-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .template-card:hover {
+            border-color: #5b5fc7;
+            background: #f8f9fa;
+        }
+
+        .template-card.selected {
+            border-color: #5b5fc7;
+            background: #eef0ff;
+        }
+
+        .template-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #5b5fc7;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .template-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .template-preview {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .email-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .email-preview h4 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .email-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 22px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #5b5fc7;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            min-height: 45px;
+        }
+
+        .tag {
+            background: #eef0ff;
+            color: #5b5fc7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag button {
+            background: none;
+            border: none;
+            color: #5b5fc7;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #5b5fc7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .insights-panel {
+            background: #fffbf0;
+            border: 1px solid #ffe0b2;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .insights-panel h3 {
+            color: #e65100;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-item {
+            font-size: 14px;
+            color: #5d4037;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .insight-item::before {
+            content: '•';
+            position: absolute;
+            left: 8px;
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>Time Entry Action Center</h1>
+        <p>Integrated with Power BI Dashboard • Real-time Employee Management</p>
+    </div>
+
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card critical">
+                <h3>Critical Utilization</h3>
+                <div class="stat-value">12</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Below Target</h3>
+                <div class="stat-value">28</div>
+            </div>
+            <div class="stat-card">
+                <h3>Emails Sent Today</h3>
+                <div class="stat-value">45</div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg Response Time</h3>
+                <div class="stat-value">2.3h</div>
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="insights-panel">
+            <h3>🤖 AI-Powered Insights</h3>
+            <div class="insight-item">Tax service line showing consistent underutilization - consider workload redistribution</div>
+            <div class="insight-item">Los Angeles office has 3 employees below 50% for 2+ months - immediate action recommended</div>
+            <div class="insight-item">Friday submissions are 40% lower than other days - consider automated reminders</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Employee Selection Panel -->
+            <div class="action-panel">
+                <div class="panel-header">
+                    <h2>Select Employees for Action</h2>
+                    <button class="action-btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="selectAll()">
+                        Select All
+                    </button>
+                </div>
+
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterEmployees('critical')">Critical (&lt;50%)</button>
+                    <button class="filter-tab" onclick="filterEmployees('warning')">Warning (50-70%)</button>
+                    <button class="filter-tab" onclick="filterEmployees('all')">All Employees</button>
+                </div>
+
+                <div class="employee-list" id="employeeList">
+                    <!-- Critical Employees -->
+                    <div class="employee-item" data-category="critical">
+                        <input type="checkbox" class="employee-checkbox" id="emp1">
+                        <div class="employee-info">
+                            <div class="employee-name">Abigail Vidanza</div>
+                            <div class="employee-details">Tax • Los Angeles, CA</div>
+                        </div>
+                        <span class="utilization-badge utilization-critical">24% Util</span>
+                    </div>
+
+                    <div class="employee-item" data-category="critical">
+                        <input type="checkbox" class="employee-checkbox" id="emp2">
+                        <div class="employee-info">
+                            <div class="employee-name">Adam Rubin</div>
+                            <div class="employee-details">Assurance & Advisory • Orange County, CA</div>
+                        </div>
+                        <span class="utilization-badge utilization-critical">29% Util</span>
+                    </div>
+
+                    <div class="employee-item" data-category="critical">
+                        <input type="checkbox" class="employee-checkbox" id="emp3">
+                        <div class="employee-info">
+                            <div class="employee-name">Alena Zoubareva</div>
+                            <div class="employee-details">Tax • South San Francisco, CA</div>
+                        </div>
+                        <span class="utilization-badge utilization-critical">0% Util</span>
+                    </div>
+
+                    <!-- Warning Employees -->
+                    <div class="employee-item" data-category="warning" style="display: none;">
+                        <input type="checkbox" class="employee-checkbox" id="emp4">
+                        <div class="employee-info">
+                            <div class="employee-name">Michael Chen</div>
+                            <div class="employee-details">Consulting • Denver, CO</div>
+                        </div>
+                        <span class="utilization-badge utilization-warning">65% Util</span>
+                    </div>
+
+                    <div class="employee-item" data-category="warning" style="display: none;">
+                        <input type="checkbox" class="employee-checkbox" id="emp5">
+                        <div class="employee-info">
+                            <div class="employee-name">Sarah Johnson</div>
+                            <div class="employee-details">Tax • Seattle, WA</div>
+                        </div>
+                        <span class="utilization-badge utilization-warning">58% Util</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn btn-primary" onclick="showEmailModal()">
+                        📧 Send Email Campaign
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="scheduleOneOnOne()">
+                        📅 Schedule 1:1 Meetings
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="createActionPlan()">
+                        📋 Create Action Plan
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="exportReport()">
+                        📊 Export Detailed Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Email Template Section -->
+            <div class="template-section">
+                <h2>Quick Email Templates</h2>
+                
+                <div class="template-cards">
+                    <div class="template-card selected" onclick="selectTemplate(this, 'urgent')">
+                        <div class="template-title">🚨 Urgent: Time Entry Required</div>
+                        <div class="template-preview">Hi {Name}, I noticed your utilization is at {Utilization}% for this month. Please update your time entries by EOD...</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate(this, 'reminder')">
+                        <div class="template-title">🔔 Friendly Reminder</div>
+                        <div class="template-preview">Hello {Name}, This is a friendly reminder to complete your time entries for the week. Your current utilization...</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate(this, 'support')">
+                        <div class="template-title">💡 Offering Support</div>
+                        <div class="template-preview">Hi {Name}, I've noticed your time entries might need attention. Is there anything I can help with? Let's discuss...</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate(this, 'custom')">
+                        <div class="template-title">✏️ Custom Message</div>
+                        <div class="template-preview">Create your own personalized message...</div>
+                    </div>
+                </div>
+
+                <div class="email-preview">
+                    <h4>Preview (with personalization)</h4>
+                    <div class="email-content" id="emailPreview">
+                        Hi Abigail,<br><br>
+                        I noticed your utilization is at 24% for this month. Please update your time entries by EOD today to ensure accurate reporting.<br><br>
+                        Your current status:<br>
+                        • Total Hours: 82<br>
+                        • Billable Hours: 50<br>
+                        • Target: 105 hours<br><br>
+                        Please let me know if you need any assistance.<br><br>
+                        Best regards,<br>
+                        [Your Name]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div class="modal" id="emailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Send Email Campaign</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+
+            <div id="modalBody">
+                <div class="form-group">
+                    <label>Recipients (3 selected)</label>
+                    <div class="tags-input">
+                        <span class="tag">Abigail Vidanza <button>×</button></span>
+                        <span class="tag">Adam Rubin <button>×</button></span>
+                        <span class="tag">Alena Zoubareva <button>×</button></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Subject Line</label>
+                    <input type="text" class="form-control" value="Action Required: Time Entry Update - July 2025">
+                </div>
+
+                <div class="form-group">
+                    <label>Message Template</label>
+                    <select class="form-control">
+                        <option>Urgent: Time Entry Required</option>
+                        <option>Friendly Reminder</option>
+                        <option>Offering Support</option>
+                        <option>Custom Message</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Message Body</label>
+                    <textarea class="form-control">Hi {Name},
+
+I noticed your utilization is at {Utilization}% for this month. Please update your time entries by EOD today to ensure accurate reporting.
+
+Your current status:
+• Total Hours: {TotalHours}
+• Billable Hours: {BillableHours}
+• Target: {Target} hours
+
+Please let me know if you need any assistance.
+
+Best regards,
+{SenderName}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Include manager in CC
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Track email opens and responses
+                    </label>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn btn-primary" onclick="sendEmails()">
+                        <span id="sendBtnText">Send Emails Now</span>
+                        <span class="loading" id="loadingSpinner" style="display: none;"></span>
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="saveDraft()">
+                        Save as Draft
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filter employees by category
+        function filterEmployees(category) {
+            const tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const employees = document.querySelectorAll('.employee-item');
+            employees.forEach(emp => {
+                if (category === 'all' || emp.dataset.category === category) {
+                    emp.style.display = 'flex';
+                } else {
+                    emp.style.display = 'none';
+                }
+            });
+        }
+
+        // Select all visible employees
+        function selectAll() {
+            const visibleCheckboxes = document.querySelectorAll('.employee-item:not([style*="display: none"]) .employee-checkbox');
+            const allChecked = Array.from(visibleCheckboxes).every(cb => cb.checked);
+            visibleCheckboxes.forEach(cb => cb.checked = !allChecked);
+        }
+
+        // Toggle employee selection
+        document.querySelectorAll('.employee-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('employee-checkbox')) {
+                    const checkbox = this.querySelector('.employee-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                }
+                this.classList.toggle('selected', this.querySelector('.employee-checkbox').checked);
+            });
+        });
+
+        // Template selection
+        function selectTemplate(card, type) {
+            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            
+            // Update email preview based on template
+            const previews = {
+                urgent: `Hi Abigail,<br><br>I noticed your utilization is at 24% for this month. Please update your time entries by EOD today to ensure accurate reporting.<br><br>Your current status:<br>• Total Hours: 82<br>• Billable Hours: 50<br>• Target: 105 hours<br><br>Please let me know if you need any assistance.<br><br>Best regards,<br>[Your Name]`,
+                reminder: `Hello Abigail,<br><br>This is a friendly reminder to complete your time entries for the week. Your current utilization is 24%, which is below our target.<br><br>Could you please review and update your entries when you get a chance today?<br><br>Thanks!<br>[Your Name]`,
+                support: `Hi Abigail,<br><br>I've noticed your time entries might need attention. Your current utilization is at 24%.<br><br>Is there anything I can help with? Let's discuss if you're facing any challenges with projects or need support with workload.<br><br>Happy to set up a quick call if that would help.<br><br>Best,<br>[Your Name]`,
+                custom: `[Create your custom message here]`
+            };
+            
+            document.getElementById('emailPreview').innerHTML = previews[type];
+        }
+
+        // Modal functions
+        function showEmailModal() {
+            const selectedCount = document.querySelectorAll('.employee-checkbox:checked').length;
+            if (selectedCount === 0) {
+                alert('Please select at least one employee');
+                return;
+            }
+            document.getElementById('emailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('emailModal').classList.remove('active');
+        }
+
+        function sendEmails() {
+            const btn = event.target;
+            const btnText = document.getElementById('sendBtnText');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            btnText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            
+            setTimeout(() => {
+                const modalBody = document.getElementById('modalBody');
+                modalBody.innerHTML = `
+                    <div class="success-message">
+                        <span style="font-size: 24px;">✅</span>
+                        <div>
+                            <strong>Emails sent successfully!</strong><br>
+                            3 emails have been sent and will be tracked in your dashboard.
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h4>Next Steps:</h4>
+                        <ul style="margin: 10px 0 20px 20px; color: #666;">
+                            <li>Monitor responses in the Email Tracking dashboard</li>
+                            <li>Follow up with non-responders after 24 hours</li>
+                            <li>Schedule 1:1 meetings for critical cases</li>
+                        </ul>
+                    </div>
+                    <button class="action-btn btn-primary" onclick="closeModal()">Done</button>
+                `;
+            }, 2000);
+        }
+
+        function saveDraft() {
+            alert('Draft saved! You can access it from the Drafts folder.');
+            closeModal();
+        }
+
+        function scheduleOneOnOne() {
+            alert('Opening calendar integration to schedule 1:1 meetings...');
+        }
+
+        function createActionPlan() {
+            alert('Creating personalized action plans for selected employees...');
+        }
+
+        function exportReport() {
+            alert('Generating detailed utilization report with historical trends...');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('emailModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
+
