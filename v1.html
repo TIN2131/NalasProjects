@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Manager Comparison Visuals</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .visual-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e3c72;
+        }
+
+        .section-description {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        /* Visual 1: Enhanced Matrix Table */
+        .matrix-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .matrix-table th {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .matrix-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .matrix-table tr:hover td {
+            background-color: #f8f9fa;
+        }
+
+        .manager-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .manager-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a90e2 0%, #63b8ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .manager-details {
+            flex: 1;
+        }
+
+        .manager-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .manager-region {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .service-mix-cell {
+            width: 200px;
+        }
+
+        .service-mix-bar {
+            height: 25px;
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 5px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .mix-segment {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .mix-segment:hover {
+            filter: brightness(1.1);
+            z-index: 5;
+        }
+
+        .service-mix-labels {
+            display: flex;
+            gap: 10px;
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .metric-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            color: #2a5298;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #999;
+            font-weight: normal;
+        }
+
+        .status-cell {
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-good {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Visual 2: Card Grid with Heatmap */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .manager-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .manager-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-header {
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .header-excellent::before {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .header-good::before {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .header-average::before {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .header-poor::before {
+            background: linear-gradient(90deg, #dc2626, #ef4444);
+        }
+
+        .card-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 0 20px 20px;
+            text-align: center;
+        }
+
+        .card-metric {
+            position: relative;
+        }
+
+        .card-metric::after {
+            content: '';
+            position: absolute;
+            right: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 30px;
+            background: #e5e7eb;
+        }
+
+        .card-metric:last-child::after {
+            display: none;
+        }
+
+        .card-service-mix {
+            padding: 0 20px 20px;
+        }
+
+        /* Visual 3: Bubble Chart Layout */
+        .bubble-container {
+            position: relative;
+            height: 500px;
+            background: #fafafa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .manager-bubble {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .manager-bubble:hover {
+            transform: scale(1.1);
+            z-index: 100;
+        }
+
+        .bubble-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .bubble-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Visual 4: Radial Comparison */
+        .radial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .radial-card {
+            text-align: center;
+            position: relative;
+        }
+
+        .radial-chart {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        .radial-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .radial-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .radial-label {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .radial-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .radial-metrics {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .tooltip.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Visual 1: Enhanced Matrix Table -->
+    <div class="visual-section">
+        <h2 class="section-title">Visual Option 1: Enhanced Matrix Table</h2>
+        <p class="section-description">A sophisticated matrix view combining avatars, service mix bars, and key metrics. Perfect for Power BI's Matrix visual with custom formatting.</p>
+        
+        <table class="matrix-table">
+            <thead>
+                <tr>
+                    <th>Account Manager</th>
+                    <th>Service Mix</th>
+                    <th>Revenue</th>
+                    <th>Accounts</th>
+                    <th>Cross-Sell %</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="manager-cell">
+                            <div class="manager-avatar">ET</div>
+                            <div class="manager-details">
+                                <div class="manager-name">Elberta Thompson</div>
+                                <div class="manager-region">Southeast Region</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="service-mix-cell">
+                        <div class="service-mix-bar">
+                            <div class="mix-segment" style="background: #4285f4; width: 32%;">32%</div>
+                            <div class="mix-segment" style="background: #34a853; width: 24%;">24%</div>
+                            <div class="mix-segment" style="background: #ea4335; width: 29%;">29%</div>
+                            <div class="mix-segment" style="background: #fbbc04; width: 16%;">16%</div>
+                        </div>
+                        <div class="service-mix-labels">
+                            <span>Audit • Tax • Specialty • Business</span>
+                        </div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">$1.25M</div>
+                        <div class="metric-label">total</div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">3</div>
+                        <div class="metric-label">active</div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">95%</div>
+                        <div class="metric-label">rate</div>
+                    </td>
+                    <td class="status-cell">
+                        <span class="status-indicator status-excellent">Excellent</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="manager-cell">
+                            <div class="manager-avatar" style="background: linear-gradient(135deg, #34a853 0%, #4ade80 100%);">MR</div>
+                            <div class="manager-details">
+                                <div class="manager-name">Michael Roberts</div>
+                                <div class="manager-region">Northeast Region</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="service-mix-cell">
+                        <div class="service-mix-bar">
+                            <div class="mix-segment" style="background: #4285f4; width: 45%;">45%</div>
+                            <div class="mix-segment" style="background: #34a853; width: 35%;">35%</div>
+                            <div class="mix-segment" style="background: #fbbc04; width: 20%;">20%</div>
+                        </div>
+                        <div class="service-mix-labels">
+                            <span>Audit • Tax • Business</span>
+                        </div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">$980K</div>
+                        <div class="metric-label">total</div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">5</div>
+                        <div class="metric-label">active</div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">78%</div>
+                        <div class="metric-label">rate</div>
+                    </td>
+                    <td class="status-cell">
+                        <span class="status-indicator status-good">Good</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="manager-cell">
+                            <div class="manager-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">PC</div>
+                            <div class="manager-details">
+                                <div class="manager-name">Patricia Chen</div>
+                                <div class="manager-region">West Region</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="service-mix-cell">
+                        <div class="service-mix-bar">
+                            <div class="mix-segment" style="background: #34a853; width: 60%;">60%</div>
+                            <div class="mix-segment" style="background: #ea4335; width: 40%;">40%</div>
+                        </div>
+                        <div class="service-mix-labels">
+                            <span>Tax • Specialty Tax</span>
+                        </div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">$760K</div>
+                        <div class="metric-label">total</div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">4</div>
+                        <div class="metric-label">active</div>
+                    </td>
+                    <td class="metric-cell">
+                        <div class="metric-value">65%</div>
+                        <div class="metric-label">rate</div>
+                    </td>
+                    <td class="status-cell">
+                        <span class="status-indicator status-average">Average</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Visual 2: Card Grid with Heatmap Indicators -->
+    <div class="visual-section">
+        <h2 class="section-title">Visual Option 2: Performance Card Grid</h2>
+        <p class="section-description">Compact cards with color-coded performance indicators. Great for showing many managers at once with drill-down capability.</p>
+        
+        <div class="card-grid">
+            <div class="manager-card">
+                <div class="card-header header-excellent">
+                    <div class="manager-name">Elberta Thompson</div>
+                    <div class="manager-region">Southeast Region</div>
+                </div>
+                <div class="card-metrics">
+                    <div class="card-metric">
+                        <div class="metric-value">95%</div>
+                        <div class="metric-label">Cross-Sell</div>
+                    </div>
+                    <div class="card-metric">
+                        <div class="metric-value">$1.25M</div>
+                        <div class="metric-label">Revenue</div>
+                    </div>
+                    <div class="card-metric">
+                        <div class="metric-value">3</div>
+                        <div class="metric-label">Accounts</div>
+                    </div>
+                </div>
+                <div class="card-service-mix">
+                    <div class="service-mix-bar">
+                        <div class="mix-segment" style="background: #4285f4; width: 32%;"></div>
+                        <div class="mix-segment" style="background: #34a853; width: 24%;"></div>
+                        <div class="mix-segment" style="background: #ea4335; width: 29%;"></div>
+                        <div class="mix-segment" style="background: #fbbc04; width: 16%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="manager-card">
+                <div class="card-header header-good">
+                    <div class="manager-name">Michael Roberts</div>
+                    <div class="manager-region">Northeast Region</div>
+                </div>
+                <div class="card-metrics">
+                    <div class="card-metric">
+                        <div class="metric-value">78%</div>
+                        <div class="metric-label">Cross-Sell</div>
+                    </div>
+                    <div class="card-metric">
+                        <div class="metric-value">$980K</div>
+                        <div class="metric-label">Revenue</div>
+                    </div>
+                    <div class="card-metric">
+                        <div class="metric-value">5</div>
+                        <div class="metric-label">Accounts</div>
+                    </div>
+                </div>
+                <div class="card-service-mix">
+                    <div class="service-mix-bar">
+                        <div class="mix-segment" style="background: #4285f4; width: 45%;"></div>
+                        <div class="mix-segment" style="background: #34a853; width: 35%;"></div>
+                        <div class="mix-segment" style="background: #fbbc04; width: 20%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="manager-card">
+                <div class="card-header header-average">
+                    <div class="manager-name">Patricia Chen</div>
+                    <div class="manager-region">West Region</div>
+                </div>
+                <div class="card-metrics">
+                    <div class="card-metric">
+                        <div class="metric-value">65%</div>
+                        <div class="metric-label">Cross-Sell</div>
+                    </div>
+                    <div class="card-metric">
+                        <div class="metric-value">$760K</div>
+                        <div class="metric-label">Revenue</div>
+                    </div>
+                    <div class="card-metric">
+                        <div class="metric-value">4</div>
+                        <div class="metric-label">Accounts</div>
+                    </div>
+                </div>
+                <div class="card-service-mix">
+                    <div class="service-mix-bar">
+                        <div class="mix-segment" style="background: #34a853; width: 60%;"></div>
+                        <div class="mix-segment" style="background: #ea4335; width: 40%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual 3: Bubble Chart Positioning -->
+    <div class="visual-section">
+        <h2 class="section-title">Visual Option 3: Performance Bubble Map</h2>
+        <p class="section-description">Interactive bubble chart where size = revenue, position = cross-sell %, and color = performance tier. Great for spotting outliers.</p>
+        
+        <div class="bubble-container">
+            <div class="manager-bubble" style="width: 120px; height: 120px; background: linear-gradient(135deg, #10b981, #34d399); left: 70%; top: 10%;">
+                <div class="bubble-name">Elberta</div>
+                <div class="bubble-value">95%</div>
+            </div>
+            <div class="manager-bubble" style="width: 100px; height: 100px; background: linear-gradient(135deg, #3b82f6, #60a5fa); left: 50%; top: 30%;">
+                <div class="bubble-name">Michael</div>
+                <div class="bubble-value">78%</div>
+            </div>
+            <div class="manager-bubble" style="width: 90px; height: 90px; background: linear-gradient(135deg, #f59e0b, #fbbf24); left: 30%; top: 45%;">
+                <div class="bubble-name">Patricia</div>
+                <div class="bubble-value">65%</div>
+            </div>
+            <div class="manager-bubble" style="width: 110px; height: 110px; background: linear-gradient(135deg, #10b981, #34d399); left: 65%; top: 50%;">
+                <div class="bubble-name">Robert</div>
+                <div class="bubble-value">92%</div>
+            </div>
+            <div class="manager-bubble" style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #ef4444); left: 15%; top: 70%;">
+                <div class="bubble-name">James</div>
+                <div class="bubble-value">45%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual 4: Radial Progress Comparison -->
+    <div class="visual-section">
+        <h2 class="section-title">Visual Option 4: Radial Progress Grid</h2>
+        <p class="section-description">Circular progress indicators showing cross-sell percentage with service mix shown as segments. Compact and visually striking.</p>
+        
+        <div class="radial-grid">
+            <div class="radial-card">
+                <div class="radial-chart">
+                    <canvas id="radial1" width="150" height="150"></canvas>
+                    <div class="radial-center">
+                        <div class="radial-score">95%</div>
+                        <div class="radial-label">Cross-Sell</div>
+                    </div>
+                </div>
+                <div class="radial-name">Elberta Thompson</div>
+                <div class="radial-metrics">
+                    <span>$1.25M</span>
+                    <span>•</span>
+                    <span>3 Accounts</span>
+                </div>
+            </div>
+            
+            <div class="radial-card">
+                <div class="radial-chart">
+                    <canvas id="radial2" width="150" height="150"></canvas>
+                    <div class="radial-center">
+                        <div class="radial-score">78%</div>
+                        <div class="radial-label">Cross-Sell</div>
+                    </div>
+                </div>
+                <div class="radial-name">Michael Roberts</div>
+                <div class="radial-metrics">
+                    <span>$980K</span>
+                    <span>•</span>
+                    <span>5 Accounts</span>
+                </div>
+            </div>
+            
+            <div class="radial-card">
+                <div class="radial-chart">
+                    <canvas id="radial3" width="150" height="150"></canvas>
+                    <div class="radial-center">
+                        <div class="radial-score">65%</div>
+                        <div class="radial-label">Cross-Sell</div>
+                    </div>
+                </div>
+                <div class="radial-name">Patricia Chen</div>
+                <div class="radial-metrics">
+                    <span>$760K</span>
+                    <span>•</span>
+                    <span>4 Accounts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Radial Charts
+        function createRadialChart(canvasId, data, colors) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create radial charts
+        createRadialChart('radial1', [32, 24, 29, 16], ['#4285f4', '#34a853', '#ea4335', '#fbbc04']);
+        createRadialChart('radial2', [45, 35, 20], ['#4285f4', '#34a853', '#fbbc04']);
+        createRadialChart('radial3', [60, 40], ['#34a853', '#ea4335']);
+
+        // Add hover effects for service mix segments
+        document.querySelectorAll('.mix-segment').forEach(segment => {
+            segment.addEventListener('mouseenter', function(e) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip active';
+                tooltip.textContent = this.textContent + ' of revenue';
+                document.body.appendChild(tooltip);
+                
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = rect.left + rect.width/2 - tooltip.offsetWidth/2 + 'px';
+                tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
+            });
+            
+            segment.addEventListener('mouseleave', function() {
+                document.querySelectorAll('.tooltip').forEach(t => t.remove());
+            });
+        });
+    </script>
+</body>
+</html>
+
