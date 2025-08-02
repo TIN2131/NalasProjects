@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OhHeyAvi - Your Pregnancy Best Friend</title>
+    <style>
+        /* Embedded font to avoid loading errors */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-lavender: #E6E6FA;
+            --deep-lavender: #DDA0DD;
+            --soft-lavender: #F0E6FA;
+            --accent-lavender: #9370DB;
+            --mint: #E0F5E9;
+            --butter-yellow: #FFF8DC;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --white: #FFFFFF;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Web font for better typography - Poppins style */
+        @font-face {
+            font-family: 'CustomPoppins';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: local('Poppins Regular'), local('Poppins-Regular');
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary-lavender) 0%, var(--deep-lavender) 100%);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        nav a:hover {
+            transform: translateY(-2px);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .search-container {
+            position: relative;
+            margin: 1rem 0;
+        }
+        
+        .search-bar {
+            padding: 0.7rem 1rem;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+        
+        .cta-button {
+            background: var(--accent-lavender);
+            color: var(--white);
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(147, 112, 219, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(147, 112, 219, 0.4);
+            background: var(--deep-lavender);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(180deg, var(--butter-yellow) 0%, var(--white) 100%);
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-lavender) 0%, var(--deep-lavender) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subheadline {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .hero-image {
+            margin-top: 3rem;
+            position: relative;
+            height: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .carousel-slide.active {
+            opacity: 1;
+        }
+        
+        /* Trimester Cards */
+        .trimester-section {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+        
+        .trimester-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .trimester-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .trimester-card {
+            background: linear-gradient(135deg, var(--lavender) 0%, var(--mint) 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trimester-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+        
+        .trimester-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .trimester-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .hover-products {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            padding: 1rem;
+            transition: bottom 0.3s;
+        }
+        
+        .trimester-card:hover .hover-products {
+            bottom: 0;
+        }
+        
+        /* Decision Engine */
+        .decision-engine {
+            background: linear-gradient(180deg, var(--mint) 0%, var(--white) 100%);
+            padding: 4rem 0;
+        }
+        
+        .decision-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .filter-option {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px var(--shadow);
+        }
+        
+        .filter-option.active {
+            background: var(--accent-lavender);
+            color: var(--white);
+        }
+        
+        /* Product Cards */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .product-card {
+            background: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow);
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--lavender) 0%, var(--mint) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-review {
+            background: var(--butter-yellow);
+            padding: 0.5rem;
+            border-radius: 10px;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .tag {
+            background: var(--deep-lavender);
+            color: var(--white);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* Collections Section */
+        .collections {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+        
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .collection-card {
+            background: linear-gradient(135deg, var(--primary-lavender) 0%, var(--accent-lavender) 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            color: var(--white);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .collection-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        
+        /* Video Review Zone */
+        .video-zone {
+            background: linear-gradient(180deg, var(--lavender) 0%, var(--white) 100%);
+            padding: 4rem 0;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .video-tile {
+            background: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .video-tile:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        
+        .video-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, var(--accent-lavender) 0%, var(--deep-lavender) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--white);
+        }
+        
+        .video-info {
+            padding: 1rem;
+        }
+        
+        /* Community Section */
+        .community {
+            padding: 4rem 0;
+            background: var(--mint);
+            text-align: center;
+        }
+        
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .testimonial {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+        
+        .email-capture {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .email-input {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--text-primary);
+            color: var(--white);
+            padding: 3rem 0;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        footer a {
+            color: var(--primary-lavender);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        footer a:hover {
+            color: var(--deep-lavender);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .search-bar {
+                width: 200px;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <a href="#" class="logo">OhHeyAvi</a>
+            <nav>
+                <a href="#trimester">🌱 Trimester Guide</a>
+                <a href="#recommendations">💡 Avi Recommends</a>
+                <a href="#reviews">🎥 Mom Reviews</a>
+                <a href="#products">🛒 Product Directory</a>
+            </nav>
+            <div class="search-container">
+                <input type="text" class="search-bar" placeholder="What are you looking for today?">
+            </div>
+            <button class="cta-button" onclick="startQuiz()">Get Personalized Picks</button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1>Welcome to the only pregnancy directory that listens like your best friend.</h1>
+            <p class="hero-subheadline">We break down the best-loved prenatal products by trimester—because your needs change, and so should your care.</p>
+            <div class="hero-buttons">
+                <button class="cta-button" onclick="scrollToSection('trimester')">🔎 Explore by Trimester</button>
+                <button class="cta-button" onclick="startQuiz()">🧠 Take the Smart Quiz</button>
+            </div>
+            <div class="hero-image">
+                <div class="carousel">
+                    <div class="carousel-slide active" style="background: linear-gradient(135deg, var(--primary-lavender) 0%, var(--deep-lavender) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                        👶 Beautiful Pregnancy Journey
+                    </div>
+                    <div class="carousel-slide" style="background: linear-gradient(135deg, var(--soft-lavender) 0%, var(--butter-yellow) 100%); display: flex; align-items: center; justify-content: center; color: #333; font-size: 2rem;">
+                        💕 Motherhood Awaits
+                    </div>
+                    <div class="carousel-slide" style="background: linear-gradient(135deg, var(--accent-lavender) 0%, var(--primary-lavender) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                        🤰 Every Stage Matters
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trimester Navigation -->
+    <section class="trimester-section" id="trimester">
+        <div class="trimester-container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Choose Your Trimester</h2>
+            <div class="trimester-cards">
+                <div class="trimester-card" onclick="filterByTrimester(1)">
+                    <h3>First Trimester</h3>
+                    <p>"Nausea, fatigue, food fear? Start here."</p>
+                    <div class="hover-products">
+                        <p><strong>Top picks:</strong> Ginger chews, prenatal gummies, anti-nausea bands</p>
+                    </div>
+                </div>
+                <div class="trimester-card" onclick="filterByTrimester(2)">
+                    <h3>Second Trimester</h3>
+                    <p>"You're glowing… and stretching. We got you."</p>
+                    <div class="hover-products">
+                        <p><strong>Top picks:</strong> Belly butter, maternity leggings, pregnancy pillows</p>
+                    </div>
+                </div>
+                <div class="trimester-card" onclick="filterByTrimester(3)">
+                    <h3>Third Trimester</h3>
+                    <p>"One more stretch before the big day. Let's make it comfy."</p>
+                    <div class="hover-products">
+                        <p><strong>Top picks:</strong> Compression socks, sleeping aids, birthing prep</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Decision Engine -->
+    <section class="decision-engine" id="recommendations">
+        <div class="decision-container">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">🤖 Avi's Decision Engine</h2>
+            <p style="font-size: 1.2rem; color: var(--text-secondary);">Tell us what's bugging you most right now. We'll help.</p>
+            
+            <div class="filter-grid">
+                <div class="filter-option" onclick="toggleFilter(this, 'symptom')">
+                    <h4>Symptom</h4>
+                    <p>Nausea, back pain, insomnia...</p>
+                </div>
+                <div class="filter-option" onclick="toggleFilter(this, 'budget')">
+                    <h4>Budget</h4>
+                    <p>Find products in your range</p>
+                </div>
+                <div class="filter-option" onclick="toggleFilter(this, 'ingredients')">
+                    <h4>Ingredients</h4>
+                    <p>Organic, fragrance-free</p>
+                </div>
+                <div class="filter-option" onclick="toggleFilter(this, 'user-type')">
+                    <h4>User Type</h4>
+                    <p>First-time mom, twins...</p>
+                </div>
+            </div>
+            
+            <div class="product-grid" id="filtered-products">
+                <!-- Sample product cards -->
+                <div class="product-card">
+                    <div class="product-image">📦</div>
+                    <div class="product-info">
+                        <h4>Morning Sickness Relief Bands</h4>
+                        <div class="product-review">
+                            😍 "91% of moms say this was a lifesaver in week 7"
+                        </div>
+                        <div class="product-tags">
+                            <span class="tag">❤️ Mom's Choice</span>
+                            <span class="tag">🌿 Drug-Free</span>
+                            <span class="tag">👩‍⚕️ Nurse Verified</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">🧴</div>
+                    <div class="product-info">
+                        <h4>Stretch Mark Prevention Oil</h4>
+                        <div class="product-review">
+                            😍 "My skin feels amazing and no stretch marks!" - Sarah M.
+                        </div>
+                        <div class="product-tags">
+                            <span class="tag">✨ Clean Certified</span>
+                            <span class="tag">🌱 Organic</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">🛏️</div>
+                    <div class="product-info">
+                        <h4>Full Body Pregnancy Pillow</h4>
+                        <div class="product-review">
+                            😍 "Finally sleeping through the night at 32 weeks!"
+                        </div>
+                        <div class="product-tags">
+                            <span class="tag">💤 Sleep Essential</span>
+                            <span class="tag">🏆 Award Winner</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Curated Collections -->
+    <section class="collections">
+        <div class="decision-container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">🛍️ Featured Curated Collections</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: var(--text-secondary);">Hand-picked by real moms who've been there.</p>
+            
+            <div class="collections-grid">
+                <div class="collection-card">
+                    <h3>🤢 Nausea Survival Kit</h3>
+                    <p>Everything to get through those tough first weeks</p>
+                </div>
+                <div class="collection-card">
+                    <h3>😴 Sleep Like a Queen Bundle</h3>
+                    <p>Because rest is precious when you're growing a human</p>
+                </div>
+                <div class="collection-card">
+                    <h3>🧴 Stretch Mark Defense Squad</h3>
+                    <p>Keep your skin happy and healthy</p>
+                </div>
+                <div class="collection-card">
+                    <h3>👖 The Comfiest Maternity Leggings of 2025</h3>
+                    <p>Tested by hundreds of moms</p>
+                </div>
+                <div class="collection-card">
+                    <h3>🏥 3rd Trimester Hospital Bag Musts</h3>
+                    <p>Be ready for the big day</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Review Zone -->
+    <section class="video-zone" id="reviews">
+        <div class="decision-container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">📱 Video Review Zone</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: var(--text-secondary);">See it. Hear it. Believe it.</p>
+            
+            <div style="text-align: center; margin: 2rem 0;">
+                <button class="cta-button" onclick="filterVideos('1st')">1st Trimester</button>
+                <button class="cta-button" onclick="filterVideos('2nd')">2nd Trimester</button>
+                <button class="cta-button" onclick="filterVideos('3rd')">3rd Trimester</button>
+            </div>
+            
+            <div class="video-grid">
+                <div class="video-tile">
+                    <div class="video-placeholder">▶️</div>
+                    <div class="video-info">
+                        <h4>My Morning Sickness Must-Haves</h4>
+                        <p>@momof3jessica • 1.2M views</p>
+                    </div>
+                </div>
+                <div class="video-tile">
+                    <div class="video-placeholder">▶️</div>
+                    <div class="video-info">
+                        <h4>Belly Butter Comparison</h4>
+                        <p>@healthymama • 850K views</p>
+                    </div>
+                </div>
+                <div class="video-tile">
+                    <div class="video-placeholder">▶️</div>
+                    <div class="video-info">
+                        <h4>Hospital Bag Tour</h4>
+                        <p>@firsttimemom • 2.1M views</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="cta-button">📤 Share Your Honest Review</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Avi Insight -->
+    <section style="padding: 4rem 0; background: var(--white);">
+        <div class="decision-container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">🧠 Avi-Insight: Why This Works</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: var(--text-secondary);">The science, the mom wisdom, the reason.</p>
+            
+            <div class="collections-grid" style="margin-top: 2rem;">
+                <div style="background: var(--butter-yellow); padding: 2rem; border-radius: 15px;">
+                    <h4>Why Magnesium Helps</h4>
+                    <p>Learn how magnesium lotion can ease those restless legs and help you sleep better.</p>
+                </div>
+                <div style="background: var(--mint); padding: 2rem; border-radius: 15px;">
+                    <h4>The Truth About Stretch Marks</h4>
+                    <p>What actually works (and what doesn't) based on dermatologist research.</p>
+                </div>
+                <div style="background: var(--lavender); padding: 2rem; border-radius: 15px;">
+                    <h4>Nausea Relief Science</h4>
+                    <p>Understanding why ginger and B6 are your first trimester best friends.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section class="community">
+        <div class="decision-container">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">❤️ Join the Avi Circle</h2>
+            
+            <div class="testimonial-grid">
+                <div class="testimonial">
+                    <p>"OhHeyAvi helped me find exactly what I needed for each stage. No more endless googling!"</p>
+                    <strong>- Sarah, mom of 2</strong>
+                </div>
+                <div class="testimonial">
+                    <p>"The video reviews from real moms made all the difference. I knew exactly what to expect."</p>
+                    <strong>- Jessica, first-time mom</strong>
+                </div>
+                <div class="testimonial">
+                    <p>"Finally, honest reviews without the fluff. This site saved me so much money and stress!"</p>
+                    <strong>- Maria, expecting twins</strong>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <h3>Follow @OhHeyAvi on Instagram & TikTok</h3>
+                <div class="email-capture">
+                    <input type="email" class="email-input" placeholder="Enter your email">
+                    <button class="cta-button">Join Weekly Avi Tips</button>
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">No spam, just golden advice. 💛</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div>
+                <h4>About</h4>
+                <p><a href="#">About Avi</a></p>
+                <p><a href="#">Our Mission</a></p>
+                <p><a href="#">Press</a></p>
+            </div>
+            <div>
+                <h4>Support</h4>
+                <p><a href="#">Contact</a></p>
+                <p><a href="#">FAQ</a></p>
+                <p><a href="#">Submit a Product</a></p>
+            </div>
+            <div>
+                <h4>Legal</h4>
+                <p><a href="#">Terms of Service</a></p>
+                <p><a href="#">Privacy Policy</a></p>
+                <p><a href="#">Disclaimer</a></p>
+            </div>
+            <div>
+                <h4>Connect</h4>
+                <p><a href="#">Instagram</a></p>
+                <p><a href="#">TikTok</a></p>
+                <p><a href="#">Newsletter</a></p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.2);">
+            <p>&copy; 2025 OhHeyAvi. Made with 💕 for expecting moms.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Carousel functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        
+        setInterval(() => {
+            showSlide(currentSlide + 1);
+        }, 3000);
+        
+        // Smooth scroll function
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Filter functionality
+        function toggleFilter(element, filterType) {
+            element.classList.toggle('active');
+            // Here you would implement actual filtering logic
+            console.log('Filtering by:', filterType);
+        }
+        
+        function filterByTrimester(trimester) {
+            console.log('Filtering products for trimester:', trimester);
+            // Implement filtering logic
+            scrollToSection('recommendations');
+        }
+        
+        function filterVideos(trimester) {
+            console.log('Filtering videos for:', trimester);
+            // Implement video filtering
+        }
+        
+        // Quiz functionality
+        function startQuiz() {
+            alert('Quiz feature coming soon! This will help personalize your product recommendations.');
+        }
+        
+        // Search functionality
+        document.querySelector('.search-bar').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                console.log('Searching for:', this.value);
+                // Implement search logic
+            }
+        });
+        
+        // Add hover effects to product cards
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                alert('Product details page coming soon!');
+            });
+        });
+        
+        // Email capture
+        document.querySelector('.email-capture button').addEventListener('click', function() {
+            const email = document.querySelector('.email-input').value;
+            if (email && email.includes('@')) {
+                alert('Thanks for joining! You\'ll receive your first Avi Tips soon.');
+                document.querySelector('.email-input').value = '';
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        });
+    </script>
+</body>
+</html>
