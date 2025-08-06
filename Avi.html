@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babymoon in San Diego - August 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #faf8ff 0%, #f0ebff 50%, #e8dfff 100%);
+            color: #2d2d2d;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,245,255,0.95) 100%);
+            backdrop-filter: blur(10px);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #b19cd9 0%, #9b7cbf 50%, #8b6bb1 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: clamp(2em, 5vw, 2.8em);
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: clamp(1em, 3vw, 1.2em);
+            opacity: 0.9;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .babymoon-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+            to { box-shadow: 0 0 25px rgba(255,255,255,0.5); }
+        }
+
+        .itinerary {
+            padding: 20px;
+        }
+
+        .countdown {
+            background: linear-gradient(135deg, #fff 0%, #f8f5ff 100%);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(139, 107, 177, 0.15);
+            border: 1px solid #e8dfff;
+        }
+
+        .countdown h3 {
+            color: #8b6bb1;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            padding: 0 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 121, 191, 0.1);
+            font-size: 0.85em;
+            border: 1px solid rgba(184, 169, 217, 0.2);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .color-booked { background: #4caf50; }
+        .color-suggestion { background: #ff9800; }
+        .color-need-booking { background: #e91e63; }
+
+        .day {
+            margin-bottom: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(139, 107, 177, 0.12);
+            border: 1px solid rgba(184, 169, 217, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .day:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 15px 45px rgba(139, 107, 177, 0.2);
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #c8b5e8 0%, #b8a2db 50%, #a691d4 100%);
+            color: white;
+            padding: 18px 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .day-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #fff 0%, transparent 50%, #fff 100%);
+            opacity: 0.3;
+        }
+
+        .day-content {
+            padding: 20px;
+        }
+
+        .hotel-info {
+            background: linear-gradient(135deg, #f8f5ff 0%, #f0ebff 100%);
+            border-left: 4px solid #b19cd9;
+            padding: 16px;
+            margin-bottom: 18px;
+            border-radius: 12px;
+            border: 1px solid #e8dfff;
+            position: relative;
+        }
+
+        .hotel-info::before {
+            content: "🏨";
+            font-size: 1.2em;
+            position: absolute;
+            top: 16px;
+            left: 16px;
+        }
+
+        .hotel-info h4 {
+            color: #8b6bb1;
+            margin-bottom: 6px;
+            margin-left: 30px;
+            font-weight: 600;
+        }
+
+        .hotel-info p {
+            margin-left: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .activity {
+            margin-bottom: 12px;
+            padding: 16px;
+            border-radius: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .activity:hover::before {
+            left: 100%;
+        }
+
+        .activity:hover {
+            transform: translateX(8px) scale(1.02);
+        }
+
+        .booked {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4f8d4 100%);
+            border-left: 4px solid #4caf50;
+            border: 1px solid #c8e6c8;
+        }
+
+        .suggestion {
+            background: linear-gradient(135deg, #fff8e8 0%, #fff4d4 100%);
+            border-left: 4px solid #ff9800;
+            border: 1px solid #ffe4b8;
+        }
+
+        .need-booking {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+            border-left: 4px solid #e91e63;
+            border: 1px solid #f48fb1;
+        }
+
+        .activity-time {
+            font-weight: 700;
+            color: #8b6bb1;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .activity-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #2d2d2d;
+        }
+
+        .activity-location {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-booked {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-suggestion {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-need-booking {
+            background: #e91e63;
+            color: white;
+        }
+
+        .empty-day {
+            text-align: center;
+            color: #b19cd9;
+            font-style: italic;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f5ff 0%, #f0ebff 100%);
+            border-radius: 15px;
+            margin: 10px 0;
+        }
+
+        .baby-icons {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.2em;
+            opacity: 0.7;
+        }
+
+        .quick-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #b19cd9 0%, #9b7cbf 100%);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            box-shadow: 0 8px 25px rgba(139, 107, 177, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(139, 107, 177, 0.4);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .itinerary {
+                padding: 15px;
+            }
+            
+            .day {
+                margin-bottom: 20px;
+            }
+            
+            .day-content {
+                padding: 15px;
+            }
+            
+            .legend {
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .legend-item {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+            
+            .activity {
+                padding: 14px;
+                margin-bottom: 10px;
+            }
+            
+            .hotel-info {
+                padding: 14px;
+                margin-bottom: 15px;
+            }
+            
+            .quick-actions {
+                bottom: 15px;
+                right: 15px;
+            }
+            
+            .fab {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 10px;
+            }
+            
+            .itinerary {
+                padding: 10px;
+            }
+            
+            .day-header {
+                padding: 15px;
+                font-size: 1.1em;
+            }
+            
+            .day-content {
+                padding: 12px;
+            }
+            
+            .activity {
+                padding: 12px;
+            }
+            
+            .hotel-info {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>✨ San Diego Babymoon ✨</h1>
+                <p class="subtitle">Celebrating Your Growing Family</p>
+                <div class="babymoon-badge">👶 August 7-13, 2025 🤱</div>
+            </div>
+            <div class="baby-icons">💕</div>
+        </div>
+
+        <div class="itinerary">
+            <div class="countdown">
+                <h3>🌟 Making Beautiful Memories Before Baby Arrives 🌟</h3>
+                <p>Cherish these precious moments together as a couple</p>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color color-booked"></div>
+                    <span>Confirmed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color color-suggestion"></div>
+                    <span>Consider</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color color-need-booking"></div>
+                    <span>To Book</span>
+                </div>
+            </div>
+
+            <!-- Thursday, August 7th -->
+            <div class="day">
+                <div class="day-header">
+                    Thursday, August 7th - Arrival Day
+                    <div class="baby-icons">🏖️</div>
+                </div>
+                <div class="day-content">
+                    <div class="hotel-info">
+                        <h4>Check-in: Hotel Indigo Del Mar</h4>
+                        <p>Your romantic coastal retreat begins • Through Saturday, August 9th</p>
+                    </div>
+                    
+                    <div class="activity suggestion">
+                        <div class="activity-title">Del Mar Race Track Experience</div>
+                        <div class="activity-location">2260 Jimmy Durante Blvd, Del Mar</div>
+                        <span class="status-badge status-suggestion">Consider</span>
+                    </div>
+
+                    <div class="activity suggestion">
+                        <div class="activity-title">Romantic Lunch at Jake's Del Mar</div>
+                        <div class="activity-location">Ocean view dining • 1660 Coast Blvd, Del Mar</div>
+                        <span class="status-badge status-suggestion">Consider</span>
+                    </div>
+
+                    <div class="activity suggestion">
+                        <div class="activity-title">Sunset Dinner at Pacifica Del Mar</div>
+                        <div class="activity-location">Perfect for couples • 1555 Camino Del Mar, Del Mar</div>
+                        <span class="status-badge status-suggestion">Consider</span>
+                    </div>
+
+                    <div class="activity booked">
+                        <div class="activity-title">Prenatal Sound Bowl Healing</div>
+                        <div class="activity-location">Four Moons, Encinitas • Perfect for expecting couples</div>
+                        <span class="status-badge status-booked">Confirmed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Friday, August 8th -->
+            <div class="day">
+                <div class="day-header">
+                    Friday, August 8th - Adventure & Romance
+                    <div class="baby-icons">💃</div>
+                </div>
+                <div class="day-content">
+                    <div class="activity booked">
+                        <div class="activity-time">9:30 AM</div>
+                        <div class="activity-title">IMAX Movie Experience</div>
+                        <div class="activity-location">Irvine Spectrum • Comfortable seating for expecting mamas</div>
+                        <span class="status-badge status-booked">Confirmed</span>
+                    </div>
+
+                    <div class="activity booked">
+                        <div class="activity-time">6:00 PM - 8:00 PM</div>
+                        <div class="activity-title">Salsa Under the Stars</div>
+                        <div class="activity-location">w/ Manny Cepeda Orchestra Quartet • Romantic evening dance</div>
+                        <span class="status-badge status-booked">Confirmed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saturday, August 9th -->
+            <div class="day">
+                <div class="day-header">
+                    Saturday, August 9th - Exploration Day
+                    <div class="baby-icons">🌺</div>
+                </div>
+                <div class="day-content">
+                    <div class="hotel-info">
+                        <h4>Hotel Change Day</h4>
+                        <p>Check-out: Hotel Indigo Del Mar → Check-in: Residence Inn by Marriott</p>
+                    </div>
+
+                    <div class="activity suggestion">
+                        <div class="activity-title">Little Italy Farmers Market</div>
+                        <div class="activity-location">Fresh local produce & gentle morning walk</div>
+                        <span class="status-badge status-suggestion">Consider</span>
+                    </div>
+
+                    <div class="activity suggestion">
+                        <div class="activity-title">Peaceful Balboa Park Stroll</div>
+                        <div class="activity-location">Beautiful gardens perfect for expectant parents</div>
+                        <span class="status-badge status-suggestion">Consider</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sunday, August 10th -->
+            <div class="day">
+                <div class="day-header">
+                    Sunday, August 10th - Pamper & Celebrate
+                    <div class="baby-icons">💆‍♀️</div>
+                </div>
+                <div class="day-content">
+                    <div class="activity booked">
+                        <div class="activity-time">9:00 AM</div>
+                        <div class="activity-title">Prenatal "Rebirth" Massage</div>
+                        <div class="activity-location">Specially designed for expecting mothers</div>
+                        <span class="status-badge status-booked">Confirmed</span>
+                    </div>
+
+                    <div class="activity need-booking">
+                        <div class="activity-time">4:30 PM - 9:00 PM</div>
+                        <div class="activity-title">Rooftop Salsa & Bachata Party</div>
+                        <div class="activity-location">Andaz San Diego (600 F St) • City views & gentle dancing</div>
+                        <span class="status-badge status-need-booking">To Book</span>
+                    </div>
+
+                    <div class="activity booked">
+                        <div class="activity-time">9:00 PM</div>
+                        <div class="activity-title">Fine Dining at Born & Raised</div>
+                        <div class="activity-location">Celebrate your last nights out as a couple • 1909 India St</div>
+                        <span class="status-badge status-booked">Confirmed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monday, August 11th -->
+            <div class="day">
+                <div class="day-header">
+                    Monday, August 11th - Luxury Retreat
+                    <div class="baby-icons">🌊</div>
+                </div>
+                <div class="day-content">
+                    <div class="hotel-info">
+                        <h4>Ultimate Luxury: Park Hyatt Aviara, Carlsbad</h4>
+                        <p>Your final nights in paradise • Through Wednesday, August 13th</p>
+                    </div>
+                    
+                    <div class="empty-day">
+                        <p>🧘‍♀️ Relax at your luxury resort • Spa time • Pool lounging • Preparing for baby's arrival 👶</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tuesday, August 12th -->
+            <div class="day">
+                <div class="day-header">
+                    Tuesday, August 12th - Pure Relaxation
+                    <div class="baby-icons">☀️</div>
+                </div>
+                <div class="day-content">
+                    <div class="empty-day">
+                        <p>💕 Your day to unwind • Couples spa treatments • Beach walks • Quality time together 🌅</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wednesday, August 13th -->
+            <div class="day">
+                <div class="day-header">
+                    Wednesday, August 13th - Farewell San Diego
+                    <div class="baby-icons">✈️</div>
+                </div>
+                <div class="day-content">
+                    <div class="hotel-info">
+                        <h4>Check-out: Park Hyatt Aviara</h4>
+                        <p>End of your beautiful babymoon journey</p>
+                    </div>
+
+                    <div class="activity need-booking">
+                        <div class="activity-title">Final Pampering Session</div>
+                        <div class="activity-location">Massage at Berke Williams • Perfect send-off treatment</div>
+                        <span class="status-badge status-need-booking">To Book</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="fab" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
+                ↑
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive touches
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scrolling for mobile
+            document.documentElement.style.scrollBehavior = 'smooth';
+            
+            // Add gentle shake animation to "need booking" items
+            const needBooking = document.querySelectorAll('.need-booking');
+            needBooking.forEach(item => {
+                item.addEventListener('click', () => {
+                    item.style.animation = 'none';
+                    setTimeout(() => {
+                        item.style.animation = 'shake 0.5s ease-in-out';
+                    }, 10);
+                });
+            });
+        });
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
