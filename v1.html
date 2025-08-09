@@ -1,751 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Manager Comparison Visuals</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
-
-        .visual-section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #1e3c72;
-        }
-
-        .section-description {
-            color: #666;
-            margin-bottom: 25px;
-            font-size: 14px;
-        }
-
-        /* Visual 1: Enhanced Matrix Table */
-        .matrix-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .matrix-table th {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .matrix-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-
-        .matrix-table tr:hover td {
-            background-color: #f8f9fa;
-        }
-
-        .manager-cell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .manager-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4a90e2 0%, #63b8ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .manager-details {
-            flex: 1;
-        }
-
-        .manager-name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .manager-region {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .service-mix-cell {
-            width: 200px;
-        }
-
-        .service-mix-bar {
-            height: 25px;
-            display: flex;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 5px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .mix-segment {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .mix-segment:hover {
-            filter: brightness(1.1);
-            z-index: 5;
-        }
-
-        .service-mix-labels {
-            display: flex;
-            gap: 10px;
-            font-size: 10px;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        .metric-cell {
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .metric-value {
-            font-size: 18px;
-            color: #2a5298;
-        }
-
-        .metric-label {
-            font-size: 11px;
-            color: #999;
-            font-weight: normal;
-        }
-
-        .status-cell {
-            text-align: center;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-excellent {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-good {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .status-average {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-poor {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Visual 2: Card Grid with Heatmap */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .manager-card {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .manager-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-        }
-
-        .card-header {
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-        }
-
-        .header-excellent::before {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-
-        .header-good::before {
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-        }
-
-        .header-average::before {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-
-        .header-poor::before {
-            background: linear-gradient(90deg, #dc2626, #ef4444);
-        }
-
-        .card-metrics {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            padding: 0 20px 20px;
-            text-align: center;
-        }
-
-        .card-metric {
-            position: relative;
-        }
-
-        .card-metric::after {
-            content: '';
-            position: absolute;
-            right: -7px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 1px;
-            height: 30px;
-            background: #e5e7eb;
-        }
-
-        .card-metric:last-child::after {
-            display: none;
-        }
-
-        .card-service-mix {
-            padding: 0 20px 20px;
-        }
-
-        /* Visual 3: Bubble Chart Layout */
-        .bubble-container {
-            position: relative;
-            height: 500px;
-            background: #fafafa;
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .manager-bubble {
-            position: absolute;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .manager-bubble:hover {
-            transform: scale(1.1);
-            z-index: 100;
-        }
-
-        .bubble-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .bubble-value {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        /* Visual 4: Radial Comparison */
-        .radial-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 30px;
-            padding: 20px;
-        }
-
-        .radial-card {
-            text-align: center;
-            position: relative;
-        }
-
-        .radial-chart {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 15px;
-            position: relative;
-        }
-
-        .radial-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .radial-score {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2a5298;
-        }
-
-        .radial-label {
-            font-size: 10px;
-            color: #666;
-        }
-
-        .radial-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .radial-metrics {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        /* Tooltips */
-        .tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 1000;
-        }
-
-        .tooltip.active {
-            opacity: 1;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bachata Basic — 3D Human (Slow Tempo)</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #0b0e13; color: #e9edf1; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    #ui { position: absolute; inset: 0 auto auto 0; padding: 12px 14px; z-index: 10; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    #ui .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    label { font-size: 12px; opacity: 0.9; margin-right: 6px; }
+    input[type="range"] { width: 180px; }
+    button, select { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e9edf1; padding: 6px 10px; border-radius: 10px; cursor: pointer; }
+    button:hover { background: rgba(255,255,255,0.12); }
+    #hint { position: absolute; right: 12px; top: 12px; font-size: 12px; opacity: 0.8; }
+    #footer { position: absolute; left: 12px; bottom: 10px; font-size: 12px; opacity: 0.7; }
+    a { color: #a7d0ff; }
+    #drop { position: absolute; inset: 0; border: 2px dashed rgba(255,255,255,0.18); border-radius: 16px; display: none; place-items: center; color: #cfe5ff; font-size: 14px; pointer-events: none; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
-    <!-- Visual 1: Enhanced Matrix Table -->
-    <div class="visual-section">
-        <h2 class="section-title">Visual Option 1: Enhanced Matrix Table</h2>
-        <p class="section-description">A sophisticated matrix view combining avatars, service mix bars, and key metrics. Perfect for Power BI's Matrix visual with custom formatting.</p>
-        
-        <table class="matrix-table">
-            <thead>
-                <tr>
-                    <th>Account Manager</th>
-                    <th>Service Mix</th>
-                    <th>Revenue</th>
-                    <th>Accounts</th>
-                    <th>Cross-Sell %</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <div class="manager-cell">
-                            <div class="manager-avatar">ET</div>
-                            <div class="manager-details">
-                                <div class="manager-name">Elberta Thompson</div>
-                                <div class="manager-region">Southeast Region</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="service-mix-cell">
-                        <div class="service-mix-bar">
-                            <div class="mix-segment" style="background: #4285f4; width: 32%;">32%</div>
-                            <div class="mix-segment" style="background: #34a853; width: 24%;">24%</div>
-                            <div class="mix-segment" style="background: #ea4335; width: 29%;">29%</div>
-                            <div class="mix-segment" style="background: #fbbc04; width: 16%;">16%</div>
-                        </div>
-                        <div class="service-mix-labels">
-                            <span>Audit • Tax • Specialty • Business</span>
-                        </div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">$1.25M</div>
-                        <div class="metric-label">total</div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">3</div>
-                        <div class="metric-label">active</div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">95%</div>
-                        <div class="metric-label">rate</div>
-                    </td>
-                    <td class="status-cell">
-                        <span class="status-indicator status-excellent">Excellent</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="manager-cell">
-                            <div class="manager-avatar" style="background: linear-gradient(135deg, #34a853 0%, #4ade80 100%);">MR</div>
-                            <div class="manager-details">
-                                <div class="manager-name">Michael Roberts</div>
-                                <div class="manager-region">Northeast Region</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="service-mix-cell">
-                        <div class="service-mix-bar">
-                            <div class="mix-segment" style="background: #4285f4; width: 45%;">45%</div>
-                            <div class="mix-segment" style="background: #34a853; width: 35%;">35%</div>
-                            <div class="mix-segment" style="background: #fbbc04; width: 20%;">20%</div>
-                        </div>
-                        <div class="service-mix-labels">
-                            <span>Audit • Tax • Business</span>
-                        </div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">$980K</div>
-                        <div class="metric-label">total</div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">5</div>
-                        <div class="metric-label">active</div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">78%</div>
-                        <div class="metric-label">rate</div>
-                    </td>
-                    <td class="status-cell">
-                        <span class="status-indicator status-good">Good</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="manager-cell">
-                            <div class="manager-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">PC</div>
-                            <div class="manager-details">
-                                <div class="manager-name">Patricia Chen</div>
-                                <div class="manager-region">West Region</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="service-mix-cell">
-                        <div class="service-mix-bar">
-                            <div class="mix-segment" style="background: #34a853; width: 60%;">60%</div>
-                            <div class="mix-segment" style="background: #ea4335; width: 40%;">40%</div>
-                        </div>
-                        <div class="service-mix-labels">
-                            <span>Tax • Specialty Tax</span>
-                        </div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">$760K</div>
-                        <div class="metric-label">total</div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">4</div>
-                        <div class="metric-label">active</div>
-                    </td>
-                    <td class="metric-cell">
-                        <div class="metric-value">65%</div>
-                        <div class="metric-label">rate</div>
-                    </td>
-                    <td class="status-cell">
-                        <span class="status-indicator status-average">Average</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+  <div id="ui">
+    <div class="card">
+      <button id="playBtn" title="Play / Pause">▶︎ Play</button>
+      <label for="bpm">Tempo</label>
+      <input id="bpm" type="range" min="40" max="120" step="1" value="68" />
+      <span id="bpmVal">68 BPM</span>
     </div>
-
-    <!-- Visual 2: Card Grid with Heatmap Indicators -->
-    <div class="visual-section">
-        <h2 class="section-title">Visual Option 2: Performance Card Grid</h2>
-        <p class="section-description">Compact cards with color-coded performance indicators. Great for showing many managers at once with drill-down capability.</p>
-        
-        <div class="card-grid">
-            <div class="manager-card">
-                <div class="card-header header-excellent">
-                    <div class="manager-name">Elberta Thompson</div>
-                    <div class="manager-region">Southeast Region</div>
-                </div>
-                <div class="card-metrics">
-                    <div class="card-metric">
-                        <div class="metric-value">95%</div>
-                        <div class="metric-label">Cross-Sell</div>
-                    </div>
-                    <div class="card-metric">
-                        <div class="metric-value">$1.25M</div>
-                        <div class="metric-label">Revenue</div>
-                    </div>
-                    <div class="card-metric">
-                        <div class="metric-value">3</div>
-                        <div class="metric-label">Accounts</div>
-                    </div>
-                </div>
-                <div class="card-service-mix">
-                    <div class="service-mix-bar">
-                        <div class="mix-segment" style="background: #4285f4; width: 32%;"></div>
-                        <div class="mix-segment" style="background: #34a853; width: 24%;"></div>
-                        <div class="mix-segment" style="background: #ea4335; width: 29%;"></div>
-                        <div class="mix-segment" style="background: #fbbc04; width: 16%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="manager-card">
-                <div class="card-header header-good">
-                    <div class="manager-name">Michael Roberts</div>
-                    <div class="manager-region">Northeast Region</div>
-                </div>
-                <div class="card-metrics">
-                    <div class="card-metric">
-                        <div class="metric-value">78%</div>
-                        <div class="metric-label">Cross-Sell</div>
-                    </div>
-                    <div class="card-metric">
-                        <div class="metric-value">$980K</div>
-                        <div class="metric-label">Revenue</div>
-                    </div>
-                    <div class="card-metric">
-                        <div class="metric-value">5</div>
-                        <div class="metric-label">Accounts</div>
-                    </div>
-                </div>
-                <div class="card-service-mix">
-                    <div class="service-mix-bar">
-                        <div class="mix-segment" style="background: #4285f4; width: 45%;"></div>
-                        <div class="mix-segment" style="background: #34a853; width: 35%;"></div>
-                        <div class="mix-segment" style="background: #fbbc04; width: 20%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="manager-card">
-                <div class="card-header header-average">
-                    <div class="manager-name">Patricia Chen</div>
-                    <div class="manager-region">West Region</div>
-                </div>
-                <div class="card-metrics">
-                    <div class="card-metric">
-                        <div class="metric-value">65%</div>
-                        <div class="metric-label">Cross-Sell</div>
-                    </div>
-                    <div class="card-metric">
-                        <div class="metric-value">$760K</div>
-                        <div class="metric-label">Revenue</div>
-                    </div>
-                    <div class="card-metric">
-                        <div class="metric-value">4</div>
-                        <div class="metric-label">Accounts</div>
-                    </div>
-                </div>
-                <div class="card-service-mix">
-                    <div class="service-mix-bar">
-                        <div class="mix-segment" style="background: #34a853; width: 60%;"></div>
-                        <div class="mix-segment" style="background: #ea4335; width: 40%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="card">
+      <label for="role">Role</label>
+      <select id="role">
+        <option value="leader" selected>Leader (1 = step left)</option>
+        <option value="follower">Follower (1 = step right)</option>
+      </select>
+      <label for="cam">Camera</label>
+      <select id="cam">
+        <option value="front" selected>Front</option>
+        <option value="iso">Isometric</option>
+        <option value="top">Top</option>
+      </select>
+      <button id="resetView">Reset View</button>
     </div>
-
-    <!-- Visual 3: Bubble Chart Positioning -->
-    <div class="visual-section">
-        <h2 class="section-title">Visual Option 3: Performance Bubble Map</h2>
-        <p class="section-description">Interactive bubble chart where size = revenue, position = cross-sell %, and color = performance tier. Great for spotting outliers.</p>
-        
-        <div class="bubble-container">
-            <div class="manager-bubble" style="width: 120px; height: 120px; background: linear-gradient(135deg, #10b981, #34d399); left: 70%; top: 10%;">
-                <div class="bubble-name">Elberta</div>
-                <div class="bubble-value">95%</div>
-            </div>
-            <div class="manager-bubble" style="width: 100px; height: 100px; background: linear-gradient(135deg, #3b82f6, #60a5fa); left: 50%; top: 30%;">
-                <div class="bubble-name">Michael</div>
-                <div class="bubble-value">78%</div>
-            </div>
-            <div class="manager-bubble" style="width: 90px; height: 90px; background: linear-gradient(135deg, #f59e0b, #fbbf24); left: 30%; top: 45%;">
-                <div class="bubble-name">Patricia</div>
-                <div class="bubble-value">65%</div>
-            </div>
-            <div class="manager-bubble" style="width: 110px; height: 110px; background: linear-gradient(135deg, #10b981, #34d399); left: 65%; top: 50%;">
-                <div class="bubble-name">Robert</div>
-                <div class="bubble-value">92%</div>
-            </div>
-            <div class="manager-bubble" style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #ef4444); left: 15%; top: 70%;">
-                <div class="bubble-name">James</div>
-                <div class="bubble-value">45%</div>
-            </div>
-        </div>
+    <div class="card">
+      <button id="toggleFeet">Show foot trails</button>
+      <button id="toggleGrid">Toggle grid</button>
     </div>
+  </div>
+  <div id="hint">Tip: You can also drag & drop a local <b>.glb</b>/<b>.gltf</b> character (rigged) onto this page.
+  </div>
+  <div id="drop">Drop GLB/GLTF here…</div>
+  <div id="footer">Model defaults to Khronos <i>CesiumMan</i>. Animation is procedural (no mocap) to demo the bachata basic.
+  </div>
 
-    <!-- Visual 4: Radial Progress Comparison -->
-    <div class="visual-section">
-        <h2 class="section-title">Visual Option 4: Radial Progress Grid</h2>
-        <p class="section-description">Circular progress indicators showing cross-sell percentage with service mix shown as segments. Compact and visually striking.</p>
-        
-        <div class="radial-grid">
-            <div class="radial-card">
-                <div class="radial-chart">
-                    <canvas id="radial1" width="150" height="150"></canvas>
-                    <div class="radial-center">
-                        <div class="radial-score">95%</div>
-                        <div class="radial-label">Cross-Sell</div>
-                    </div>
-                </div>
-                <div class="radial-name">Elberta Thompson</div>
-                <div class="radial-metrics">
-                    <span>$1.25M</span>
-                    <span>•</span>
-                    <span>3 Accounts</span>
-                </div>
-            </div>
-            
-            <div class="radial-card">
-                <div class="radial-chart">
-                    <canvas id="radial2" width="150" height="150"></canvas>
-                    <div class="radial-center">
-                        <div class="radial-score">78%</div>
-                        <div class="radial-label">Cross-Sell</div>
-                    </div>
-                </div>
-                <div class="radial-name">Michael Roberts</div>
-                <div class="radial-metrics">
-                    <span>$980K</span>
-                    <span>•</span>
-                    <span>5 Accounts</span>
-                </div>
-            </div>
-            
-            <div class="radial-card">
-                <div class="radial-chart">
-                    <canvas id="radial3" width="150" height="150"></canvas>
-                    <div class="radial-center">
-                        <div class="radial-score">65%</div>
-                        <div class="radial-label">Cross-Sell</div>
-                    </div>
-                </div>
-                <div class="radial-name">Patricia Chen</div>
-                <div class="radial-metrics">
-                    <span>$760K</span>
-                    <span>•</span>
-                    <span>4 Accounts</span>
-                </div>
-            </div>
-        </div>
-    </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.157/examples/jsm/controls/OrbitControls.js";
+    import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.157/examples/jsm/loaders/GLTFLoader.js";
 
-    <script>
-        // Initialize Radial Charts
-        function createRadialChart(canvasId, data, colors) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors,
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: false
-                        }
-                    }
-                }
-            });
-        }
+    // ---- Scene setup ----
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b0e13);
 
-        // Create radial charts
-        createRadialChart('radial1', [32, 24, 29, 16], ['#4285f4', '#34a853', '#ea4335', '#fbbc04']);
-        createRadialChart('radial2', [45, 35, 20], ['#4285f4', '#34a853', '#fbbc04']);
-        createRadialChart('radial3', [60, 40], ['#34a853', '#ea4335']);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-        // Add hover effects for service mix segments
-        document.querySelectorAll('.mix-segment').forEach(segment => {
-            segment.addEventListener('mouseenter', function(e) {
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip active';
-                tooltip.textContent = this.textContent + ' of revenue';
-                document.body.appendChild(tooltip);
-                
-                const rect = this.getBoundingClientRect();
-                tooltip.style.left = rect.left + rect.width/2 - tooltip.offsetWidth/2 + 'px';
-                tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
-            });
-            
-            segment.addEventListener('mouseleave', function() {
-                document.querySelectorAll('.tooltip').forEach(t => t.remove());
-            });
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(3.2, 2.0, 5.2);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x334466, 0.9);
+    scene.add(hemi);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(5, 7, 5);
+    dir.castShadow = true;
+    scene.add(dir);
+
+    // Floor
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 10),
+      new THREE.MeshStandardMaterial({ color: 0x0f141a, metalness: 0.0, roughness: 1.0 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Grid (toggleable)
+    const grid = new THREE.GridHelper(20, 40, 0x334455, 0x223344);
+    grid.position.y = 0.001;
+    scene.add(grid);
+
+    // Foot trails (small decals that show where the feet land)
+    const footTrailGroup = new THREE.Group();
+    scene.add(footTrailGroup);
+    let trailsVisible = false;
+
+    function addTrail(x, z, isLeft) {
+      const g = new THREE.CircleGeometry(isLeft ? 0.08 : 0.08, 24);
+      const m = new THREE.MeshBasicMaterial({ color: isLeft ? 0x77c3ff : 0xffa54b, transparent: true, opacity: 0.9 });
+      const mesh = new THREE.Mesh(g, m);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(x, 0.002, z);
+      footTrailGroup.add(mesh);
+      if (!trailsVisible) footTrailGroup.visible = false;
+    }
+
+    // ---- Load a rigged human model ----
+    const loader = new GLTFLoader();
+
+    // Default model (public glTF sample, human figure). If that URL ever fails, drag & drop will still work.
+    let modelUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF/CesiumMan.gltf";
+
+    let skinned, skeleton, bones = {}, baseBonePos = {};
+
+    function mapBone(nameList) {
+      for (const n of nameList) {
+        const b = skeleton ? skeleton.getBoneByName(n) : scene.getObjectByName(n, true);
+        if (b) return b;
+      }
+      return null;
+    }
+
+    function cacheBasePos(b) {
+      if (!b) return;
+      baseBonePos[b.name] = b.position.clone();
+    }
+
+    function findImportantBones() {
+      bones.hips = mapBone(["Hips", "hips", "mixamorigHips", "mixamorig:Hips"]);
+      bones.spine = mapBone(["Spine", "spine", "mixamorigSpine", "mixamorig:Spine"]);
+      bones.leftUpLeg  = mapBone(["LeftUpLeg", "mixamorigLeftUpLeg", "mixamorig:LeftUpLeg", "LeftUpLeg_t"]);
+      bones.leftLeg    = mapBone(["LeftLeg", "mixamorigLeftLeg", "mixamorig:LeftLeg"]);
+      bones.leftFoot   = mapBone(["LeftFoot", "mixamorigLeftFoot", "mixamorig:LeftFoot"]);
+      bones.rightUpLeg = mapBone(["RightUpLeg", "mixamorigRightUpLeg", "mixamorig:RightUpLeg", "RightUpLeg_t"]);
+      bones.rightLeg   = mapBone(["RightLeg", "mixamorigRightLeg", "mixamorig:RightLeg"]);
+      bones.rightFoot  = mapBone(["RightFoot", "mixamorigRightFoot", "mixamorig:RightFoot"]);
+
+      // Cache base positions (for additive procedural offsets)
+      for (const k in bones) cacheBasePos(bones[k]);
+    }
+
+    function loadModel(url) {
+      return new Promise((resolve, reject) => {
+        loader.load(url, (gltf) => {
+          if (skinned) scene.remove(skinned);
+          const root = gltf.scene;
+          root.traverse(o => { o.castShadow = true; });
+          scene.add(root);
+
+          // Grab first SkinnedMesh's skeleton
+          root.traverse(o => {
+            if (o.isSkinnedMesh && !skeleton) {
+              skinned = root;
+              skeleton = o.skeleton;
+            }
+          });
+          if (!skeleton) {
+            console.warn("No skeleton found. The animation will be limited.");
+          }
+          findImportantBones();
+          resolve();
+        }, undefined, (err) => {
+          reject(err);
         });
-    </script>
+      });
+    }
+
+    // Initial load
+    loadModel(modelUrl).catch(() => {
+      alert("Could not load default model. Drag & drop a rigged GLB/GLTF onto the page.");
+    });
+
+    // Drag & drop support
+    const drop = document.getElementById('drop');
+    window.addEventListener('dragover', (e) => { e.preventDefault(); drop.style.display = 'grid'; });
+    window.addEventListener('dragleave', () => { drop.style.display = 'none'; });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault(); drop.style.display = 'none';
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      loadModel(url);
+    });
+
+    // ---- Bachata basic: procedural animation ----
+    // We drive foot bones and hips with small local offsets to illustrate side–together–side–tap.
+    const TWO_PI = Math.PI * 2;
+    const state = {
+      playing: false,
+      role: 'leader', // or 'follower'
+      bpm: 68,        // beats per minute (1 count = 1 beat)
+      showGrid: true,
+    };
+
+    function countPhase(timeSec) {
+      // One count = 60/bpm seconds. An 8-count phrase duration:
+      const beatDur = 60.0 / state.bpm;
+      const total = 8 * beatDur;
+      const t = (timeSec % total) / total; // 0..1 across 8 counts
+      const countFloat = t * 8.0;          // 0..8
+      const countIndex = Math.floor(countFloat); // 0..7
+      const countT = countFloat - countIndex;    // 0..1 within count
+      return { t, countIndex, countT };
+    }
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    // Step parameters (meters in model space)
+    const STEP_SIDE = 0.24;      // lateral foot displacement on side steps
+    const CLOSE_GAP = 0.12;      // how close the trailing foot comes
+    const EXTRA_KICK = 0.04;     // small extra push on 3 & 7
+    const TAP_LIFT = 0.03;       // small vertical on taps
+    const HIP_SWAY = 0.06;       // hip side sway amplitude
+    const HIP_BUMP = 0.025;      // vertical bump on taps
+
+    // Keep a running time
+    let tStart = performance.now() / 1000;
+
+    // UI wiring
+    const playBtn = document.getElementById('playBtn');
+    const bpmSlider = document.getElementById('bpm');
+    const bpmVal = document.getElementById('bpmVal');
+    const roleSel = document.getElementById('role');
+    const camSel = document.getElementById('cam');
+    const resetBtn = document.getElementById('resetView');
+    const toggleFeetBtn = document.getElementById('toggleFeet');
+    const toggleGridBtn = document.getElementById('toggleGrid');
+
+    playBtn.addEventListener('click', () => {
+      state.playing = !state.playing;
+      playBtn.textContent = state.playing ? '❚❚ Pause' : '▶︎ Play';
+      if (state.playing) tStart = performance.now() / 1000 - 0.0001; // resume smoothly
+    });
+    bpmSlider.addEventListener('input', () => { state.bpm = +bpmSlider.value; bpmVal.textContent = `${state.bpm} BPM`; });
+    roleSel.addEventListener('change', () => { state.role = roleSel.value; });
+    camSel.addEventListener('change', () => setCamera(camSel.value));
+    resetBtn.addEventListener('click', () => { controls.reset(); setCamera(camSel.value); });
+    toggleFeetBtn.addEventListener('click', () => { trailsVisible = !trailsVisible; footTrailGroup.visible = trailsVisible; });
+    toggleGridBtn.addEventListener('click', () => { grid.visible = !grid.visible; });
+
+    function setCamera(mode) {
+      if (mode === 'front') {
+        camera.position.set(3.2, 2.0, 5.2);
+        camera.lookAt(0, 1.1, 0);
+      } else if (mode === 'iso') {
+        camera.position.set(4.3, 3.3, 4.3);
+        camera.lookAt(0, 1.1, 0);
+      } else {
+        camera.position.set(0.0, 8.0, 0.001);
+        camera.lookAt(0, 1.0, 0);
+      }
+      controls.update();
+    }
+
+    setCamera('front');
+
+    // Animate helper: get procedural offsets for each foot and hips at this phase
+    function getOffsets(countIndex, cT, role) {
+      // Leader: 1 step LEFT, 2 together (R), 3 left, 4 tap (R), 5 step RIGHT, 6 together (L), 7 right, 8 tap (L)
+      // Follower mirrors left/right.
+      const mirror = (role === 'follower') ? -1 : 1;
+
+      // Smoothstep easing
+      const ease = (x) => x * x * (3 - 2 * x);
+      const move = (amt) => ease(cT) * amt;
+
+      let L = { x: 0, y: 0 }, R = { x: 0, y: 0 }, H = { x: 0, y: 0 };
+
+      switch (countIndex) {
+        case 0: // 1 — lead side out
+          L.x = mirror * -move(STEP_SIDE);
+          H.x = mirror * -HIP_SWAY * cT; // sway into the step
+          break;
+        case 1: // 2 — together (trail in)
+          L.x = mirror * -STEP_SIDE;
+          R.x = mirror * -move(STEP_SIDE - CLOSE_GAP);
+          H.x = mirror * -HIP_SWAY;
+          break;
+        case 2: // 3 — lead side a touch more
+          L.x = mirror * -(STEP_SIDE + move(EXTRA_KICK));
+          R.x = mirror * -(STEP_SIDE - CLOSE_GAP);
+          H.x = mirror * -HIP_SWAY * (1 - 0.5 * cT);
+          break;
+        case 3: // 4 — tap (trail foot)
+          L.x = mirror * -(STEP_SIDE + EXTRA_KICK);
+          R.x = mirror * -(STEP_SIDE - CLOSE_GAP) + mirror * 0.06 * Math.sin(Math.PI * cT);
+          R.y = TAP_LIFT * Math.sin(Math.PI * cT);
+          H.x = mirror * -HIP_SWAY * (1 - cT);
+          H.y = HIP_BUMP * Math.sin(Math.PI * cT);
+          // Place a trail dot near tap end
+          if (cT > 0.98) addTrail(L.x, 0, true), addTrail(R.x, 0, false);
+          break;
+        case 4: // 5 — step to the RIGHT (lead foot switches)
+          R.x = mirror * move(STEP_SIDE);
+          H.x = mirror * HIP_SWAY * cT;
+          break;
+        case 5: // 6 — together
+          R.x = mirror * STEP_SIDE;
+          L.x = mirror * move(STEP_SIDE - CLOSE_GAP);
+          H.x = mirror * HIP_SWAY;
+          break;
+        case 6: // 7 — right a bit more
+          R.x = mirror * (STEP_SIDE + move(EXTRA_KICK));
+          L.x = mirror * (STEP_SIDE - CLOSE_GAP);
+          H.x = mirror * HIP_SWAY * (1 - 0.5 * cT);
+          break;
+        case 7: // 8 — tap (other foot)
+          R.x = mirror * (STEP_SIDE + EXTRA_KICK);
+          L.x = mirror * (STEP_SIDE - CLOSE_GAP) - mirror * 0.06 * Math.sin(Math.PI * cT);
+          L.y = TAP_LIFT * Math.sin(Math.PI * cT);
+          H.x = mirror * HIP_SWAY * (1 - cT);
+          H.y = HIP_BUMP * Math.sin(Math.PI * cT);
+          if (cT > 0.98) addTrail(L.x, 0, true), addTrail(R.x, 0, false);
+          break;
+      }
+      return { L, R, H };
+    }
+
+    // Render loop
+    function tick() {
+      requestAnimationFrame(tick);
+      const now = performance.now() / 1000;
+      controls.update();
+
+      if (skeleton && state.playing) {
+        const { countIndex, countT } = countPhase(now - tStart);
+        const { L, R, H } = getOffsets(countIndex, countT, state.role);
+
+        // Safeguard: some models may have different bone names
+        const lF = bones.leftFoot, rF = bones.rightFoot, hips = bones.hips;
+
+        if (lF && baseBonePos[lF.name]) {
+          lF.position.x = baseBonePos[lF.name].x + L.x;
+          lF.position.y = baseBonePos[lF.name].y + L.y;
+        }
+        if (rF && baseBonePos[rF.name]) {
+          rF.position.x = baseBonePos[rF.name].x + R.x;
+          rF.position.y = baseBonePos[rF.name].y + R.y;
+        }
+        if (hips && baseBonePos[hips.name]) {
+          hips.position.x = baseBonePos[hips.name].x + H.x;
+          hips.position.y = baseBonePos[hips.name].y + H.y;
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    tick();
+
+    // Responsiveness
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
-
