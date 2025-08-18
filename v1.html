@@ -1,363 +1,896 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bachata Basic — 3D Human (Slow Tempo)</title>
-  <style>
-    html, body { height: 100%; margin: 0; background: #0b0e13; color: #e9edf1; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-    #ui { position: absolute; inset: 0 auto auto 0; padding: 12px 14px; z-index: 10; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    #ui .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
-    label { font-size: 12px; opacity: 0.9; margin-right: 6px; }
-    input[type="range"] { width: 180px; }
-    button, select { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e9edf1; padding: 6px 10px; border-radius: 10px; cursor: pointer; }
-    button:hover { background: rgba(255,255,255,0.12); }
-    #hint { position: absolute; right: 12px; top: 12px; font-size: 12px; opacity: 0.8; }
-    #footer { position: absolute; left: 12px; bottom: 10px; font-size: 12px; opacity: 0.7; }
-    a { color: #a7d0ff; }
-    #drop { position: absolute; inset: 0; border: 2px dashed rgba(255,255,255,0.18); border-radius: 16px; display: none; place-items: center; color: #cfe5ff; font-size: 14px; pointer-events: none; }
-    canvas { display: block; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PracticePro365 Business Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .level-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .level-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-right: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .level-title h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .level-title p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '▸';
+            margin-right: 8px;
+            animation: bounce 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        .field-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .field-item {
+            display: inline-block;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            color: #555;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
+            cursor: default;
+        }
+
+        .field-item:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.05);
+            border-color: transparent;
+        }
+
+        .tracker-box {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tracker-box.expanded {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .tracker-box::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .tracker-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tracker-content {
+            color: #555;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .origination-types {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .origination-type {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.85em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .origination-type:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .flow-indicator {
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        .arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-top: 40px solid rgba(255,255,255,0.9);
+            margin: 0 auto;
+            animation: float 2s ease-in-out infinite;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        .flow-text {
+            color: white;
+            font-size: 1.2em;
+            margin-top: 15px;
+            font-weight: 500;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-left: 10px;
+            animation: badgePop 0.5s ease-out;
+        }
+
+        @keyframes badgePop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Live Demo Styles */
+        .live-demo-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .demo-header h2 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .demo-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding: 20px 0;
+            margin: 30px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            transform: translateX(-50%);
+        }
+
+        .timeline-event {
+            position: relative;
+            margin: 30px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .timeline-event.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin: 0 60px;
+            position: relative;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .timeline-date {
+            position: absolute;
+            top: 5px;
+            right: -100px;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+
+        .visualization-area {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-top: 40px;
+            min-height: 400px;
+        }
+
+        .account-visual {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .account-visual h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .account-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s ease;
+        }
+
+        .account-info.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .engagements-visual {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .engagements-visual h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .engagement-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.5s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .engagement-card.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .engagement-card.tax {
+            border-left-color: #4caf50;
+        }
+
+        .engagement-card.bsg {
+            border-left-color: #ff9800;
+        }
+
+        .engagement-card.retirement {
+            border-left-color: #e91e63;
+        }
+
+        .engagement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .engagement-type {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .engagement-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        .engagement-badge.expanded {
+            background: #4caf50;
+        }
+
+        .engagement-badge.new-work {
+            background: #ff9800;
+        }
+
+        .engagement-details {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .control-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 5px 20px rgba(102,126,234,0.3);
+        }
+
+        .control-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102,126,234,0.4);
+        }
+
+        .control-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .narrative-text {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 20px 60px;
+            text-align: center;
+            color: #2d3436;
+            font-weight: 500;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s ease;
+        }
+
+        .narrative-text.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        @keyframes highlightPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 30px rgba(102,126,234,0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 15px 40px rgba(102,126,234,0.5); }
+        }
+
+        .highlight-animation {
+            animation: highlightPulse 1s ease-in-out 2;
+        }
+    </style>
 </head>
 <body>
-  <div id="ui">
-    <div class="card">
-      <button id="playBtn" title="Play / Pause">▶︎ Play</button>
-      <label for="bpm">Tempo</label>
-      <input id="bpm" type="range" min="40" max="120" step="1" value="68" />
-      <span id="bpmVal">68 BPM</span>
+    <div class="container">
+        <div class="header">
+            <h1>PracticePro365</h1>
+            <p>Business Development & Service Tracking System</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Level 1: Account -->
+            <div class="level-card" id="accountCard">
+                <div class="level-header">
+                    <div class="level-number">1</div>
+                    <div class="level-title">
+                        <h2>Account Level</h2>
+                        <p>Client Foundation & New Business</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Client Information Storage</div>
+                    <div class="field-list">
+                        <span class="field-item">Client Name</span>
+                        <span class="field-item">Address</span>
+                        <span class="field-item">Industry</span>
+                        <span class="field-item">CSG</span>
+                        <span class="field-item">Phone</span>
+                        <span class="field-item">Contact Details</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="tracker-box">
+                        <div class="tracker-title">
+                            📊 New Business Tracker
+                            <span class="badge">NEW ACCOUNTS ONLY</span>
+                        </div>
+                        <div class="tracker-content">
+                            <p>Tracks origination source for brand new client accounts:</p>
+                            <div class="origination-types">
+                                <div class="origination-type">💼 Internal Employee (Commission Eligible)</div>
+                                <div class="origination-type">🤝 Referral</div>
+                                <div class="origination-type">🏢 House Account</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 2: Engagements -->
+            <div class="level-card" id="engagementCard">
+                <div class="level-header">
+                    <div class="level-number">2</div>
+                    <div class="level-title">
+                        <h2>Engagement Level</h2>
+                        <p>Service Delivery & Expansion</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Engagement Details</div>
+                    <div class="field-list">
+                        <span class="field-item">Partner in Charge</span>
+                        <span class="field-item">Service Type</span>
+                        <span class="field-item">WIP</span>
+                        <span class="field-item">AR</span>
+                        <span class="field-item">Engagement Status</span>
+                        <span class="field-item">Timeline</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="tracker-box expanded">
+                        <div class="tracker-title">
+                            📈 Engagement Tracker
+                            <span class="badge">EXPANDED SERVICES</span>
+                        </div>
+                        <div class="tracker-content">
+                            <p>Tracks all service expansions within existing accounts:</p>
+                            <div class="origination-types">
+                                <div class="origination-type">🔄 Recurring Work</div>
+                                <div class="origination-type">✨ New Services</div>
+                                <div class="origination-type">📊 Expanded Services</div>
+                                <div class="origination-type">👤 Employee-Pitched Work</div>
+                            </div>
+                            <p style="margin-top: 10px; font-size: 0.9em; font-style: italic;">
+                                Includes origination & closer fields (simplified version)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-indicator">
+            <div class="arrow-down"></div>
+            <p class="flow-text">Engagements Roll Up to Accounts</p>
+        </div>
+
+        <!-- Live Demo Section -->
+        <div class="live-demo-section">
+            <div class="demo-header">
+                <h2>🎬 Live Business Flow Demonstration</h2>
+                <p>Watch how new business and service expansions flow through the system</p>
+            </div>
+
+            <button class="control-button" id="startDemo" onclick="startLiveDemo()">
+                Start Live Demo
+            </button>
+
+            <div class="timeline-container" id="timeline" style="display: none;">
+                <div class="timeline-line"></div>
+                
+                <!-- Timeline events will be added dynamically -->
+            </div>
+
+            <div class="visualization-area" id="visualArea" style="display: none;">
+                <div class="account-visual" id="accountVisual">
+                    <h3>Account: TechCorp Industries</h3>
+                    <div id="accountDetails"></div>
+                </div>
+                
+                <div class="engagements-visual" id="engagementsVisual">
+                    <h3>Active Engagements</h3>
+                    <div id="engagementsList"></div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card">
-      <label for="role">Role</label>
-      <select id="role">
-        <option value="leader" selected>Leader (1 = step left)</option>
-        <option value="follower">Follower (1 = step right)</option>
-      </select>
-      <label for="cam">Camera</label>
-      <select id="cam">
-        <option value="front" selected>Front</option>
-        <option value="iso">Isometric</option>
-        <option value="top">Top</option>
-      </select>
-      <button id="resetView">Reset View</button>
-    </div>
-    <div class="card">
-      <button id="toggleFeet">Show foot trails</button>
-      <button id="toggleGrid">Toggle grid</button>
-    </div>
-  </div>
-  <div id="hint">Tip: You can also drag & drop a local <b>.glb</b>/<b>.gltf</b> character (rigged) onto this page.
-  </div>
-  <div id="drop">Drop GLB/GLTF here…</div>
-  <div id="footer">Model defaults to Khronos <i>CesiumMan</i>. Animation is procedural (no mocap) to demo the bachata basic.
-  </div>
 
-  <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js";
-    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.157/examples/jsm/controls/OrbitControls.js";
-    import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.157/examples/jsm/loaders/GLTFLoader.js";
+    <script>
+        let demoInProgress = false;
+        let timelineEvents = [];
 
-    // ---- Scene setup ----
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b0e13);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(3.2, 2.0, 5.2);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x334466, 0.9);
-    scene.add(hemi);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-    dir.position.set(5, 7, 5);
-    dir.castShadow = true;
-    scene.add(dir);
-
-    // Floor
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 10),
-      new THREE.MeshStandardMaterial({ color: 0x0f141a, metalness: 0.0, roughness: 1.0 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
-
-    // Grid (toggleable)
-    const grid = new THREE.GridHelper(20, 40, 0x334455, 0x223344);
-    grid.position.y = 0.001;
-    scene.add(grid);
-
-    // Foot trails (small decals that show where the feet land)
-    const footTrailGroup = new THREE.Group();
-    scene.add(footTrailGroup);
-    let trailsVisible = false;
-
-    function addTrail(x, z, isLeft) {
-      const g = new THREE.CircleGeometry(isLeft ? 0.08 : 0.08, 24);
-      const m = new THREE.MeshBasicMaterial({ color: isLeft ? 0x77c3ff : 0xffa54b, transparent: true, opacity: 0.9 });
-      const mesh = new THREE.Mesh(g, m);
-      mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(x, 0.002, z);
-      footTrailGroup.add(mesh);
-      if (!trailsVisible) footTrailGroup.visible = false;
-    }
-
-    // ---- Load a rigged human model ----
-    const loader = new GLTFLoader();
-
-    // Default model (public glTF sample, human figure). If that URL ever fails, drag & drop will still work.
-    let modelUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF/CesiumMan.gltf";
-
-    let skinned, skeleton, bones = {}, baseBonePos = {};
-
-    function mapBone(nameList) {
-      for (const n of nameList) {
-        const b = skeleton ? skeleton.getBoneByName(n) : scene.getObjectByName(n, true);
-        if (b) return b;
-      }
-      return null;
-    }
-
-    function cacheBasePos(b) {
-      if (!b) return;
-      baseBonePos[b.name] = b.position.clone();
-    }
-
-    function findImportantBones() {
-      bones.hips = mapBone(["Hips", "hips", "mixamorigHips", "mixamorig:Hips"]);
-      bones.spine = mapBone(["Spine", "spine", "mixamorigSpine", "mixamorig:Spine"]);
-      bones.leftUpLeg  = mapBone(["LeftUpLeg", "mixamorigLeftUpLeg", "mixamorig:LeftUpLeg", "LeftUpLeg_t"]);
-      bones.leftLeg    = mapBone(["LeftLeg", "mixamorigLeftLeg", "mixamorig:LeftLeg"]);
-      bones.leftFoot   = mapBone(["LeftFoot", "mixamorigLeftFoot", "mixamorig:LeftFoot"]);
-      bones.rightUpLeg = mapBone(["RightUpLeg", "mixamorigRightUpLeg", "mixamorig:RightUpLeg", "RightUpLeg_t"]);
-      bones.rightLeg   = mapBone(["RightLeg", "mixamorigRightLeg", "mixamorig:RightLeg"]);
-      bones.rightFoot  = mapBone(["RightFoot", "mixamorigRightFoot", "mixamorig:RightFoot"]);
-
-      // Cache base positions (for additive procedural offsets)
-      for (const k in bones) cacheBasePos(bones[k]);
-    }
-
-    function loadModel(url) {
-      return new Promise((resolve, reject) => {
-        loader.load(url, (gltf) => {
-          if (skinned) scene.remove(skinned);
-          const root = gltf.scene;
-          root.traverse(o => { o.castShadow = true; });
-          scene.add(root);
-
-          // Grab first SkinnedMesh's skeleton
-          root.traverse(o => {
-            if (o.isSkinnedMesh && !skeleton) {
-              skinned = root;
-              skeleton = o.skeleton;
-            }
-          });
-          if (!skeleton) {
-            console.warn("No skeleton found. The animation will be limited.");
-          }
-          findImportantBones();
-          resolve();
-        }, undefined, (err) => {
-          reject(err);
-        });
-      });
-    }
-
-    // Initial load
-    loadModel(modelUrl).catch(() => {
-      alert("Could not load default model. Drag & drop a rigged GLB/GLTF onto the page.");
-    });
-
-    // Drag & drop support
-    const drop = document.getElementById('drop');
-    window.addEventListener('dragover', (e) => { e.preventDefault(); drop.style.display = 'grid'; });
-    window.addEventListener('dragleave', () => { drop.style.display = 'none'; });
-    window.addEventListener('drop', (e) => {
-      e.preventDefault(); drop.style.display = 'none';
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      loadModel(url);
-    });
-
-    // ---- Bachata basic: procedural animation ----
-    // We drive foot bones and hips with small local offsets to illustrate side–together–side–tap.
-    const TWO_PI = Math.PI * 2;
-    const state = {
-      playing: false,
-      role: 'leader', // or 'follower'
-      bpm: 68,        // beats per minute (1 count = 1 beat)
-      showGrid: true,
-    };
-
-    function countPhase(timeSec) {
-      // One count = 60/bpm seconds. An 8-count phrase duration:
-      const beatDur = 60.0 / state.bpm;
-      const total = 8 * beatDur;
-      const t = (timeSec % total) / total; // 0..1 across 8 counts
-      const countFloat = t * 8.0;          // 0..8
-      const countIndex = Math.floor(countFloat); // 0..7
-      const countT = countFloat - countIndex;    // 0..1 within count
-      return { t, countIndex, countT };
-    }
-
-    function lerp(a, b, t) { return a + (b - a) * t; }
-
-    // Step parameters (meters in model space)
-    const STEP_SIDE = 0.24;      // lateral foot displacement on side steps
-    const CLOSE_GAP = 0.12;      // how close the trailing foot comes
-    const EXTRA_KICK = 0.04;     // small extra push on 3 & 7
-    const TAP_LIFT = 0.03;       // small vertical on taps
-    const HIP_SWAY = 0.06;       // hip side sway amplitude
-    const HIP_BUMP = 0.025;      // vertical bump on taps
-
-    // Keep a running time
-    let tStart = performance.now() / 1000;
-
-    // UI wiring
-    const playBtn = document.getElementById('playBtn');
-    const bpmSlider = document.getElementById('bpm');
-    const bpmVal = document.getElementById('bpmVal');
-    const roleSel = document.getElementById('role');
-    const camSel = document.getElementById('cam');
-    const resetBtn = document.getElementById('resetView');
-    const toggleFeetBtn = document.getElementById('toggleFeet');
-    const toggleGridBtn = document.getElementById('toggleGrid');
-
-    playBtn.addEventListener('click', () => {
-      state.playing = !state.playing;
-      playBtn.textContent = state.playing ? '❚❚ Pause' : '▶︎ Play';
-      if (state.playing) tStart = performance.now() / 1000 - 0.0001; // resume smoothly
-    });
-    bpmSlider.addEventListener('input', () => { state.bpm = +bpmSlider.value; bpmVal.textContent = `${state.bpm} BPM`; });
-    roleSel.addEventListener('change', () => { state.role = roleSel.value; });
-    camSel.addEventListener('change', () => setCamera(camSel.value));
-    resetBtn.addEventListener('click', () => { controls.reset(); setCamera(camSel.value); });
-    toggleFeetBtn.addEventListener('click', () => { trailsVisible = !trailsVisible; footTrailGroup.visible = trailsVisible; });
-    toggleGridBtn.addEventListener('click', () => { grid.visible = !grid.visible; });
-
-    function setCamera(mode) {
-      if (mode === 'front') {
-        camera.position.set(3.2, 2.0, 5.2);
-        camera.lookAt(0, 1.1, 0);
-      } else if (mode === 'iso') {
-        camera.position.set(4.3, 3.3, 4.3);
-        camera.lookAt(0, 1.1, 0);
-      } else {
-        camera.position.set(0.0, 8.0, 0.001);
-        camera.lookAt(0, 1.0, 0);
-      }
-      controls.update();
-    }
-
-    setCamera('front');
-
-    // Animate helper: get procedural offsets for each foot and hips at this phase
-    function getOffsets(countIndex, cT, role) {
-      // Leader: 1 step LEFT, 2 together (R), 3 left, 4 tap (R), 5 step RIGHT, 6 together (L), 7 right, 8 tap (L)
-      // Follower mirrors left/right.
-      const mirror = (role === 'follower') ? -1 : 1;
-
-      // Smoothstep easing
-      const ease = (x) => x * x * (3 - 2 * x);
-      const move = (amt) => ease(cT) * amt;
-
-      let L = { x: 0, y: 0 }, R = { x: 0, y: 0 }, H = { x: 0, y: 0 };
-
-      switch (countIndex) {
-        case 0: // 1 — lead side out
-          L.x = mirror * -move(STEP_SIDE);
-          H.x = mirror * -HIP_SWAY * cT; // sway into the step
-          break;
-        case 1: // 2 — together (trail in)
-          L.x = mirror * -STEP_SIDE;
-          R.x = mirror * -move(STEP_SIDE - CLOSE_GAP);
-          H.x = mirror * -HIP_SWAY;
-          break;
-        case 2: // 3 — lead side a touch more
-          L.x = mirror * -(STEP_SIDE + move(EXTRA_KICK));
-          R.x = mirror * -(STEP_SIDE - CLOSE_GAP);
-          H.x = mirror * -HIP_SWAY * (1 - 0.5 * cT);
-          break;
-        case 3: // 4 — tap (trail foot)
-          L.x = mirror * -(STEP_SIDE + EXTRA_KICK);
-          R.x = mirror * -(STEP_SIDE - CLOSE_GAP) + mirror * 0.06 * Math.sin(Math.PI * cT);
-          R.y = TAP_LIFT * Math.sin(Math.PI * cT);
-          H.x = mirror * -HIP_SWAY * (1 - cT);
-          H.y = HIP_BUMP * Math.sin(Math.PI * cT);
-          // Place a trail dot near tap end
-          if (cT > 0.98) addTrail(L.x, 0, true), addTrail(R.x, 0, false);
-          break;
-        case 4: // 5 — step to the RIGHT (lead foot switches)
-          R.x = mirror * move(STEP_SIDE);
-          H.x = mirror * HIP_SWAY * cT;
-          break;
-        case 5: // 6 — together
-          R.x = mirror * STEP_SIDE;
-          L.x = mirror * move(STEP_SIDE - CLOSE_GAP);
-          H.x = mirror * HIP_SWAY;
-          break;
-        case 6: // 7 — right a bit more
-          R.x = mirror * (STEP_SIDE + move(EXTRA_KICK));
-          L.x = mirror * (STEP_SIDE - CLOSE_GAP);
-          H.x = mirror * HIP_SWAY * (1 - 0.5 * cT);
-          break;
-        case 7: // 8 — tap (other foot)
-          R.x = mirror * (STEP_SIDE + EXTRA_KICK);
-          L.x = mirror * (STEP_SIDE - CLOSE_GAP) - mirror * 0.06 * Math.sin(Math.PI * cT);
-          L.y = TAP_LIFT * Math.sin(Math.PI * cT);
-          H.x = mirror * HIP_SWAY * (1 - cT);
-          H.y = HIP_BUMP * Math.sin(Math.PI * cT);
-          if (cT > 0.98) addTrail(L.x, 0, true), addTrail(R.x, 0, false);
-          break;
-      }
-      return { L, R, H };
-    }
-
-    // Render loop
-    function tick() {
-      requestAnimationFrame(tick);
-      const now = performance.now() / 1000;
-      controls.update();
-
-      if (skeleton && state.playing) {
-        const { countIndex, countT } = countPhase(now - tStart);
-        const { L, R, H } = getOffsets(countIndex, countT, state.role);
-
-        // Safeguard: some models may have different bone names
-        const lF = bones.leftFoot, rF = bones.rightFoot, hips = bones.hips;
-
-        if (lF && baseBonePos[lF.name]) {
-          lF.position.x = baseBonePos[lF.name].x + L.x;
-          lF.position.y = baseBonePos[lF.name].y + L.y;
+        function startLiveDemo() {
+            if (demoInProgress) return;
+            
+            demoInProgress = true;
+            const button = document.getElementById('startDemo');
+            button.disabled = true;
+            button.textContent = 'Demo in Progress...';
+            
+            // Show containers
+            document.getElementById('timeline').style.display = 'block';
+            document.getElementById('visualArea').style.display = 'grid';
+            
+            // Clear previous demo
+            document.getElementById('timeline').innerHTML = '<div class="timeline-line"></div>';
+            document.getElementById('accountDetails').innerHTML = '';
+            document.getElementById('engagementsList').innerHTML = '';
+            
+            // Start the demo sequence
+            runDemoSequence();
         }
-        if (rF && baseBonePos[rF.name]) {
-          rF.position.x = baseBonePos[rF.name].x + R.x;
-          rF.position.y = baseBonePos[rF.name].y + R.y;
+
+        async function runDemoSequence() {
+            // Step 1: New Account Creation
+            await delay(500);
+            addTimelineEvent('🆕', 'January 2024', 'New Client Acquisition', 
+                'Elberta brings in TechCorp Industries as a new client');
+            
+            await delay(1000);
+            showAccountInfo();
+            
+            await delay(1500);
+            addNarrativeText('Elberta receives origination credit for this new account! 💰');
+            
+            // Step 2: First Engagement - Audit
+            await delay(2000);
+            addTimelineEvent('📋', 'January 2024', 'Initial Engagement', 
+                'Audit engagement created with Elberta as Partner in Charge');
+            
+            await delay(1000);
+            addEngagement('audit', 'Audit Services', 'Elberta', 'Initial Service', '#667eea');
+            
+            // Step 3: Tax Expansion
+            await delay(2500);
+            addTimelineEvent('📊', 'March 2024', 'Service Expansion', 
+                'Lior identifies tax planning opportunity and wins the engagement');
+            
+            await delay(1000);
+            addEngagement('tax', 'Tax Services', 'Lior', 'Expanded Service', '#4caf50');
+            
+            await delay(1500);
+            addNarrativeText('Lior gets credit for expanding services - marked as "Expanded Services" in Engagement Tracker! 📈');
+            
+            // Step 4: BSG Expansion
+            await delay(2500);
+            addTimelineEvent('💼', 'June 2024', 'Business Strategy', 
+                'Sally proposes Business Strategy Group services and client agrees');
+            
+            await delay(1000);
+            addEngagement('bsg', 'BSG Consulting', 'Sally', 'Expanded Service', '#ff9800');
+            
+            // Step 5: 401k New Work
+            await delay(2500);
+            addTimelineEvent('🎯', 'January 2025', 'New Service Line', 
+                'Elberta cross-sells 401k Plan Administration - a completely new service');
+            
+            await delay(1000);
+            addEngagement('retirement', '401k Plan Admin', 'Elberta', 'New Work', '#e91e63');
+            
+            await delay(1500);
+            addNarrativeText('Elberta brings in NEW work (401k) - tracked separately from expanded services! 🚀');
+            
+            // Final summary
+            await delay(2000);
+            showFinalSummary();
+            
+            // Reset button
+            await delay(2000);
+            const button = document.getElementById('startDemo');
+            button.disabled = false;
+            button.textContent = 'Restart Demo';
+            demoInProgress = false;
         }
-        if (hips && baseBonePos[hips.name]) {
-          hips.position.x = baseBonePos[hips.name].x + H.x;
-          hips.position.y = baseBonePos[hips.name].y + H.y;
+
+        function addTimelineEvent(icon, date, title, description) {
+            const timeline = document.getElementById('timeline');
+            const event = document.createElement('div');
+            event.className = 'timeline-event';
+            event.innerHTML = `
+                <div class="timeline-icon">${icon}</div>
+                <div class="timeline-date">${date}</div>
+                <div class="timeline-content">
+                    <h4 style="color: #667eea; margin-bottom: 5px;">${title}</h4>
+                    <p style="color: #666; font-size: 0.95em;">${description}</p>
+                </div>
+            `;
+            timeline.appendChild(event);
+            
+            setTimeout(() => event.classList.add('show'), 100);
         }
-      }
 
-      renderer.render(scene, camera);
-    }
+        function addNarrativeText(text) {
+            const timeline = document.getElementById('timeline');
+            const narrative = document.createElement('div');
+            narrative.className = 'narrative-text';
+            narrative.textContent = text;
+            timeline.appendChild(narrative);
+            
+            setTimeout(() => narrative.classList.add('show'), 100);
+        }
 
-    tick();
+        function showAccountInfo() {
+            const accountDetails = document.getElementById('accountDetails');
+            accountDetails.innerHTML = `
+                <div class="account-info" id="clientInfo">
+                    <strong>Client:</strong> TechCorp Industries<br>
+                    <strong>Industry:</strong> Technology<br>
+                    <strong>CSG:</strong> Mid-Market
+                </div>
+                <div class="account-info" id="originationInfo">
+                    <strong>📍 New Business Tracker</strong><br>
+                    <strong>Originator:</strong> Elberta<br>
+                    <strong>Type:</strong> Internal Employee<br>
+                    <strong>Commission:</strong> Eligible ✅
+                </div>
+            `;
+            
+            setTimeout(() => {
+                document.getElementById('clientInfo').classList.add('show');
+                document.getElementById('accountVisual').classList.add('highlight-animation');
+            }, 100);
+            
+            setTimeout(() => {
+                document.getElementById('originationInfo').classList.add('show');
+            }, 500);
+        }
 
-    // Responsiveness
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+        function addEngagement(type, service, partner, badge, color) {
+            const engagementsList = document.getElementById('engagementsList');
+            const engagement = document.createElement('div');
+            engagement.className = `engagement-card ${type}`;
+            
+            let badgeClass = badge === 'Expanded Service' ? 'expanded' : 
+                            badge === 'New Work' ? 'new-work' : '';
+            
+            engagement.innerHTML = `
+                <div class="engagement-header">
+                    <span class="engagement-type">${service}</span>
+                    <span class="engagement-badge ${badgeClass}">${badge}</span>
+                </div>
+                <div class="engagement-details">
+                    <strong>Partner in Charge:</strong> ${partner}<br>
+                    <strong>Status:</strong> Active<br>
+                    ${badge !== 'Initial Service' ? '<strong>Tracked in:</strong> Engagement Tracker' : ''}
+                </div>
+            `;
+            
+            engagementsList.appendChild(engagement);
+            
+            setTimeout(() => {
+                engagement.classList.add('show');
+                if (badge !== 'Initial Service') {
+                    document.getElementById('engagementCard').classList.add('highlight-animation');
+                    setTimeout(() => {
+                        document.getElementById('engagementCard').classList.remove('highlight-animation');
+                    }, 2000);
+                }
+            }, 100);
+        }
+
+        function showFinalSummary() {
+            const timeline = document.getElementById('timeline');
+            const summary = document.createElement('div');
+            summary.className = 'timeline-event';
+            summary.innerHTML = `
+                <div class="timeline-icon">🎉</div>
+                <div class="timeline-content" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 2px solid #667eea;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Summary: Complete Business Growth Journey</h4>
+                    <div style="color: #555; line-height: 1.8;">
+                        <strong>Account Level:</strong> Elberta's new client → Origination credit<br>
+                        <strong>Engagement Level:</strong><br>
+                        • Initial Audit (Elberta)<br>
+                        • Tax Services (Lior) → Expanded Service credit<br>
+                        • BSG Consulting (Sally) → Expanded Service credit<br>
+                        • 401k Plan (Elberta) → New Work credit<br><br>
+                        <em style="color: #667eea;">All expansions tracked separately from initial account origination!</em>
+                    </div>
+                </div>
+            `;
+            timeline.appendChild(summary);
+            
+            setTimeout(() => summary.classList.add('show'), 100);
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
 </body>
 </html>
