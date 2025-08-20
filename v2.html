@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Account Manager Cross-Selling Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <title>Enhanced CRM Forms with Policy Guidance</title>
     <style>
         * {
             margin: 0;
@@ -13,971 +12,802 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
         }
 
-        .dashboard {
-            max-width: 1600px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
 
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-        }
-
-        .view-selector {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .view-btn {
-            padding: 8px 20px;
-            background: rgba(255,255,255,0.2);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .view-btn.active {
-            background: white;
-            color: #1e3c72;
-        }
-
-        .kpi-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .kpi-card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .kpi-value {
-            font-size: 36px;
-            font-weight: bold;
-            color: #2a5298;
-            margin-bottom: 5px;
-        }
-
-        .kpi-label {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .kpi-trend {
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .trend-up {
-            color: #10b981;
-        }
-
-        .trend-down {
-            color: #ef4444;
-        }
-
-        /* Global View Styles */
-        .global-view {
-            display: block;
-        }
-
-        .filter-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-label {
-            font-size: 12px;
-            color: #666;
-            font-weight: 600;
-        }
-
-        .filter-select {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: white;
-            min-width: 150px;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .managers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .manager-summary-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .manager-summary-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .manager-summary-header {
-            padding: 20px;
-            background: linear-gradient(135deg, #f0f7ff 0%, #e8f3ff 100%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .manager-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1e3c72;
-        }
-
-        .manager-region {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .performance-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-excellent {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-good {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .badge-average {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-poor {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .manager-mini-metrics {
-            padding: 15px 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+        .form-selector {
             text-align: center;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 30px;
         }
 
-        .mini-metric {
-            font-size: 12px;
+        .form-button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
         }
 
-        .mini-metric-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2a5298;
+        .form-button:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
         }
 
-        .mini-metric-label {
-            color: #666;
-            margin-top: 2px;
+        .form-button.active {
+            background: #1565C0;
+            box-shadow: 0 3px 10px rgba(33, 150, 243, 0.4);
         }
 
-        .service-mix-mini {
-            padding: 15px 20px;
-            height: 30px;
-            display: flex;
-            border-radius: 0 0 10px 10px;
-            overflow: hidden;
-        }
-
-        .mix-segment-mini {
-            transition: all 0.3s;
-        }
-
-        /* Detail View Styles */
-        .detail-view {
+        .form-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: none;
         }
 
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #2a5298;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.3s;
+        .form-container.active {
+            display: block;
         }
 
-        .back-button:hover {
-            background: #1e3c72;
-            transform: translateX(-5px);
+        .form-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #e9ecef;
         }
 
-        .manager-detail-header {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .form-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
         }
 
-        .manager-info h2 {
-            font-size: 28px;
-            color: #1e3c72;
-            margin-bottom: 10px;
-        }
-
-        .manager-info p {
+        .form-subtitle {
             color: #666;
-        }
-
-        .detail-metrics {
-            display: flex;
-            gap: 40px;
-        }
-
-        .detail-metric {
-            text-align: center;
-        }
-
-        .detail-metric-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #2a5298;
-        }
-
-        .detail-metric-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            margin-top: 5px;
-        }
-
-        .account-structure {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .account-group {
-            margin-bottom: 25px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .account-header {
-            background: #f0f7ff;
-            padding: 15px 20px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .parent-indicator {
-            background: #1e3c72;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .child-indicator {
-            background: #4285f4;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .engagements {
-            padding: 15px;
-            background: #fafafa;
-        }
-
-        .engagement-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 15px;
-            padding: 12px;
-            background: white;
-            border-radius: 5px;
-            margin-bottom: 8px;
-            align-items: center;
             font-size: 14px;
         }
 
-        .service-tag {
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-block;
+        .form-body {
+            padding: 30px;
         }
 
-        .tag-audit {
-            background: #e8f0fe;
-            color: #1967d2;
+        .policy-banner {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
         }
 
-        .tag-tax {
-            background: #e6f4ea;
-            color: #137333;
+        .policy-banner h3 {
+            color: #1565C0;
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
         }
 
-        .tag-specialty {
-            background: #fce8e6;
-            color: #c5221f;
+        .policy-banner h3::before {
+            content: '📋';
+            margin-right: 8px;
         }
 
-        .tag-business {
-            background: #fef7e0;
-            color: #b06000;
+        .policy-banner ul {
+            margin-left: 20px;
+            color: #333;
+            font-size: 14px;
         }
 
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .policy-banner li {
+            margin: 5px 0;
+        }
+
+        .section {
             margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
         }
 
-        .chart-container {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
         }
 
-        .chart-title {
+        .section-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 20px;
             color: #333;
         }
 
-        .performance-comparison {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .help-indicator {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: help;
+            transition: all 0.3s ease;
         }
 
-        .comparison-grid {
+        .help-indicator:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .field-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .field-group {
+            position: relative;
+        }
+
+        .field-label {
+            display: block;
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .field-label.required::after {
+            content: ' *';
+            color: #f44336;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .field-input:focus {
+            border-color: #2196F3;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .field-help {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #FFF9C4;
+            border: 1px solid #F9A825;
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 11px;
+            color: #F57C00;
+            cursor: help;
+            z-index: 10;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            max-width: 250px;
+            white-space: normal;
+        }
+
+        .field-help:hover + .tooltip {
+            opacity: 1;
+        }
+
+        .info-box {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info-box h4 {
+            color: #E65100;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .credit-rules {
+            background: #E8F5E9;
+            border: 1px solid #4CAF50;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .credit-rules h5 {
+            color: #2E7D32;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .credit-rules h5::before {
+            content: '✅';
+            margin-right: 8px;
+        }
+
+        .credit-rules ul {
+            margin-left: 20px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .credit-rules li {
+            margin: 5px 0;
+        }
+
+        .warning-box {
+            background: #FFEBEE;
+            border: 1px solid #EF5350;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .warning-box h5 {
+            color: #C62828;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .warning-box h5::before {
+            content: '⚠️';
+            margin-right: 8px;
+        }
+
+        .warning-box p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .service-grid {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .service-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .service-row:last-child {
+            border-bottom: none;
+        }
+
+        .fee-total {
+            background: #E3F2FD;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fee-total span {
+            font-weight: 600;
+            color: #1565C0;
+        }
+
+        .fee-total .amount {
+            font-size: 20px;
+        }
+
+        .example-scenario {
+            background: #F3E5F5;
+            border: 1px solid #BA68C8;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .example-scenario strong {
+            color: #6A1B9A;
+        }
+
+        .pipeline-status {
+            background: #E0F2F1;
+            border: 1px solid #26A69A;
+            border-radius: 6px;
+            padding: 15px;
             margin-top: 20px;
         }
 
-        .comparison-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .comparison-label {
+        .pipeline-status h4 {
+            color: #00695C;
             font-size: 14px;
-            color: #666;
             margin-bottom: 10px;
         }
 
-        .comparison-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2a5298;
+        .status-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
         }
 
-        .comparison-vs {
+        .status-step {
+            text-align: center;
+            flex: 1;
+        }
+
+        .status-step .circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-size: 12px;
-            color: #999;
-            margin-top: 5px;
         }
 
-        @media (max-width: 768px) {
-            .managers-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .view-selector {
-                position: static;
-                margin-top: 20px;
-            }
+        .status-step.active .circle {
+            background: #26A69A;
+        }
+
+        .status-step span {
+            font-size: 12px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="header">
-            <h1>Enterprise Account Manager Cross-Selling Dashboard</h1>
-            <p>Performance monitoring and service diversification analysis across all Account Managers</p>
-            <div class="view-selector">
-                <button class="view-btn active" onclick="showGlobalView()">Global Overview</button>
-                <button class="view-btn" onclick="showDetailView()">Manager Detail</button>
+    <div class="container">
+        <div class="form-selector">
+            <button class="form-button active" onclick="showForm('newBusiness')">New Business Tracker</button>
+            <button class="form-button" onclick="showForm('expanded')">Expanded Services Tracker (Pipeline)</button>
+        </div>
+
+        <!-- New Business Tracker Form -->
+        <div id="newBusinessForm" class="form-container active">
+            <div class="form-header">
+                <h2 class="form-title">New Business Tracker</h2>
+                <p class="form-subtitle">For brand NEW clients only - Track origination and closing credits</p>
+            </div>
+            
+            <div class="form-body">
+                <div class="policy-banner">
+                    <h3>Quick Policy Guide - Who Gets Credit?</h3>
+                    <ul>
+                        <li><strong>Origination Credit:</strong> Goes to whoever actively brought in this NEW client</li>
+                        <li><strong>Closing Credit:</strong> Goes to whoever actually closed the deal</li>
+                        <li><strong>Credit Amount:</strong> Average of 3 years expected fees (Example: $10,000/year × 2 years ÷ 3 = $6,667 credit)</li>
+                        <li><strong>Remember:</strong> This form is ONLY for brand new clients, not existing ones!</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h3 class="section-title">Source Details</h3>
+                        <span class="help-indicator">Who brought this client?</span>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label required">Internal/External Source</label>
+                            <select class="field-input">
+                                <option>Legacy Transfer</option>
+                                <option>Internal Employee</option>
+                                <option>External Referral</option>
+                                <option>House (Cold Call/RFP)</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Referral Contact</label>
+                            <input type="text" class="field-input" placeholder="Who referred this client?">
+                            <span class="field-help">?</span>
+                            <div class="tooltip">Leave blank if cold call or unsolicited RFP - these go to "House"</div>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>💡 When does credit go to "House" instead of a person?</h4>
+                        <p>• Unsolicited cold calls or walk-ins</p>
+                        <p>• Random RFPs not generated by anyone's efforts</p>
+                        <p>• Referrals where no one has been actively working the source (6+ months no contact)</p>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Event</label>
+                            <input type="text" class="field-input" placeholder="Trade show, webinar, etc.">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Originator Name 1</label>
+                            <input type="text" class="field-input" placeholder="Who found/developed this lead?">
+                            <span class="field-help">?</span>
+                            <div class="tooltip">Person who actively worked to bring in this client (met within last 6 months)</div>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Originator Name 2</label>
+                            <input type="text" class="field-input" placeholder="Split credit if multiple people">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Originator Name 3</label>
+                            <input type="text" class="field-input" placeholder="e.g., multiple attendees at trade show">
+                        </div>
+                    </div>
+
+                    <div class="credit-rules">
+                        <h5>Origination Credit Rules</h5>
+                        <ul>
+                            <li><strong>Active Working Required:</strong> Must have contacted referral source within last 6 months</li>
+                            <li><strong>Trade Shows:</strong> Credit splits among all attendees who worked the event</li>
+                            <li><strong>Speaking/Webinars:</strong> Speaker gets credit if client mentions it (within 1 year)</li>
+                            <li><strong>Multiple People:</strong> Credit splits evenly if multiple people worked the same source</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h3 class="section-title">Closing Information</h3>
+                        <span class="help-indicator">Who closed the deal?</span>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Closer Name 1</label>
+                            <input type="text" class="field-input" placeholder="Who materially participated in closing?">
+                            <span class="field-help">?</span>
+                            <div class="tooltip">Must be Manager+ level and materially participated in closing</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Closer Name 2</label>
+                            <input type="text" class="field-input" placeholder="Split if multiple closers">
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Closer Name 3</label>
+                            <input type="text" class="field-input">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Lead Source</label>
+                            <input type="text" class="field-input" placeholder="How did we get this lead?">
+                        </div>
+                    </div>
+
+                    <div class="example-scenario">
+                        <strong>Example:</strong> Sarah attends a trade show and meets a prospect. She follows up and schedules meetings. John (Manager) joins the final meetings and helps close the deal. 
+                        <br><strong>Result:</strong> Sarah gets Origination Credit, John gets Closing Credit.
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h3 class="section-title">Service and Fee Estimations</h3>
+                        <span class="help-indicator">Calculate credit amount</span>
+                    </div>
+
+                    <div class="service-grid">
+                        <div class="service-row">
+                            <div class="field-group">
+                                <label class="field-label">Service 1</label>
+                                <input type="text" class="field-input" placeholder="e.g., Tax, Audit">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label required">Fee Service 1</label>
+                                <input type="text" class="field-input" placeholder="$0.00">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label required">Annuity 1</label>
+                                <select class="field-input">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="service-row">
+                            <div class="field-group">
+                                <label class="field-label">Service 2</label>
+                                <input type="text" class="field-input">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Fee Service 2</label>
+                                <input type="text" class="field-input" placeholder="$0.00">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Annuity 2</label>
+                                <select class="field-input">
+                                    <option>No</option>
+                                    <option>Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fee-total">
+                        <span>Fee Estimate (Total)</span>
+                        <span class="amount">$0.00</span>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>📊 How Credit Amount is Calculated</h4>
+                        <p><strong>Formula:</strong> (Total Expected Fees over Client Lifetime) ÷ 3</p>
+                        <p><strong>Example:</strong> Client expected for 2 years at $10,000/year = $20,000 ÷ 3 = $6,667 credit</p>
+                        <p><strong>Note:</strong> For clients less than 1 year old, expanded services count toward initial credit</p>
+                    </div>
+                </div>
+
+                <div class="pipeline-status">
+                    <h4>📍 When Credit is Recorded</h4>
+                    <div class="status-steps">
+                        <div class="status-step active">
+                            <div class="circle">1</div>
+                            <span>Engagement Letter Signed</span>
+                        </div>
+                        <div class="status-step active">
+                            <div class="circle">2</div>
+                            <span>Pipeline Marked Complete</span>
+                        </div>
+                        <div class="status-step">
+                            <div class="circle">3</div>
+                            <span>Entered in System</span>
+                        </div>
+                        <div class="status-step">
+                            <div class="circle">4</div>
+                            <span>Credit Recorded</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- KPI Summary (Always Visible) -->
-        <div class="kpi-summary">
-            <div class="kpi-card">
-                <div class="kpi-value">87%</div>
-                <div class="kpi-label">Overall Cross-Sell Rate</div>
-                <div class="kpi-trend trend-up">↑ 5% from last quarter</div>
+        <!-- Expanded Services Tracker Form -->
+        <div id="expandedForm" class="form-container">
+            <div class="form-header">
+                <h2 class="form-title">Pipeline Tracker - Expanded Services</h2>
+                <p class="form-subtitle">For EXISTING clients only - Track new services and expansions</p>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-value">3.4</div>
-                <div class="kpi-label">Avg Services per Client</div>
-                <div class="kpi-trend trend-up">↑ 0.3 from last quarter</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-value">$42.5M</div>
-                <div class="kpi-label">Total Managed Revenue</div>
-                <div class="kpi-trend trend-up">↑ 12% YoY</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-value">68/80</div>
-                <div class="kpi-label">Managers at Target</div>
-                <div class="kpi-trend trend-down">↓ 2 from last month</div>
-            </div>
-        </div>
+            
+            <div class="form-body">
+                <div class="policy-banner">
+                    <h3>Quick Guide - Expanded Services vs. Regular Growth</h3>
+                    <ul>
+                        <li><strong>Expanded Service:</strong> NEW service line you actively pitched (competed for or took from another firm)</li>
+                        <li><strong>NOT Expanded:</strong> Natural growth, upgrades (Review→Audit), additional entities, compliance updates</li>
+                        <li><strong>Key Rule:</strong> YOU must actively pitch it - client requests go to "House"</li>
+                        <li><strong>Examples:</strong> Adding Tax to Audit-only client ✅ | More tax returns for new entities ❌</li>
+                    </ul>
+                </div>
 
-        <!-- Global View -->
-        <div id="globalView" class="global-view">
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label class="filter-label">Region</label>
-                    <select class="filter-select">
-                        <option>All Regions</option>
-                        <option>Northeast</option>
-                        <option>Southeast</option>
-                        <option>Midwest</option>
-                        <option>West</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Performance</label>
-                    <select class="filter-select">
-                        <option>All Levels</option>
-                        <option>Excellent (90%+)</option>
-                        <option>Good (75-89%)</option>
-                        <option>Average (60-74%)</option>
-                        <option>Needs Improvement (<60%)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Sort By</label>
-                    <select class="filter-select">
-                        <option>Cross-Sell % (High to Low)</option>
-                        <option>Revenue (High to Low)</option>
-                        <option># of Accounts</option>
-                        <option>Growth Rate</option>
-                    </select>
-                </div>
-                <div class="filter-group search-box">
-                    <label class="filter-label">Search</label>
-                    <input type="text" class="search-input" placeholder="Search by manager name...">
-                </div>
-            </div>
-
-            <div class="managers-grid" id="managersGrid">
-                <!-- Sample Manager Cards - In real implementation, these would be generated dynamically -->
-                <div class="manager-summary-card" onclick="showManagerDetail('Elberta Thompson')">
-                    <div class="manager-summary-header">
-                        <div>
-                            <div class="manager-name">Elberta Thompson</div>
-                            <div class="manager-region">Southeast Region</div>
-                        </div>
-                        <span class="performance-badge badge-excellent">Excellent</span>
+                <div class="section">
+                    <div class="section-header">
+                        <h3 class="section-title">Pipeline Tracker</h3>
+                        <span class="help-indicator">Engagement-level tracking</span>
                     </div>
-                    <div class="manager-mini-metrics">
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">95%</div>
-                            <div class="mini-metric-label">Cross-Sell</div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Originator Name 1</label>
+                            <input type="text" class="field-input" placeholder="Who pitched this expansion?">
+                            <span class="field-help">?</span>
+                            <div class="tooltip">Must have ACTIVELY pitched this service - not client-requested</div>
                         </div>
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">$1.25M</div>
-                            <div class="mini-metric-label">Revenue</div>
-                        </div>
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">3</div>
-                            <div class="mini-metric-label">Accounts</div>
+                        <div class="field-group">
+                            <label class="field-label">Closer Name 1</label>
+                            <input type="text" class="field-input" placeholder="Who closed this expansion?">
                         </div>
                     </div>
-                    <div class="service-mix-mini">
-                        <div class="mix-segment-mini" style="background: #4285f4; width: 32%;"></div>
-                        <div class="mix-segment-mini" style="background: #34a853; width: 24%;"></div>
-                        <div class="mix-segment-mini" style="background: #ea4335; width: 29%;"></div>
-                        <div class="mix-segment-mini" style="background: #fbbc04; width: 16%;"></div>
+
+                    <div class="warning-box">
+                        <h5>Important: Active Solicitation Required</h5>
+                        <p>Credit only applies if YOU approached the client about this service. If the client asked for it themselves, credit goes to "House" - even for existing clients!</p>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Originator Name 2</label>
+                            <input type="text" class="field-input">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Closer Name 2</label>
+                            <input type="text" class="field-input">
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Fee Estimate</label>
+                            <input type="text" class="field-input" placeholder="Expected annual fee">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Engagement Source</label>
+                            <select class="field-input">
+                                <option>---</option>
+                                <option>Expanded Service</option>
+                                <option>New Work</option>
+                                <option>Recurring</option>
+                            </select>
+                            <span class="field-help">?</span>
+                            <div class="tooltip">Expanded = Adding to existing service line | New Work = Completely new service type</div>
+                        </div>
+                    </div>
+
+                    <div class="credit-rules">
+                        <h5>What Qualifies as "Expanded Service"?</h5>
+                        <ul>
+                            <li>✅ <strong>Tax services</strong> for audit-only client (different service line)</li>
+                            <li>✅ <strong>Valuation services</strong> pitched to existing tax client</li>
+                            <li>✅ <strong>BSG consulting</strong> added to traditional services</li>
+                            <li>❌ <strong>NOT: Review → Audit</strong> (just an upgrade)</li>
+                            <li>❌ <strong>NOT: More tax returns</strong> for new entities (natural growth)</li>
+                            <li>❌ <strong>NOT: Compliance updates</strong> (maintenance work)</li>
+                        </ul>
                     </div>
                 </div>
 
-                <div class="manager-summary-card" onclick="showManagerDetail('Michael Roberts')">
-                    <div class="manager-summary-header">
-                        <div>
-                            <div class="manager-name">Michael Roberts</div>
-                            <div class="manager-region">Northeast Region</div>
-                        </div>
-                        <span class="performance-badge badge-good">Good</span>
+                <div class="section">
+                    <div class="section-header">
+                        <h3 class="section-title">Lead Source Information</h3>
+                        <span class="help-indicator">How did this expansion happen?</span>
                     </div>
-                    <div class="manager-mini-metrics">
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">78%</div>
-                            <div class="mini-metric-label">Cross-Sell</div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Lead Source</label>
+                            <input type="text" class="field-input" placeholder="Internal referral, cross-sell, etc.">
                         </div>
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">$980K</div>
-                            <div class="mini-metric-label">Revenue</div>
-                        </div>
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">5</div>
-                            <div class="mini-metric-label">Accounts</div>
+                        <div class="field-group">
+                            <label class="field-label">Lead Source Sub Type</label>
+                            <input type="text" class="field-input">
                         </div>
                     </div>
-                    <div class="service-mix-mini">
-                        <div class="mix-segment-mini" style="background: #4285f4; width: 45%;"></div>
-                        <div class="mix-segment-mini" style="background: #34a853; width: 35%;"></div>
-                        <div class="mix-segment-mini" style="background: #fbbc04; width: 20%;"></div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Lead Source Details</label>
+                            <input type="text" class="field-input" placeholder="Additional context">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">External Referral Contact</label>
+                            <input type="text" class="field-input">
+                        </div>
+                    </div>
+
+                    <div class="example-scenario">
+                        <strong>Scenario 1:</strong> You notice client needs tax planning during audit. You propose tax services and win the work.
+                        <br><strong>Result:</strong> You get Expanded Service credit ✅
+                        <br><br>
+                        <strong>Scenario 2:</strong> Client calls and asks "Can you do our tax returns too?"
+                        <br><strong>Result:</strong> Credit goes to House (client-initiated) ❌
                     </div>
                 </div>
 
-                <div class="manager-summary-card" onclick="showManagerDetail('Patricia Chen')">
-                    <div class="manager-summary-header">
-                        <div>
-                            <div class="manager-name">Patricia Chen</div>
-                            <div class="manager-region">West Region</div>
-                        </div>
-                        <span class="performance-badge badge-average">Average</span>
+                <div class="section">
+                    <div class="section-header">
+                        <h3 class="section-title">Additional Information</h3>
                     </div>
-                    <div class="manager-mini-metrics">
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">65%</div>
-                            <div class="mini-metric-label">Cross-Sell</div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">External Referral Account</label>
+                            <input type="text" class="field-input">
                         </div>
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">$760K</div>
-                            <div class="mini-metric-label">Revenue</div>
-                        </div>
-                        <div class="mini-metric">
-                            <div class="mini-metric-value">4</div>
-                            <div class="mini-metric-label">Accounts</div>
+                        <div class="field-group">
+                            <label class="field-label">Estimated AUM Potential</label>
+                            <input type="text" class="field-input" placeholder="For wealth management">
                         </div>
                     </div>
-                    <div class="service-mix-mini">
-                        <div class="mix-segment-mini" style="background: #34a853; width: 60%;"></div>
-                        <div class="mix-segment-mini" style="background: #ea4335; width: 40%;"></div>
+
+                    <div class="info-box">
+                        <h4>🎯 Special Rules for Existing Clients</h4>
+                        <p><strong>New Clients (< 2 years):</strong> Expansions may count toward initial new business credit</p>
+                        <p><strong>Existing Clients (> 2 years):</strong> Relationship Partner usually gets credit for client referrals</p>
+                        <p><strong>Specialty Departments:</strong> Work sent to Valuation, BRaTs, BSG, etc. can qualify</p>
+                        <p><strong>Remember:</strong> Must be work we "competed for" or "took from" another firm</p>
                     </div>
                 </div>
 
-                <!-- More cards would be generated for all 80 managers -->
-            </div>
-
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <h3 class="chart-title">Service Distribution Across All Managers</h3>
-                    <canvas id="globalServiceChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Cross-Sell Performance Distribution</h3>
-                    <canvas id="performanceDistChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detail View -->
-        <div id="detailView" class="detail-view">
-            <button class="back-button" onclick="showGlobalView()">
-                ← Back to Global Overview
-            </button>
-
-            <div class="manager-detail-header">
-                <div class="manager-info">
-                    <h2 id="detailManagerName">Elberta Thompson</h2>
-                    <p>Senior Account Manager • Southeast Region • 8 Years with Firm</p>
-                </div>
-                <div class="detail-metrics">
-                    <div class="detail-metric">
-                        <div class="detail-metric-value">$1.25M</div>
-                        <div class="detail-metric-label">Total Revenue</div>
-                    </div>
-                    <div class="detail-metric">
-                        <div class="detail-metric-value">95%</div>
-                        <div class="detail-metric-label">Cross-Sell Rate</div>
-                    </div>
-                    <div class="detail-metric">
-                        <div class="detail-metric-value">4.2</div>
-                        <div class="detail-metric-label">Avg Services</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="account-structure">
-                <h3 class="chart-title">Account Portfolio Structure</h3>
-                
-                <div class="account-group">
-                    <div class="account-header">
-                        <span><strong>ABC Corporation</strong> - Total Group Revenue: $630K</span>
-                        <span class="parent-indicator">PARENT</span>
-                    </div>
-                    <div class="engagements">
-                        <div class="engagement-row">
-                            <div>Audit Services (AA)</div>
-                            <div><span class="service-tag tag-audit">Audit</span></div>
-                            <div>Partner: Elberta</div>
-                            <div>$200K</div>
+                <div class="pipeline-status">
+                    <h4>📍 Credit Timing for Expanded Services</h4>
+                    <div class="status-steps">
+                        <div class="status-step active">
+                            <div class="circle">1</div>
+                            <span>New Engagement Letter</span>
                         </div>
-                        <div class="engagement-row">
-                            <div>Corporate Tax Compliance</div>
-                            <div><span class="service-tag tag-tax">Tax</span></div>
-                            <div>Partner: Steve</div>
-                            <div>$150K</div>
+                        <div class="status-step active">
+                            <div class="circle">2</div>
+                            <span>Pipeline Complete</span>
+                        </div>
+                        <div class="status-step">
+                            <div class="circle">3</div>
+                            <span>Complete Date Entered</span>
+                        </div>
+                        <div class="status-step">
+                            <div class="circle">4</div>
+                            <span>Credit Recorded</span>
                         </div>
                     </div>
-                </div>
-                
-                <div class="account-group">
-                    <div class="account-header">
-                        <span><strong>ABC-1 International</strong> - Subsidiary</span>
-                        <span class="child-indicator">CHILD</span>
-                    </div>
-                    <div class="engagements">
-                        <div class="engagement-row">
-                            <div>International Tax Planning</div>
-                            <div><span class="service-tag tag-specialty">Specialty Tax</span></div>
-                            <div>Partner: Jason</div>
-                            <div>$180K</div>
-                        </div>
-                        <div class="engagement-row">
-                            <div>ERP Implementation</div>
-                            <div><span class="service-tag tag-business">Business Solutions</span></div>
-                            <div>Partner: Sally</div>
-                            <div>$100K</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional account groups would be shown here -->
-            </div>
-
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <h3 class="chart-title">Service Mix for This Manager</h3>
-                    <canvas id="managerServiceChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Revenue by Account Type</h3>
-                    <canvas id="accountTypeChart"></canvas>
-                </div>
-            </div>
-
-            <div class="performance-comparison">
-                <h3 class="chart-title">Performance vs. Peer Group</h3>
-                <div class="comparison-grid">
-                    <div class="comparison-item">
-                        <div class="comparison-label">Cross-Sell Rate</div>
-                        <div class="comparison-value">95%</div>
-                        <div class="comparison-vs">vs. 73% peer avg</div>
-                    </div>
-                    <div class="comparison-item">
-                        <div class="comparison-label">Revenue per Account</div>
-                        <div class="comparison-value">$417K</div>
-                        <div class="comparison-vs">vs. $285K peer avg</div>
-                    </div>
-                    <div class="comparison-item">
-                        <div class="comparison-label">Service Diversity</div>
-                        <div class="comparison-value">4 Services</div>
-                        <div class="comparison-vs">vs. 2.8 peer avg</div>
-                    </div>
-                    <div class="comparison-item">
-                        <div class="comparison-label">YoY Growth</div>
-                        <div class="comparison-value">+22%</div>
-                        <div class="comparison-vs">vs. +12% peer avg</div>
-                    </div>
+                    <p style="margin-top: 15px; font-size: 13px; color: #666;">
+                        <strong>Note:</strong> Credit is based on "Complete Date" not "Date Won" - make sure pipeline is properly updated!
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Toggle between views
-        function showGlobalView() {
-            document.getElementById('globalView').style.display = 'block';
-            document.getElementById('detailView').style.display = 'none';
-            document.querySelectorAll('.view-btn')[0].classList.add('active');
-            document.querySelectorAll('.view-btn')[1].classList.remove('active');
-        }
-
-        function showDetailView() {
-            document.getElementById('globalView').style.display = 'none';
-            document.getElementById('detailView').style.display = 'block';
-            document.querySelectorAll('.view-btn')[0].classList.remove('active');
-            document.querySelectorAll('.view-btn')[1].classList.add('active');
-        }
-
-        function showManagerDetail(managerName) {
-            document.getElementById('detailManagerName').textContent = managerName;
-            showDetailView();
-        }
-
-        // Generate more manager cards (simulating 80 managers)
-        function generateManagerCards() {
-            const grid = document.getElementById('managersGrid');
-            const regions = ['Northeast', 'Southeast', 'Midwest', 'West'];
-            const performances = ['Excellent', 'Good', 'Average', 'Poor'];
-            const badgeClasses = ['badge-excellent', 'badge-good', 'badge-average', 'badge-poor'];
+        function showForm(formType) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.form-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
             
-            // Keep the first 3 example cards and add more
-            for (let i = 4; i <= 12; i++) {
-                const perfIndex = Math.floor(Math.random() * 4);
-                const crossSell = perfIndex === 0 ? 90 + Math.random() * 10 : 
-                                 perfIndex === 1 ? 75 + Math.random() * 15 :
-                                 perfIndex === 2 ? 60 + Math.random() * 15 : 
-                                 40 + Math.random() * 20;
-                
-                const revenue = (500 + Math.random() * 1000).toFixed(0);
-                const accounts = Math.floor(2 + Math.random() * 8);
-                
-                const card = `
-                    <div class="manager-summary-card" onclick="showManagerDetail('Manager ${i}')">
-                        <div class="manager-summary-header">
-                            <div>
-                                <div class="manager-name">Manager ${i}</div>
-                                <div class="manager-region">${regions[Math.floor(Math.random() * regions.length)]} Region</div>
-                            </div>
-                            <span class="performance-badge ${badgeClasses[perfIndex]}">${performances[perfIndex]}</span>
-                        </div>
-                        <div class="manager-mini-metrics">
-                            <div class="mini-metric">
-                                <div class="mini-metric-value">${crossSell.toFixed(0)}%</div>
-                                <div class="mini-metric-label">Cross-Sell</div>
-                            </div>
-                            <div class="mini-metric">
-                                <div class="mini-metric-value">$${revenue}K</div>
-                                <div class="mini-metric-label">Revenue</div>
-                            </div>
-                            <div class="mini-metric">
-                                <div class="mini-metric-value">${accounts}</div>
-                                <div class="mini-metric-label">Accounts</div>
-                            </div>
-                        </div>
-                        <div class="service-mix-mini">
-                            <div class="mix-segment-mini" style="background: #4285f4; width: ${20 + Math.random() * 30}%;"></div>
-                            <div class="mix-segment-mini" style="background: #34a853; width: ${20 + Math.random() * 30}%;"></div>
-                            <div class="mix-segment-mini" style="background: #ea4335; width: ${10 + Math.random() * 20}%;"></div>
-                            <div class="mix-segment-mini" style="background: #fbbc04; width: ${10 + Math.random() * 20}%;"></div>
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += card;
+            // Remove active class from all forms
+            document.querySelectorAll('.form-container').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            // Add active class to clicked button and corresponding form
+            if (formType === 'newBusiness') {
+                document.querySelector('.form-button:first-child').classList.add('active');
+                document.getElementById('newBusinessForm').classList.add('active');
+            } else {
+                document.querySelector('.form-button:last-child').classList.add('active');
+                document.getElementById('expandedForm').classList.add('active');
             }
         }
-
-        // Initialize Charts
-        Chart.defaults.color = '#333';
-
-        // Global Service Distribution Chart
-        const globalServiceCtx = document.getElementById('globalServiceChart').getContext('2d');
-        new Chart(globalServiceCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Audit', 'Tax', 'Specialty Tax', 'Business Solutions', 'Other'],
-                datasets: [{
-                    data: [32, 28, 22, 15, 3],
-                    backgroundColor: ['#4285f4', '#34a853', '#ea4335', '#fbbc04', '#9c27b0'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Performance Distribution Chart
-        const performanceDistCtx = document.getElementById('performanceDistChart').getContext('2d');
-        new Chart(performanceDistCtx, {
-            type: 'bar',
-            data: {
-                labels: ['<60%', '60-74%', '75-89%', '90%+'],
-                datasets: [{
-                    label: 'Number of Managers',
-                    data: [8, 12, 42, 18],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-
-        // Manager Service Chart
-        const managerServiceCtx = document.getElementById('managerServiceChart').getContext('2d');
-        new Chart(managerServiceCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Audit', 'Tax', 'Specialty Tax', 'Business Solutions'],
-                datasets: [{
-                    data: [32, 24, 29, 16],
-                    backgroundColor: ['#4285f4', '#34a853', '#ea4335', '#fbbc04'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-
-        // Account Type Chart
-        const accountTypeCtx = document.getElementById('accountTypeChart').getContext('2d');
-        new Chart(accountTypeCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Parent Accounts', 'Child Accounts'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: [850, 400],
-                    backgroundColor: '#2a5298',
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value + 'K';
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-
-        // Initialize additional manager cards
-        generateManagerCards();
     </script>
 </body>
 </html>
-
