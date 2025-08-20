@@ -509,6 +509,173 @@
             line-height: 1.5;
         }
 
+        /* CRM Form Styles */
+        .crm-form-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            z-index: 2000;
+            max-width: 900px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .crm-form-modal.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .form-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .form-header h3 {
+            color: #333;
+            margin: 0;
+            font-size: 1.3em;
+        }
+
+        .form-tabs {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .form-tab {
+            padding: 8px 20px;
+            background: white;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-tab.active {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+        }
+
+        .form-body {
+            padding: 25px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .form-input {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: #2196F3;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .form-input.filled {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            animation: fillField 0.5s ease;
+        }
+
+        @keyframes fillField {
+            0% { background: white; }
+            50% { background: #a5d6a7; }
+            100% { background: #e8f5e9; }
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .close-form {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .close-form:hover {
+            transform: rotate(90deg);
+            background: #d32f2f;
+        }
+
+        .form-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
         .control-button {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -723,6 +890,10 @@
                 'Elberta brings in TechCorp Industries as a new client');
             
             await delay(1000);
+            showNewBusinessForm();
+            
+            await delay(3000);
+            hideForm();
             showAccountInfo();
             
             await delay(1500);
@@ -742,6 +913,10 @@
                 'Lior identifies tax planning opportunity and wins the engagement');
             
             await delay(1000);
+            showEngagementTrackerForm('Lior', 'Tax');
+            
+            await delay(3000);
+            hideForm();
             addEngagement('tax', 'Tax Services', 'Lior', 'Expanded Service', '#4caf50');
             
             await delay(1500);
@@ -750,18 +925,26 @@
             // Step 4: BSG Expansion
             await delay(2500);
             addTimelineEvent('💼', 'June 2024', 'Business Strategy', 
-                'Sally proposes BSG services and client agrees');
+                'Sally proposes Business Strategy Group services and client agrees');
             
             await delay(1000);
+            showEngagementTrackerForm('Sally', 'BSG');
+            
+            await delay(3000);
+            hideForm();
             addEngagement('bsg', 'BSG Consulting', 'Sally', 'Expanded Service', '#ff9800');
             
             // Step 5: 401k New Work
             await delay(2500);
             addTimelineEvent('🎯', 'January 2025', 'New Service Line', 
-                'Elberta cross-sells 401k Plan Audit - New work within her service line');
+                'Elberta cross-sells 401k Plan Administration - a completely new service');
             
             await delay(1000);
-            addEngagement('retirement', '401k Plan Audit', 'Elberta', 'New Work', '#e91e63');
+            showEngagementTrackerForm('Elberta', '401k Plan Admin');
+            
+            await delay(3000);
+            hideForm();
+            addEngagement('retirement', '401k Plan Admin', 'Elberta', 'New Work', '#e91e63');
             
             await delay(1500);
             addNarrativeText('Elberta brings in NEW work (401k) - tracked separately from expanded services! 🚀');
@@ -776,6 +959,263 @@
             button.disabled = false;
             button.textContent = 'Restart Demo';
             demoInProgress = false;
+        }
+
+        function showNewBusinessForm() {
+            const overlay = document.createElement('div');
+            overlay.className = 'form-overlay';
+            overlay.id = 'formOverlay';
+            
+            const modal = document.createElement('div');
+            modal.className = 'crm-form-modal';
+            modal.id = 'crmForm';
+            modal.innerHTML = `
+                <button class="close-form" onclick="hideForm()">×</button>
+                <div class="form-header">
+                    <h3>New Business Tracker</h3>
+                    <div class="form-tabs">
+                        <button class="form-tab active">New Business Tracker</button>
+                    </div>
+                </div>
+                <div class="form-body">
+                    <div class="form-section">
+                        <div class="form-section-title">Source details</div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">Internal/External Source *</label>
+                                <input class="form-input" type="text" value="Legacy Transfer" readonly>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Referral Contact</label>
+                                <input class="form-input" type="text" value="Internal Singerlawak" readonly style="color: #2196F3;">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">Event</label>
+                                <input class="form-input" type="text" id="eventField">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Originator Name 1</label>
+                                <input class="form-input" type="text" id="originator1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">Closer Name 1</label>
+                                <input class="form-input" type="text" id="closer1">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Closer Name 2</label>
+                                <input class="form-input" type="text">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="form-section-title">Service and Fee Estimations</div>
+                        <div class="service-grid">
+                            <div>
+                                <label class="form-label">Service 1</label>
+                                <input class="form-input" type="text" id="service1" style="color: #2196F3;">
+                            </div>
+                            <div>
+                                <label class="form-label">Fee Service 1 *</label>
+                                <input class="form-input" type="text" id="fee1">
+                            </div>
+                            <div>
+                                <label class="form-label">Annuity 1 *</label>
+                                <select class="form-input" id="annuity1">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="service-grid">
+                            <div>
+                                <label class="form-label">Service 2</label>
+                                <input class="form-input" type="text" id="service2" style="color: #2196F3;">
+                            </div>
+                            <div>
+                                <label class="form-label">Fee Service 2 *</label>
+                                <input class="form-input" type="text" id="fee2">
+                            </div>
+                            <div>
+                                <label class="form-label">Annuity 2 *</label>
+                                <select class="form-input">
+                                    <option>No</option>
+                                    <option>Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="form-label">Fee Estimate</span>
+                                <span style="font-size: 1.2em; font-weight: bold; color: #333;" id="totalFee">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                overlay.classList.add('show');
+                modal.classList.add('show');
+                
+                // Animate form filling
+                setTimeout(() => fillNewBusinessForm(), 500);
+            }, 100);
+        }
+
+        function showEngagementTrackerForm(partner, service) {
+            const overlay = document.createElement('div');
+            overlay.className = 'form-overlay';
+            overlay.id = 'formOverlay';
+            
+            const modal = document.createElement('div');
+            modal.className = 'crm-form-modal';
+            modal.id = 'crmForm';
+            modal.innerHTML = `
+                <button class="close-form" onclick="hideForm()">×</button>
+                <div class="form-header">
+                    <h3>ENG4002805 - TY2024 TX - ${service} - Hill Fam TR</h3>
+                    <div style="margin-top: 10px; color: #666;">
+                        Engagement › SL - General
+                    </div>
+                </div>
+                <div class="form-body">
+                    <div class="form-section">
+                        <div class="form-section-title">📊 Pipeline Tracker</div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">Originator Name 1</label>
+                                <input class="form-input" type="text" id="engOriginator1">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Closer Name 1</label>
+                                <input class="form-input" type="text" id="engCloser1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">Fee Estimate</label>
+                                <input class="form-input" type="text" id="engFee">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Engagement Source</label>
+                                <select class="form-input" id="engSource">
+                                    <option>---</option>
+                                    <option>Expanded Service</option>
+                                    <option>New Work</option>
+                                    <option>Recurring</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">Lead Source</label>
+                                <input class="form-input" type="text" id="leadSource">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Lead Source Sub Type</label>
+                                <input class="form-input" type="text">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="form-label">External Referral Contact</label>
+                                <input class="form-input" type="text">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Estimated AUM Potential</label>
+                                <input class="form-input" type="text">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                overlay.classList.add('show');
+                modal.classList.add('show');
+                
+                // Animate form filling based on partner
+                setTimeout(() => fillEngagementForm(partner, service), 500);
+            }, 100);
+        }
+
+        async function fillNewBusinessForm() {
+            // Animate filling out the form
+            document.getElementById('originator1').value = 'Elberta';
+            document.getElementById('originator1').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('closer1').value = 'Elberta';
+            document.getElementById('closer1').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('service1').value = 'Tax';
+            document.getElementById('service1').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('fee1').value = '$100.00';
+            document.getElementById('fee1').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('service2').value = 'Assurance';
+            document.getElementById('service2').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('fee2').value = '$200.00';
+            document.getElementById('fee2').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('totalFee').textContent = '$233.33';
+            document.getElementById('totalFee').style.color = '#4caf50';
+        }
+
+        async function fillEngagementForm(partner, service) {
+            document.getElementById('engOriginator1').value = partner;
+            document.getElementById('engOriginator1').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('engCloser1').value = partner;
+            document.getElementById('engCloser1').classList.add('filled');
+            
+            await delay(300);
+            let fee = service === 'Tax' ? '$75,000' : service === 'BSG' ? '$125,000' : '$45,000';
+            document.getElementById('engFee').value = fee;
+            document.getElementById('engFee').classList.add('filled');
+            
+            await delay(300);
+            let sourceType = service === '401k Plan Admin' ? 'New Work' : 'Expanded Service';
+            document.getElementById('engSource').value = sourceType;
+            document.getElementById('engSource').classList.add('filled');
+            
+            await delay(300);
+            document.getElementById('leadSource').value = 'Internal Referral';
+            document.getElementById('leadSource').classList.add('filled');
+        }
+
+        function hideForm() {
+            const overlay = document.getElementById('formOverlay');
+            const form = document.getElementById('crmForm');
+            
+            if (overlay) {
+                overlay.classList.remove('show');
+                setTimeout(() => overlay.remove(), 300);
+            }
+            
+            if (form) {
+                form.classList.remove('show');
+                setTimeout(() => form.remove(), 300);
+            }
         }
 
         function addTimelineEvent(icon, date, title, description) {
