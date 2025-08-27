@@ -3,652 +3,760 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Manager Cross-Selling Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <title>Workflow Document Management</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
         }
-
-        .dashboard {
+        
+        .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
+        
+        /* Header Tabs */
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
             padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-        }
-
-        .account-manager-grid {
+        
+        /* Two Column Layout */
+        .content-grid {
             display: grid;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .manager-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .manager-header {
-            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .manager-info h3 {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-
-        .manager-info p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
-        .manager-metrics {
-            display: flex;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
+            margin-bottom: 30px;
         }
-
-        .metric {
-            text-align: center;
+        
+        /* Upload Section */
+        .upload-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
         }
-
-        .metric-value {
-            font-size: 24px;
-            font-weight: bold;
+        
+        .upload-section:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
         }
-
-        .metric-label {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .account-structure {
-            padding: 20px;
-        }
-
-        .account-group {
-            margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .account-header {
-            background: #f0f7ff;
-            padding: 15px;
-            font-weight: 600;
+        
+        .upload-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
         }
-
-        .parent-indicator {
-            background: #1e3c72;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .child-indicator {
-            background: #4285f4;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .engagements {
-            padding: 15px;
-            background: #fafafa;
-        }
-
-        .engagement-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 15px;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-            margin-bottom: 8px;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .engagement-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .service-mix-visual {
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .mix-bar {
-            height: 40px;
-            display: flex;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .mix-segment {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            position: relative;
-        }
-
-        .mix-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 13px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .chart-container {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .chart-title {
+        
+        .upload-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
+            color: #1e293b;
         }
-
-        .performance-table {
+        
+        .file-count {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .upload-area {
             background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-
-        .table-header {
-            display: grid;
-            grid-template-columns: 150px 1fr 100px 120px 100px 100px;
-            padding: 15px;
-            font-weight: 600;
-            background: #f0f7ff;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 14px;
+        
+        .upload-area:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
         }
-
-        .table-row {
-            display: grid;
-            grid-template-columns: 150px 1fr 100px 120px 100px 100px;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.2s;
-        }
-
-        .table-row:hover {
-            background-color: #f8f9fa;
-        }
-
-        .service-breakdown-bar {
-            height: 25px;
+        
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .upload-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8pritolor: #3b82f6;
+            font-weight: 500;
+        }
+        
+        .file-types {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        
+        /* File List Section */
+        .files-section {
+            background: #ffffff;
             border-radius: 12px;
+            border: 1px solid #e2e8f0;
             overflow: hidden;
         }
-
-        .status-indicator {
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
+        
+        .section-header {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .section-title {
+            font-size: 16px;
             font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+        
+        .search-bar {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-item:hover {
+            background: #f8fafc;
+        }
+        
+        .file-item.selected {
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .file-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 2px;
+        }
+        
+        .file-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+        
+        .icon-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #334155;
+        }
+        
+        .icon-btn.delete:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        /* Bottom Sections */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        /* Tagging Section */
+        .tagging-section {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+        }
+        
+        .tags-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .form-select, .form-input {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .tag-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .tag-chip {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #bae6fd;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            color: #0284c7;
+        }
+        
+        .tag-remove:hover {
+            color: #ef4444;
+        }
+        
+        /* Actions Section */
+        .actions-section {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+        }
+        
+        .workflow-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn-workflow {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-publish {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .btn-publish:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-mark {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        .btn-mark:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .status-text {
+            font-size: 13px;
+            color: #059669;
+            font-weight: 500;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            padding: 40px;
             text-align: center;
+            color: #94a3b8;
         }
-
-        .status-excellent {
-            background: #d4edda;
-            color: #155724;
+        
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 15px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
         }
-
-        .status-good {
-            background: #fff3cd;
-            color: #856404;
+        
+        .empty-text {
+            font-size: 14px;
+            margin-bottom: 5px;
         }
-
-        .status-needs-improvement {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        @media (max-width: 768px) {
-            .manager-metrics {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .engagement-row, .table-header, .table-row {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
+        
+        .empty-subtext {
+            font-size: 13px;
+            color: #cbd5e1;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="header">
-            <h1>Account Manager Cross-Selling Performance</h1>
-            <p>Comprehensive view of service diversification and account management effectiveness</p>
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab">General</button>
+            <button class="tab active">Workflow Information</button>
+            <button class="tab">Billing</button>
+            <button class="tab">Addresses</button>
+            <button class="tab">Activities</button>
+            <button class="tab">Management</button>
+            <button class="tab">Delivery Team</button>
+            <button class="tab">Time & Expenses</button>
+            <button class="tab">Reserve Amount Review</button>
+            <button class="tab">Related</button>
         </div>
-
-        <div class="account-manager-grid">
-            <!-- Elberta's Account Portfolio -->
-            <div class="manager-card">
-                <div class="manager-header">
-                    <div class="manager-info">
-                        <h3>Elberta - Account Manager</h3>
-                        <p>Managing ABC Parent Account Group</p>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Upload and Files Grid -->
+            <div class="content-grid">
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <div class="upload-header">
+                        <h2 class="upload-title">📁 Document Upload</h2>
+                        <span class="file-count">3 files</span>
                     </div>
-                    <div class="manager-metrics">
-                        <div class="metric">
-                            <div class="metric-value">$630K</div>
-                            <div class="metric-label">Total Revenue</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">4</div>
-                            <div class="metric-label">Services Offered</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">100%</div>
-                            <div class="metric-label">Cross-Sell Rate</div>
-                        </div>
+                    
+                    <div class="upload-area">
+                        <div class="upload-icon">⬆️</div>
+                        <div class="upload-text">Drag and drop files here or <span style="color: #3b82f6;">browse</span></div>
+                        <div class="file-types">Supported formats: PDF, DOC, DOCX, XLS, XLSX</div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">
+                            📤 Upload Files
+                        </button>
+                        <button class="btn btn-secondary">
+                            🗂️ All Files
+                        </button>
                     </div>
                 </div>
                 
-                <div class="account-structure">
-                    <div class="account-group">
-                        <div class="account-header">
-                            <span><strong>ABC</strong> - Corporate Entity</span>
-                            <span class="parent-indicator">PARENT</span>
-                        </div>
-                        <div class="engagements">
-                            <div class="engagement-row">
-                                <div>Audit (AA)</div>
-                                <div>Partner: Elberta</div>
-                                <div>$200K</div>
-                                <div>32% of portfolio</div>
-                            </div>
-                            <div class="engagement-row">
-                                <div>Tax Services</div>
-                                <div>Partner: Steve</div>
-                                <div>$150K</div>
-                                <div>24% of portfolio</div>
-                            </div>
+                <!-- Files List Section -->
+                <div class="files-section">
+                    <div class="section-header">
+                        <h3 class="section-title">📋 Current Files</h3>
+                        <div class="search-bar">
+                            <input type="text" class="search-input" placeholder="Search files...">
+                            <span class="search-icon">🔍</span>
                         </div>
                     </div>
                     
-                    <div class="account-group">
-                        <div class="account-header">
-                            <span><strong>ABC-1</strong> - Subsidiary</span>
-                            <span class="child-indicator">CHILD</span>
-                        </div>
-                        <div class="engagements">
-                            <div class="engagement-row">
-                                <div>Specialty Tax</div>
-                                <div>Partner: Jason</div>
-                                <div>$180K</div>
-                                <div>29% of portfolio</div>
+                    <div class="file-list">
+                        <div class="file-item selected">
+                            <div class="file-info">
+                                <div class="file-icon">📄</div>
+                                <div class="file-details">
+                                    <div class="file-name">ENG5007914</div>
+                                    <div class="file-meta">2024 • Deliverable</div>
+                                </div>
                             </div>
-                            <div class="engagement-row">
-                                <div>Business Solutions</div>
-                                <div>Partner: Sally</div>
-                                <div>$100K</div>
-                                <div>16% of portfolio</div>
+                            <div class="file-actions">
+                                <button class="icon-btn">✏️</button>
+                                <button class="icon-btn delete">🗑️</button>
                             </div>
                         </div>
+                        
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-icon">📊</div>
+                                <div class="file-details">
+                                    <div class="file-name">CID HOLDINGS...</div>
+                                    <div class="file-meta">Label pending</div>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="icon-btn">✏️</button>
+                                <button class="icon-btn delete">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-icon">📑</div>
+                                <div class="file-details">
+                                    <div class="file-name">CID Holdings E...</div>
+                                    <div class="file-meta">Other Engagement</div>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="icon-btn">✏️</button>
+                                <button class="icon-btn delete">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Section -->
+            <div class="bottom-grid">
+                <!-- Tagging Section -->
+                <div class="tagging-section">
+                    <h3 class="section-title">🏷️ Document Tagging</h3>
+                    
+                    <div class="tags-grid">
+                        <div class="form-group">
+                            <label class="form-label">Account (Engagement)</label>
+                            <select class="form-select">
+                                <option>Select Account...</option>
+                                <option>Account 1</option>
+                                <option>Account 2</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Engagement</label>
+                            <select class="form-select">
+                                <option>Select Engagement...</option>
+                                <option>Engagement 1</option>
+                                <option>Engagement 2</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Parent Task</label>
+                            <select class="form-select">
+                                <option>Select Parent Task...</option>
+                                <option>Task 1</option>
+                                <option>Task 2</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Deliverable Type</label>
+                            <select class="form-select">
+                                <option>Select Type...</option>
+                                <option>Report</option>
+                                <option>Analysis</option>
+                                <option>Presentation</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="tag-chips">
+                        <span class="tag-chip">
+                            Deliverable
+                            <span class="tag-remove">×</span>
+                        </span>
+                        <span class="tag-chip">
+                            2024
+                            <span class="tag-remove">×</span>
+                        </span>
+                        <span class="tag-chip">
+                            CID Holdings
+                            <span class="tag-remove">×</span>
+                        </span>
                     </div>
                 </div>
                 
-                <div class="service-mix-visual">
-                    <h4 style="margin-bottom: 15px; font-size: 16px;">Elberta's Service Mix for ABC Group</h4>
-                    <div class="mix-bar">
-                        <div class="mix-segment" style="background: #4285f4; width: 32%;">32%</div>
-                        <div class="mix-segment" style="background: #34a853; width: 24%;">24%</div>
-                        <div class="mix-segment" style="background: #ea4335; width: 29%;">29%</div>
-                        <div class="mix-segment" style="background: #fbbc04; width: 16%;">16%</div>
+                <!-- Actions Section -->
+                <div class="actions-section">
+                    <h3 class="section-title">⚡ Workflow Actions</h3>
+                    
+                    <div class="workflow-actions">
+                        <button class="btn-workflow btn-save">
+                            💾 Open/Edit
+                        </button>
+                        <button class="btn-workflow btn-publish">
+                            📤 Publish to Portal
+                        </button>
+                        <button class="btn-workflow btn-mark">
+                            ✅ Mark Workflow Related
+                        </button>
                     </div>
-                    <div class="mix-legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #4285f4;"></div>
-                            <span>Audit (32%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #34a853;"></div>
-                            <span>Tax (24%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #ea4335;"></div>
-                            <span>Specialty Tax (29%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #fbbc04;"></div>
-                            <span>Business Solutions (16%)</span>
-                        </div>
+                    
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">All changes saved</span>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="performance-table">
-            <h2 class="chart-title">Account Manager Comparison</h2>
-            <div class="table-header">
-                <div>Account Manager</div>
-                <div>Service Mix</div>
-                <div>Accounts</div>
-                <div>Total Revenue</div>
-                <div>Avg/Account</div>
-                <div>Status</div>
-            </div>
-            <div class="table-row">
-                <div><strong>Elberta</strong></div>
-                <div>
-                    <div class="service-breakdown-bar">
-                        <div class="mix-segment" style="background: #4285f4; width: 32%;"></div>
-                        <div class="mix-segment" style="background: #34a853; width: 24%;"></div>
-                        <div class="mix-segment" style="background: #ea4335; width: 29%;"></div>
-                        <div class="mix-segment" style="background: #fbbc04; width: 16%;"></div>
-                    </div>
-                </div>
-                <div>3</div>
-                <div>$1,250K</div>
-                <div>$417K</div>
-                <div><span class="status-indicator status-excellent">Excellent</span></div>
-            </div>
-            <div class="table-row">
-                <div><strong>Michael</strong></div>
-                <div>
-                    <div class="service-breakdown-bar">
-                        <div class="mix-segment" style="background: #4285f4; width: 45%;"></div>
-                        <div class="mix-segment" style="background: #34a853; width: 35%;"></div>
-                        <div class="mix-segment" style="background: #fbbc04; width: 20%;"></div>
-                    </div>
-                </div>
-                <div>5</div>
-                <div>$980K</div>
-                <div>$196K</div>
-                <div><span class="status-indicator status-good">Good</span></div>
-            </div>
-            <div class="table-row">
-                <div><strong>Patricia</strong></div>
-                <div>
-                    <div class="service-breakdown-bar">
-                        <div class="mix-segment" style="background: #34a853; width: 60%;"></div>
-                        <div class="mix-segment" style="background: #ea4335; width: 40%;"></div>
-                    </div>
-                </div>
-                <div>4</div>
-                <div>$760K</div>
-                <div>$190K</div>
-                <div><span class="status-indicator status-needs-improvement">Needs Work</span></div>
-            </div>
-            <div class="table-row">
-                <div><strong>Robert</strong></div>
-                <div>
-                    <div class="service-breakdown-bar">
-                        <div class="mix-segment" style="background: #4285f4; width: 25%;"></div>
-                        <div class="mix-segment" style="background: #34a853; width: 25%;"></div>
-                        <div class="mix-segment" style="background: #ea4335; width: 25%;"></div>
-                        <div class="mix-segment" style="background: #fbbc04; width: 25%;"></div>
-                    </div>
-                </div>
-                <div>6</div>
-                <div>$1,100K</div>
-                <div>$183K</div>
-                <div><span class="status-indicator status-excellent">Excellent</span></div>
-            </div>
-        </div>
-
-        <div class="summary-grid">
-            <div class="chart-container">
-                <h2 class="chart-title">Service Distribution by Account Manager</h2>
-                <canvas id="managerServiceChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h2 class="chart-title">Cross-Selling Effectiveness</h2>
-                <canvas id="crossSellChart"></canvas>
-            </div>
-        </div>
-
-        <div class="summary-grid">
-            <div class="chart-container">
-                <h2 class="chart-title">Revenue per Account by Manager</h2>
-                <canvas id="revenuePerAccountChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h2 class="chart-title">Service Diversification Score</h2>
-                <canvas id="diversificationChart"></canvas>
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Service Distribution by Account Manager
-        const managerServiceCtx = document.getElementById('managerServiceChart').getContext('2d');
-        new Chart(managerServiceCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Elberta', 'Michael', 'Patricia', 'Robert'],
-                datasets: [
-                    {
-                        label: 'Audit',
-                        data: [32, 45, 0, 25],
-                        backgroundColor: '#4285f4'
-                    },
-                    {
-                        label: 'Tax',
-                        data: [24, 35, 60, 25],
-                        backgroundColor: '#34a853'
-                    },
-                    {
-                        label: 'Specialty Tax',
-                        data: [29, 0, 40, 25],
-                        backgroundColor: '#ea4335'
-                    },
-                    {
-                        label: 'Business Solutions',
-                        data: [16, 20, 0, 25],
-                        backgroundColor: '#fbbc04'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y + '%';
-                            }
-                        }
-                    }
-                }
-            }
+        // Add interactivity
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
-
-        // Cross-Selling Effectiveness
-        const crossSellCtx = document.getElementById('crossSellChart').getContext('2d');
-        new Chart(crossSellCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Service Variety', 'Revenue/Account', 'Client Retention', 'Growth Rate', 'Team Utilization'],
-                datasets: [
-                    {
-                        label: 'Elberta',
-                        data: [95, 90, 88, 85, 92],
-                        borderColor: '#4285f4',
-                        backgroundColor: 'rgba(66, 133, 244, 0.2)'
-                    },
-                    {
-                        label: 'Michael',
-                        data: [75, 70, 82, 78, 80],
-                        borderColor: '#34a853',
-                        backgroundColor: 'rgba(52, 168, 83, 0.2)'
-                    },
-                    {
-                        label: 'Patricia',
-                        data: [50, 68, 75, 65, 70],
-                        borderColor: '#ea4335',
-                        backgroundColor: 'rgba(234, 67, 53, 0.2)'
-                    },
-                    {
-                        label: 'Robert',
-                        data: [100, 65, 90, 88, 85],
-                        borderColor: '#fbbc04',
-                        backgroundColor: 'rgba(251, 188, 4, 0.2)'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
+        
+        document.querySelectorAll('.file-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.file-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+            });
         });
-
-        // Revenue per Account
-        const revenuePerAccountCtx = document.getElementById('revenuePerAccountChart').getContext('2d');
-        new Chart(revenuePerAccountCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Elberta', 'Michael', 'Patricia', 'Robert'],
-                datasets: [{
-                    label: 'Average Revenue per Account ($K)',
-                    data: [417, 196, 190, 183],
-                    backgroundColor: ['#4285f4', '#34a853', '#ea4335', '#fbbc04'],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value + 'K';
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
+        
+        document.querySelectorAll('.tag-remove').forEach(remove => {
+            remove.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.parentElement.style.animation = 'fadeOut 0.3s';
+                setTimeout(() => {
+                    this.parentElement.remove();
+                }, 300);
+            });
         });
-
-        // Service Diversification Score
-        const diversificationCtx = document.getElementById('diversificationChart').getContext('2d');
-        new Chart(diversificationCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Highly Diversified (4+ services)', 'Moderately Diversified (3 services)', 'Limited Diversification (2 services)', 'Single Service'],
-                datasets: [{
-                    data: [2, 3, 5, 2],
-                    backgroundColor: ['#34a853', '#4285f4', '#fbbc04', '#ea4335'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                }
-            }
+        
+        // Drag and drop simulation
+        const uploadArea = document.querySelector('.upload-area');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#e0e7ff';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = 'white';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'white';
+            // Handle file drop
         });
     </script>
 </body>
 </html>
-
