@@ -2,20 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Avi's Arrival Checklist 👶</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
+            padding-bottom: 80px;
         }
 
         .container {
@@ -26,12 +28,12 @@
         .header {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             animation: fadeIn 1s ease;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: clamp(1.5em, 5vw, 2.5em);
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
@@ -39,10 +41,10 @@
         .countdown {
             background: rgba(255,255,255,0.2);
             border-radius: 15px;
-            padding: 15px 30px;
+            padding: 12px 20px;
             display: inline-block;
             backdrop-filter: blur(10px);
-            font-size: 1.2em;
+            font-size: clamp(0.9em, 3vw, 1.2em);
             animation: pulse 2s infinite;
         }
 
@@ -56,21 +58,27 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
         .setup-panel {
             background: white;
             border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         .setup-panel h2 {
             color: #764ba2;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: clamp(1.2em, 4vw, 1.5em);
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .input-group label {
@@ -78,6 +86,7 @@
             margin-bottom: 5px;
             color: #555;
             font-weight: 600;
+            font-size: 14px;
         }
 
         .input-group input {
@@ -85,7 +94,7 @@
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 16px;
             transition: all 0.3s;
         }
 
@@ -99,28 +108,46 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 14px 24px;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+            touch-action: manipulation;
         }
 
-        .btn:hover {
+        .btn:hover, .btn:active {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
         }
 
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px;
+        }
+
+        .tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .tabs::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        .tabs::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
         }
 
         .tab {
-            padding: 12px 24px;
+            padding: 10px 16px;
             background: white;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
@@ -129,7 +156,10 @@
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            white-space: nowrap;
+            font-size: 14px;
+            flex-shrink: 0;
         }
 
         .tab.active {
@@ -166,35 +196,71 @@
 
         .add-item-form {
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-row {
+            display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .add-item-form input {
+        .form-row > * {
             flex: 1;
-            min-width: 200px;
+            min-width: 140px;
+        }
+
+        .add-item-form input, .add-item-form select, .add-item-form textarea {
             padding: 12px;
             border: 2px solid white;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 16px;
+            font-family: inherit;
+            background: white;
+        }
+
+        .add-item-form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .price-input-wrapper {
+            position: relative;
+        }
+
+        .price-input-wrapper::before {
+            content: '$';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 600;
+        }
+
+        .price-input-wrapper input {
+            padding-left: 25px;
         }
 
         .checklist-items {
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             min-height: 200px;
+            max-height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .checklist-item {
-            display: flex;
-            align-items: center;
             padding: 15px;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 10px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
             transition: all 0.3s;
             animation: itemAdd 0.5s ease;
+            border: 2px solid transparent;
         }
 
         @keyframes itemAdd {
@@ -208,50 +274,132 @@
             }
         }
 
-        .checklist-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .checklist-item:active {
+            transform: scale(0.98);
         }
 
         .checklist-item.completed {
             opacity: 0.7;
-            background: #e8f5e9;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
         }
 
-        .checklist-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-right: 15px;
+        .checklist-item.high-priority {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .item-checkbox {
+            width: 24px;
+            height: 24px;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
-        .item-details {
+        .item-main {
             flex: 1;
         }
 
         .item-name {
             font-weight: 600;
             color: #333;
-            margin-bottom: 5px;
+            font-size: 16px;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .item-price {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .item-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .item-note {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+
+        .item-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .item-link:hover {
+            background: rgba(102, 126, 234, 0.2);
         }
 
         .item-meta {
             font-size: 12px;
-            color: #666;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .delete-btn, .edit-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            flex: 1;
         }
 
         .delete-btn {
             background: #ff6b6b;
             color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
         }
 
-        .delete-btn:hover {
+        .edit-btn {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .delete-btn:hover, .delete-btn:active {
             background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        .edit-btn:hover, .edit-btn:active {
+            background: #45b7b8;
             transform: scale(1.05);
         }
 
@@ -259,19 +407,21 @@
             position: fixed;
             top: 20px;
             right: 20px;
+            left: 20px;
+            max-width: 400px;
+            margin: 0 auto;
             background: white;
-            padding: 20px;
+            padding: 16px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             display: none;
-            animation: slideInRight 0.5s ease;
+            animation: slideInDown 0.5s ease;
             z-index: 1000;
-            max-width: 300px;
         }
 
-        @keyframes slideInRight {
-            from { transform: translateX(400px); }
-            to { transform: translateX(0); }
+        @keyframes slideInDown {
+            from { transform: translateY(-120%); }
+            to { transform: translateY(0); }
         }
 
         .notification.show {
@@ -281,34 +431,34 @@
         .notification-title {
             font-weight: 600;
             color: #764ba2;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 15px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: transform 0.3s;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
+        .stat-card:active {
+            transform: scale(0.95);
         }
 
         .stat-number {
-            font-size: 2em;
+            font-size: 1.8em;
             font-weight: bold;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
@@ -317,20 +467,22 @@
 
         .stat-label {
             color: #666;
-            margin-top: 5px;
+            margin-top: 4px;
+            font-size: 12px;
         }
 
         .emoji {
-            font-size: 1.5em;
+            font-size: 1.2em;
         }
 
         .progress-bar {
             width: 100%;
-            height: 30px;
-            background: #e0e0e0;
+            height: 25px;
+            background: white;
             border-radius: 15px;
             overflow: hidden;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .progress-fill {
@@ -342,11 +494,12 @@
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 14px;
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px;
+            padding: 40px 20px;
             color: #999;
         }
 
@@ -355,19 +508,153 @@
             margin-bottom: 10px;
         }
 
+        .total-budget {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .total-budget-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .total-budget-amount {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mobile-add-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 30px;
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.3s;
+            display: none;
+        }
+
+        .mobile-add-btn:active {
+            transform: scale(0.9);
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-bottom: 100px;
+            }
+            
+            .mobile-add-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
             .header h1 {
-                font-size: 1.8em;
+                font-size: 1.5em;
             }
             
             .tabs {
+                padding: 5px 0;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .add-item-section {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 20px 20px 0 0;
+                padding: 20px;
+                z-index: 200;
+                display: none;
+                animation: slideUp 0.3s ease;
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            }
+            
+            .add-item-section.show {
+                display: block;
+            }
+            
+            .form-row {
                 flex-direction: column;
             }
             
-            .tab {
+            .form-row > * {
                 width: 100%;
-                justify-content: center;
             }
+        }
+
+        @media (max-width: 480px) {
+            .stat-card {
+                padding: 12px;
+            }
+            
+            .stat-number {
+                font-size: 1.4em;
+            }
+            
+            .tab {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+            display: none;
+        }
+
+        .modal-overlay.show {
+            display: block;
+        }
+
+        details {
+            margin-top: 15px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: #764ba2;
+            font-weight: 600;
+            padding: 10px;
+            background: #f0f4ff;
+            border-radius: 10px;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -376,36 +663,36 @@
         <div class="header">
             <h1>🍼 Avi's Arrival Checklist 👶</h1>
             <div class="countdown" id="countdown">
-                <span class="emoji">⏰</span> <span id="daysLeft"></span> days until Avi arrives!
+                <span class="emoji">⏰</span> <span id="daysLeft"></span> days to go!
             </div>
         </div>
 
         <!-- Setup Panel -->
         <div class="setup-panel" id="setupPanel">
-            <h2>🔧 Quick Setup - Connect to Google Sheets</h2>
-            <p style="margin-bottom: 20px; color: #666;">To sync this checklist with Google Sheets for real-time updates between you and your wife:</p>
+            <h2>🔧 Quick Setup</h2>
+            <p style="margin-bottom: 15px; color: #666; font-size: 14px;">Connect to Google Sheets for real-time sync between you and Ingrid!</p>
             
-            <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
-                <strong>Step 1:</strong> Create a new Google Sheet<br>
-                <strong>Step 2:</strong> Go to Extensions → Apps Script<br>
-                <strong>Step 3:</strong> Copy the provided code below<br>
-                <strong>Step 4:</strong> Deploy as Web App (set to "Anyone can access")<br>
-                <strong>Step 5:</strong> Paste the Web App URL here
+            <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 12px; margin-bottom: 15px; border-radius: 5px; font-size: 13px;">
+                <strong>Quick Steps:</strong><br>
+                1. Create a Google Sheet<br>
+                2. Add these columns: Category, Item, Priority, Completed, Timestamp, AddedBy, Price, Link, Notes<br>
+                3. Go to Extensions → Apps Script<br>
+                4. Copy the code below<br>
+                5. Deploy as Web App → Anyone can access
             </div>
 
             <div class="input-group">
-                <label>Google Sheets Web App URL (optional - works offline too!)</label>
-                <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+                <label>Google Sheets Web App URL (optional)</label>
+                <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec">
             </div>
             
             <button class="btn" onclick="saveSetup()">
-                Start Using Checklist (Works Offline Too!) 🚀
+                Start Using Checklist 🚀
             </button>
 
-            <details style="margin-top: 20px;">
-                <summary style="cursor: pointer; color: #764ba2; font-weight: 600;">📋 Google Apps Script Code (Click to expand)</summary>
-                <pre style="background: #f5f5f5; padding: 15px; border-radius: 10px; overflow-x: auto; margin-top: 10px; font-size: 12px;">
-function doGet() {
+            <details>
+                <summary>📋 Google Apps Script Code</summary>
+                <pre>function doGet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = sheet.getDataRange().getValues();
   
@@ -426,21 +713,32 @@ function doPost(e) {
       data.priority,
       data.completed,
       data.timestamp,
-      data.addedBy
+      data.addedBy,
+      data.price || '',
+      data.link || '',
+      data.notes || ''
     ]);
   } else if (data.action === 'update') {
-    // Update existing row
     var dataRange = sheet.getDataRange();
     var values = dataRange.getValues();
     
     for (var i = 0; i < values.length; i++) {
-      if (values[i][1] === data.item && values[i][0] === data.category) {
-        sheet.getRange(i + 1, 4).setValue(data.completed);
+      if (values[i][1] === data.oldItem && values[i][0] === data.category) {
+        sheet.getRange(i + 1, 1, 1, 9).setValues([[
+          data.category,
+          data.item,
+          data.priority,
+          data.completed,
+          data.timestamp,
+          data.addedBy,
+          data.price || '',
+          data.link || '',
+          data.notes || ''
+        ]]);
         break;
       }
     }
   } else if (data.action === 'delete') {
-    // Delete row
     var dataRange = sheet.getDataRange();
     var values = dataRange.getValues();
     
@@ -456,13 +754,18 @@ function doPost(e) {
     .createTextOutput(JSON.stringify({status: 'success'}))
     .setMimeType(ContentService.MimeType.JSON)
     .setHeader('Access-Control-Allow-Origin', '*');
-}
-                </pre>
+}</pre>
             </details>
         </div>
 
-        <!-- Main App (hidden initially) -->
+        <!-- Main App -->
         <div id="mainApp" style="display: none;">
+            <!-- Total Budget -->
+            <div class="total-budget">
+                <div class="total-budget-label">💰 Total Budget Estimate</div>
+                <div class="total-budget-amount" id="totalBudget">$0</div>
+            </div>
+
             <!-- Stats -->
             <div class="stats">
                 <div class="stat-card">
@@ -483,7 +786,7 @@ function doPost(e) {
                 <div class="stat-card">
                     <div class="emoji">🔥</div>
                     <div class="stat-number" id="urgentItems">0</div>
-                    <div class="stat-label">Urgent Items</div>
+                    <div class="stat-label">Urgent</div>
                 </div>
             </div>
 
@@ -504,191 +807,237 @@ function doPost(e) {
                     <span class="emoji">🍼</span> Feeding
                 </div>
                 <div class="tab" onclick="switchCategory('diapering')">
-                    <span class="emoji">🧷</span> Diapering
+                    <span class="emoji">🧷</span> Diapers
                 </div>
                 <div class="tab" onclick="switchCategory('health')">
-                    <span class="emoji">🏥</span> Health & Safety
+                    <span class="emoji">🏥</span> Health
                 </div>
                 <div class="tab" onclick="switchCategory('travel')">
                     <span class="emoji">🚗</span> Travel
                 </div>
                 <div class="tab" onclick="switchCategory('mom')">
-                    <span class="emoji">💝</span> For Mom
+                    <span class="emoji">💝</span> Mom
                 </div>
                 <div class="tab" onclick="switchCategory('documents')">
-                    <span class="emoji">📄</span> Documents
+                    <span class="emoji">📄</span> Docs
                 </div>
             </div>
 
             <!-- Category Content -->
             <div id="nursery" class="category-content active">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="nursery-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Nursery Item</h3>
                     <div class="add-item-form">
-                        <input type="text" id="nursery-item" placeholder="What do you need? (e.g., Crib, Changing table)">
-                        <select id="nursery-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('nursery')">Add Item ➕</button>
+                        <input type="text" id="nursery-item" placeholder="What do you need? (e.g., Crib)">
+                        
+                        <div class="form-row">
+                            <select id="nursery-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="nursery-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="nursery-link" placeholder="Product link (optional)">
+                        <textarea id="nursery-notes" placeholder="Notes (size, color, specific brand, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('nursery')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="nursery-items">
-                    <div class="empty-state">
-                        <div class="emoji">🏠</div>
-                        <p>No nursery items yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="nursery-items"></div>
             </div>
 
             <div id="clothing" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="clothing-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Clothing Item</h3>
                     <div class="add-item-form">
-                        <input type="text" id="clothing-item" placeholder="What clothing do you need? (e.g., Onesies, Sleepers)">
-                        <select id="clothing-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('clothing')">Add Item ➕</button>
+                        <input type="text" id="clothing-item" placeholder="What clothing? (e.g., Onesies)">
+                        
+                        <div class="form-row">
+                            <select id="clothing-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="clothing-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="clothing-link" placeholder="Product link (optional)">
+                        <textarea id="clothing-notes" placeholder="Notes (size, quantity, color, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('clothing')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="clothing-items">
-                    <div class="empty-state">
-                        <div class="emoji">👕</div>
-                        <p>No clothing items yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="clothing-items"></div>
             </div>
 
             <div id="feeding" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="feeding-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Feeding Item</h3>
                     <div class="add-item-form">
-                        <input type="text" id="feeding-item" placeholder="What feeding supplies? (e.g., Bottles, Formula)">
-                        <select id="feeding-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('feeding')">Add Item ➕</button>
+                        <input type="text" id="feeding-item" placeholder="Feeding supplies? (e.g., Bottles)">
+                        
+                        <div class="form-row">
+                            <select id="feeding-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="feeding-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="feeding-link" placeholder="Product link (optional)">
+                        <textarea id="feeding-notes" placeholder="Notes (brand preference, quantity, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('feeding')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="feeding-items">
-                    <div class="empty-state">
-                        <div class="emoji">🍼</div>
-                        <p>No feeding items yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="feeding-items"></div>
             </div>
 
             <div id="diapering" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="diapering-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Diapering Item</h3>
                     <div class="add-item-form">
-                        <input type="text" id="diapering-item" placeholder="What diapering supplies? (e.g., Diapers, Wipes)">
-                        <select id="diapering-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('diapering')">Add Item ➕</button>
+                        <input type="text" id="diapering-item" placeholder="Diaper supplies? (e.g., Diapers)">
+                        
+                        <div class="form-row">
+                            <select id="diapering-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="diapering-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="diapering-link" placeholder="Product link (optional)">
+                        <textarea id="diapering-notes" placeholder="Notes (size, brand, quantity, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('diapering')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="diapering-items">
-                    <div class="empty-state">
-                        <div class="emoji">🧷</div>
-                        <p>No diapering items yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="diapering-items"></div>
             </div>
 
             <div id="health" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="health-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Health Item</h3>
                     <div class="add-item-form">
-                        <input type="text" id="health-item" placeholder="Health & safety items? (e.g., Thermometer, Baby monitor)">
-                        <select id="health-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('health')">Add Item ➕</button>
+                        <input type="text" id="health-item" placeholder="Health items? (e.g., Thermometer)">
+                        
+                        <div class="form-row">
+                            <select id="health-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="health-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="health-link" placeholder="Product link (optional)">
+                        <textarea id="health-notes" placeholder="Notes (specific features, brand, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('health')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="health-items">
-                    <div class="empty-state">
-                        <div class="emoji">🏥</div>
-                        <p>No health items yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="health-items"></div>
             </div>
 
             <div id="travel" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="travel-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Travel Item</h3>
                     <div class="add-item-form">
-                        <input type="text" id="travel-item" placeholder="Travel gear? (e.g., Car seat, Stroller)">
-                        <select id="travel-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('travel')">Add Item ➕</button>
+                        <input type="text" id="travel-item" placeholder="Travel gear? (e.g., Car seat)">
+                        
+                        <div class="form-row">
+                            <select id="travel-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="travel-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="travel-link" placeholder="Product link (optional)">
+                        <textarea id="travel-notes" placeholder="Notes (model, safety ratings, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('travel')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="travel-items">
-                    <div class="empty-state">
-                        <div class="emoji">🚗</div>
-                        <p>No travel items yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="travel-items"></div>
             </div>
 
             <div id="mom" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="mom-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Item for Mom</h3>
                     <div class="add-item-form">
-                        <input type="text" id="mom-item" placeholder="Items for mom? (e.g., Nursing pillow, Maternity pads)">
-                        <select id="mom-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('mom')">Add Item ➕</button>
+                        <input type="text" id="mom-item" placeholder="Items for mom? (e.g., Nursing pillow)">
+                        
+                        <div class="form-row">
+                            <select id="mom-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="mom-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="mom-link" placeholder="Product link (optional)">
+                        <textarea id="mom-notes" placeholder="Notes (size, preferences, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('mom')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="mom-items">
-                    <div class="empty-state">
-                        <div class="emoji">💝</div>
-                        <p>No items for mom yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="mom-items"></div>
             </div>
 
             <div id="documents" class="category-content">
-                <div class="add-item-section">
-                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                <div class="add-item-section" id="documents-add">
+                    <h3 style="margin-bottom: 15px;">➕ Add Document/Task</h3>
                     <div class="add-item-form">
-                        <input type="text" id="documents-item" placeholder="Important documents? (e.g., Insurance forms, Birth plan)">
-                        <select id="documents-priority" style="padding: 12px; border: 2px solid white; border-radius: 10px;">
-                            <option value="normal">Normal Priority</option>
-                            <option value="high">High Priority 🔥</option>
-                            <option value="low">Low Priority</option>
-                        </select>
-                        <button class="btn" onclick="addItem('documents')">Add Item ➕</button>
+                        <input type="text" id="documents-item" placeholder="Document/Task? (e.g., Birth plan)">
+                        
+                        <div class="form-row">
+                            <select id="documents-priority">
+                                <option value="normal">Normal Priority</option>
+                                <option value="high">🔥 High Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <div class="price-input-wrapper">
+                                <input type="number" id="documents-price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <input type="url" id="documents-link" placeholder="Reference link (optional)">
+                        <textarea id="documents-notes" placeholder="Notes (deadline, requirements, etc.)"></textarea>
+                        
+                        <button class="btn" onclick="addItem('documents')">Add to List ➕</button>
                     </div>
                 </div>
-                <div class="checklist-items" id="documents-items">
-                    <div class="empty-state">
-                        <div class="emoji">📄</div>
-                        <p>No documents yet. Add your first item above!</p>
-                    </div>
-                </div>
+                <div class="checklist-items" id="documents-items"></div>
             </div>
         </div>
+
+        <!-- Mobile Add Button -->
+        <button class="mobile-add-btn" id="mobileAddBtn" onclick="toggleMobileAdd()">+</button>
+        
+        <!-- Modal Overlay for mobile -->
+        <div class="modal-overlay" id="modalOverlay" onclick="closeMobileAdd()"></div>
 
         <!-- Notification -->
         <div class="notification" id="notification">
@@ -696,7 +1045,7 @@ function doPost(e) {
                 <span class="emoji">🎉</span>
                 <span id="notificationText">New item added!</span>
             </div>
-            <div id="notificationDetails" style="color: #666; font-size: 14px;"></div>
+            <div id="notificationDetails" style="color: #666; font-size: 13px;"></div>
         </div>
     </div>
 
@@ -705,6 +1054,7 @@ function doPost(e) {
         let checklistData = {};
         let sheetsUrl = '';
         let currentCategory = 'nursery';
+        let editingItem = null;
 
         // Initialize
         function init() {
@@ -719,17 +1069,53 @@ function doPost(e) {
                 sheetsUrl = savedUrl;
                 document.getElementById('setupPanel').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('mobileAddBtn').style.display = 'flex';
                 loadAllItems();
+                updateBudget();
             }
 
             // Update countdown
             updateCountdown();
-            setInterval(updateCountdown, 60000); // Update every minute
+            setInterval(updateCountdown, 60000);
 
-            // Check for updates from Google Sheets every 10 seconds if connected
+            // Sync with sheets
             if (sheetsUrl) {
                 setInterval(syncWithSheets, 10000);
             }
+
+            // Check if on mobile
+            if (window.innerWidth <= 768) {
+                setupMobileView();
+            }
+        }
+
+        function setupMobileView() {
+            // Hide all add sections by default on mobile
+            document.querySelectorAll('.add-item-section').forEach(section => {
+                section.classList.add('mobile-hidden');
+            });
+        }
+
+        function toggleMobileAdd() {
+            const addSection = document.getElementById(`${currentCategory}-add`);
+            const overlay = document.getElementById('modalOverlay');
+            const btn = document.getElementById('mobileAddBtn');
+            
+            if (addSection.classList.contains('show')) {
+                closeMobileAdd();
+            } else {
+                addSection.classList.add('show');
+                overlay.classList.add('show');
+                btn.style.transform = 'rotate(45deg)';
+            }
+        }
+
+        function closeMobileAdd() {
+            document.querySelectorAll('.add-item-section').forEach(section => {
+                section.classList.remove('show');
+            });
+            document.getElementById('modalOverlay').classList.remove('show');
+            document.getElementById('mobileAddBtn').style.transform = 'rotate(0)';
         }
 
         function updateCountdown() {
@@ -746,27 +1132,13 @@ function doPost(e) {
             
             document.getElementById('setupPanel').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('mobileAddBtn').style.display = 'flex';
             
-            showNotification('🚀 Setup complete!', 'You can now start adding items to your checklist!');
+            showNotification('🚀 Ready to go!', 'Start adding items for Avi!');
             
-            // Initialize with some suggested items
-            initializeSuggestedItems();
-        }
-
-        function initializeSuggestedItems() {
-            const suggestions = {
-                nursery: ['Crib', 'Changing table', 'Baby monitor', 'Blackout curtains'],
-                clothing: ['Newborn onesies (5-7)', '0-3 month onesies (5-7)', 'Sleepers', 'Swaddles'],
-                feeding: ['Bottles', 'Bottle sterilizer', 'Burp cloths', 'Breast pump'],
-                diapering: ['Newborn diapers', 'Size 1 diapers', 'Wipes', 'Diaper cream'],
-                health: ['Thermometer', 'Nail clippers', 'Baby first aid kit', 'Humidifier'],
-                travel: ['Infant car seat', 'Stroller', 'Baby carrier', 'Diaper bag'],
-                mom: ['Nursing bras', 'Maternity pads', 'Comfortable robes', 'Nursing pillow'],
-                documents: ['Insurance paperwork', 'Hospital bag packed', 'Birth plan', 'Pediatrician selected']
-            };
-
-            // Don't auto-add items, just show them as placeholders
-            console.log('Suggested items ready for each category');
+            if (window.innerWidth <= 768) {
+                setupMobileView();
+            }
         }
 
         function switchCategory(category) {
@@ -781,15 +1153,30 @@ function doPost(e) {
                 content.classList.remove('active');
             });
             document.getElementById(category).classList.add('active');
+            
+            // Close mobile add if open
+            if (window.innerWidth <= 768) {
+                closeMobileAdd();
+            }
         }
 
         function addItem(category) {
             const itemInput = document.getElementById(`${category}-item`);
             const prioritySelect = document.getElementById(`${category}-priority`);
+            const priceInput = document.getElementById(`${category}-price`);
+            const linkInput = document.getElementById(`${category}-link`);
+            const notesInput = document.getElementById(`${category}-notes`);
+            
             const itemName = itemInput.value.trim();
             const priority = prioritySelect.value;
+            const price = parseFloat(priceInput.value) || 0;
+            const link = linkInput.value.trim();
+            const notes = notesInput.value.trim();
             
-            if (!itemName) return;
+            if (!itemName) {
+                showNotification('⚠️ Oops!', 'Please enter an item name');
+                return;
+            }
             
             // Initialize category if doesn't exist
             if (!checklistData[category]) {
@@ -801,28 +1188,47 @@ function doPost(e) {
                 priority: priority,
                 completed: false,
                 timestamp: new Date().toISOString(),
-                addedBy: 'You' // Could be customized based on who's logged in
+                addedBy: 'You',
+                price: price,
+                link: link,
+                notes: notes
             };
             
-            checklistData[category].push(newItem);
+            if (editingItem !== null) {
+                // Update existing item
+                checklistData[category][editingItem] = newItem;
+                editingItem = null;
+                showNotification('✏️ Item updated!', `"${itemName}" has been updated`);
+            } else {
+                // Add new item
+                checklistData[category].push(newItem);
+                
+                const emojis = ['👶', '🎉', '✨', '🌟', '💕', '🍼', '👣', '🎈', '🧸'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                showNotification(`${randomEmoji} Added to list!`, `"${itemName}" for Avi`);
+            }
             
             // Save to localStorage
             localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
             
-            // Clear input
+            // Clear inputs
             itemInput.value = '';
             prioritySelect.value = 'normal';
+            priceInput.value = '';
+            linkInput.value = '';
+            notesInput.value = '';
             
             // Update display
             renderCategory(category);
             updateStats();
+            updateBudget();
             
-            // Show notification
-            const emojis = ['👶', '🎉', '✨', '🌟', '💕', '🍼', '👣'];
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            showNotification(`${randomEmoji} New item added!`, `"${itemName}" added to ${category}`);
+            // Close mobile add if open
+            if (window.innerWidth <= 768) {
+                closeMobileAdd();
+            }
             
-            // Sync with Google Sheets if connected
+            // Sync with Google Sheets
             if (sheetsUrl) {
                 syncItemToSheets('add', category, newItem);
             }
@@ -836,26 +1242,68 @@ function doPost(e) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="emoji">${getCategoryEmoji(category)}</div>
-                        <p>No ${category} items yet. Add your first item above!</p>
+                        <p>No ${category} items yet</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Tap + to add your first item!</p>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = items.map((item, index) => `
-                <div class="checklist-item ${item.completed ? 'completed' : ''}" id="item-${category}-${index}">
-                    <input type="checkbox" 
-                           ${item.completed ? 'checked' : ''} 
-                           onchange="toggleItem('${category}', ${index})">
-                    <div class="item-details">
-                        <div class="item-name">${item.name} ${item.priority === 'high' ? '🔥' : ''}</div>
+            container.innerHTML = items.map((item, index) => {
+                const priorityClass = item.priority === 'high' ? 'high-priority' : '';
+                return `
+                    <div class="checklist-item ${item.completed ? 'completed' : ''} ${priorityClass}">
+                        <div class="item-header">
+                            <input type="checkbox" 
+                                   class="item-checkbox"
+                                   ${item.completed ? 'checked' : ''} 
+                                   onchange="toggleItem('${category}', ${index})">
+                            <div class="item-main">
+                                <div class="item-name">
+                                    ${item.name} ${item.priority === 'high' ? '🔥' : ''}
+                                    ${item.price > 0 ? `<span class="item-price">$${item.price.toFixed(2)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        ${(item.notes || item.link) ? `
+                            <div class="item-details">
+                                ${item.notes ? `<div class="item-note">📝 ${item.notes}</div>` : ''}
+                                ${item.link ? `<a href="${item.link}" target="_blank" class="item-link">🔗 View Product</a>` : ''}
+                            </div>
+                        ` : ''}
                         <div class="item-meta">
                             Added ${formatDate(item.timestamp)} by ${item.addedBy}
                         </div>
+                        <div class="item-actions">
+                            <button class="edit-btn" onclick="editItem('${category}', ${index})">Edit</button>
+                            <button class="delete-btn" onclick="deleteItem('${category}', ${index})">Delete</button>
+                        </div>
                     </div>
-                    <button class="delete-btn" onclick="deleteItem('${category}', ${index})">Delete</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        function editItem(category, index) {
+            const item = checklistData[category][index];
+            editingItem = index;
+            
+            // Populate form with item data
+            document.getElementById(`${category}-item`).value = item.name;
+            document.getElementById(`${category}-priority`).value = item.priority;
+            document.getElementById(`${category}-price`).value = item.price || '';
+            document.getElementById(`${category}-link`).value = item.link || '';
+            document.getElementById(`${category}-notes`).value = item.notes || '';
+            
+            // Show add section on mobile
+            if (window.innerWidth <= 768) {
+                const addSection = document.getElementById(`${category}-add`);
+                const overlay = document.getElementById('modalOverlay');
+                addSection.classList.add('show');
+                overlay.classList.add('show');
+            }
+            
+            // Scroll to form
+            document.getElementById(`${category}-add`).scrollIntoView({ behavior: 'smooth' });
         }
 
         function getCategoryEmoji(category) {
@@ -877,28 +1325,41 @@ function doPost(e) {
             localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
             renderCategory(category);
             updateStats();
+            updateBudget();
             
             if (sheetsUrl) {
                 syncItemToSheets('update', category, checklistData[category][index]);
             }
             
             if (checklistData[category][index].completed) {
-                showNotification('✅ Item completed!', `Great job! One step closer to Avi's arrival!`);
+                const encouragements = [
+                    'Great job! 🎉',
+                    'You\'re doing amazing! 💪',
+                    'One step closer! 🌟',
+                    'Avi will love it! 💕',
+                    'Fantastic progress! ✨',
+                    'Keep it up! 🚀'
+                ];
+                const msg = encouragements[Math.floor(Math.random() * encouragements.length)];
+                showNotification('✅ ' + msg, 'Getting ready for Avi!');
             }
         }
 
         function deleteItem(category, index) {
             const item = checklistData[category][index];
-            checklistData[category].splice(index, 1);
-            localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
-            renderCategory(category);
-            updateStats();
-            
-            if (sheetsUrl) {
-                syncItemToSheets('delete', category, item);
+            if (confirm(`Delete "${item.name}"?`)) {
+                checklistData[category].splice(index, 1);
+                localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
+                renderCategory(category);
+                updateStats();
+                updateBudget();
+                
+                if (sheetsUrl) {
+                    syncItemToSheets('delete', category, item);
+                }
+                
+                showNotification('🗑️ Removed', `"${item.name}" deleted`);
             }
-            
-            showNotification('🗑️ Item removed', `"${item.name}" has been deleted`);
         }
 
         function updateStats() {
@@ -926,11 +1387,27 @@ function doPost(e) {
             document.getElementById('progressFill').textContent = `${progress}%`;
         }
 
+        function updateBudget() {
+            let totalBudget = 0;
+            
+            Object.keys(checklistData).forEach(category => {
+                const items = checklistData[category] || [];
+                items.forEach(item => {
+                    if (!item.completed && item.price > 0) {
+                        totalBudget += item.price;
+                    }
+                });
+            });
+            
+            document.getElementById('totalBudget').textContent = `$${totalBudget.toFixed(2)}`;
+        }
+
         function loadAllItems() {
             Object.keys(checklistData).forEach(category => {
                 renderCategory(category);
             });
             updateStats();
+            updateBudget();
         }
 
         function formatDate(timestamp) {
@@ -940,9 +1417,9 @@ function doPost(e) {
             const diffMins = Math.floor(diffMs / 60000);
             
             if (diffMins < 1) return 'just now';
-            if (diffMins < 60) return `${diffMins} min ago`;
-            if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
-            return `${Math.floor(diffMins / 1440)} days ago`;
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+            return `${Math.floor(diffMins / 1440)}d ago`;
         }
 
         function showNotification(title, details) {
@@ -971,12 +1448,16 @@ function doPost(e) {
                         priority: item.priority,
                         completed: item.completed,
                         timestamp: item.timestamp,
-                        addedBy: item.addedBy
+                        addedBy: item.addedBy,
+                        price: item.price,
+                        link: item.link,
+                        notes: item.notes,
+                        oldItem: action === 'update' ? item.name : undefined
                     })
                 });
                 console.log('Synced with Google Sheets');
             } catch (error) {
-                console.error('Error syncing with Google Sheets:', error);
+                console.error('Sync error:', error);
             }
         }
 
@@ -986,17 +1467,21 @@ function doPost(e) {
             try {
                 const response = await fetch(sheetsUrl);
                 const data = await response.json();
-                
-                // Process the data and update local storage
-                // This would merge remote changes with local data
-                console.log('Checking for updates from Google Sheets');
+                console.log('Checking for updates...');
             } catch (error) {
-                console.error('Error fetching from Google Sheets:', error);
+                console.error('Sync check error:', error);
             }
         }
 
         // Initialize on load
         window.onload = init;
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                setupMobileView();
+            }
+        });
     </script>
 </body>
 </html>
