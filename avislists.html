@@ -1509,4 +1509,235 @@ function doPost(e) {
             
             document.getElementById('totalItems').textContent = total;
             document.getElementById('completedItems').textContent = completed;
-            document.getElementById('
+            document.getElementById('remainingItems').textContent = total - completed;
+            document.getElementById('urgentItems').textContent = urgent;
+            
+            // Update progress bar
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressFill').textContent = `${progress}%`;
+        }
+
+        function updateBudget() {
+            let totalBudget = 0;
+            
+            Object.keys(checklistData).forEach(category => {
+                const items = checklistData[category] || [];
+                items.forEach(item => {
+                    if (!item.completed && item.price > 0) {
+                        totalBudget += item.price;
+                    }
+                });
+            });
+            
+            document.getElementById('totalBudget').textContent = `${totalBudget.toFixed(2)}`;
+        }
+
+        function loadAllItems() {
+            Object.keys(checklistData).forEach(category => {
+                renderCategory(category);
+            });
+            updateStats();
+            updateBudget();
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+            return `${Math.floor(diffMins / 1440)}d ago`;
+        }
+
+        function showNotification(title, details) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notificationText').textContent = title;
+            document.getElementById('notificationDetails').textContent = details;
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            try {
+                const audio = new Audio(sounds[type]);
+                audio.volume = 0.3;
+                audio.play().catch(e => console.log('Sound play failed:', e));
+            } catch (e) {
+                console.log('Sound error:', e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('aviSoundEnabled', soundEnabled);
+            updateSoundToggle();
+            
+            if (soundEnabled) {
+                playSound('add');
+                showNotification('🔊 Sounds On!', 'You\'ll hear cute sounds for actions');
+            } else {
+                showNotification('🔇 Sounds Off', 'Silent mode activated');
+            }
+        }
+
+        function updateSoundToggle() {
+            const toggle = document.getElementById('soundToggle');
+            toggle.textContent = soundEnabled ? '🔊' : '🔇';
+            toggle.style.background = soundEnabled ? 'white' : '#f0f0f0';
+        }
+
+        async function syncItemToSheets(action, category, item, originalItem) {
+            if (!sheetsUrl) return;
+            
+            try {
+                const payload = {
+                    action: action,
+                    category: category,
+                    item: item.name,
+                    priority: item.priority,
+                    completed: item.completed,
+                    timestamp: item.timestamp,
+                    addedBy: item.addedBy,
+                    price: item.price,
+                    link: item.link,
+                    notes: item.notes
+                };
+                
+                if (action === 'update' && originalItem) {
+                    payload.originalItem = originalItem;
+                }
+                
+                const response = await fetch(sheetsUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('Synced to Sheets:', action, item.name);
+            } catch (error) {
+                console.error('Sync error:', error);
+            }
+        }
+
+        async function syncFromSheets() {
+            if (!sheetsUrl) return;
+            
+            const syncStatus = document.getElementById('syncStatus');
+            const syncText = document.getElementById('syncText');
+            
+            try {
+                syncStatus.classList.add('syncing');
+                syncText.textContent = '🔄 Syncing...';
+                
+                const response = await fetch(sheetsUrl);
+                const data = await response.json();
+                
+                if (data.items && Array.isArray(data.items)) {
+                    // Create a hash of current data to detect changes
+                    const currentHash = JSON.stringify(checklistData);
+                    
+                    // Build new data structure from sheets
+                    const newData = {};
+                    let hasNewItems = false;
+                    
+                    data.items.forEach(item => {
+                        if (!newData[item.category]) {
+                            newData[item.category] = [];
+                        }
+                        
+                        // Check if this item is new (not added by current user)
+                        const existingCategory = checklistData[item.category] || [];
+                        const existingItem = existingCategory.find(i => i.name === item.item);
+                        
+                        if (!existingItem || existingItem.addedBy !== item.addedBy) {
+                            hasNewItems = true;
+                        }
+                        
+                        newData[item.category].push({
+                            name: item.item,
+                            priority: item.priority,
+                            completed: item.completed === true || item.completed === 'true',
+                            timestamp: item.timestamp,
+                            addedBy: item.addedBy,
+                            price: parseFloat(item.price) || 0,
+                            link: item.link || '',
+                            notes: item.notes || ''
+                        });
+                    });
+                    
+                    // Update local data
+                    checklistData = newData;
+                    localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
+                    
+                    // Check if data changed
+                    const newHash = JSON.stringify(checklistData);
+                    if (newHash !== currentHash) {
+                        // Refresh current category display
+                        renderCategory(currentCategory);
+                        updateStats();
+                        updateBudget();
+                        
+                        // Show notification if there are items from others
+                        if (hasNewItems && lastSyncHash !== newHash) {
+                            const otherUsers = new Set();
+                            Object.values(newData).forEach(items => {
+                                items.forEach(item => {
+                                    if (item.addedBy !== userName) {
+                                        otherUsers.add(item.addedBy);
+                                    }
+                                });
+                            });
+                            
+                            if (otherUsers.size > 0) {
+                                showNotification('🔄 List Updated!', `New items from ${Array.from(otherUsers).join(', ')}`);
+                                playSound('add');
+                            }
+                        }
+                        
+                        lastSyncHash = newHash;
+                    }
+                }
+                
+                syncStatus.classList.remove('syncing');
+                syncText.textContent = '✨ Synced';
+                
+            } catch (error) {
+                console.error('Sync from sheets error:', error);
+                syncStatus.classList.remove('syncing');
+                syncText.textContent = '⚠️ Sync Error';
+                
+                // Still load local data
+                loadAllItems();
+            }
+        }
+
+        // Initialize on load
+        window.onload = init;
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                setupMobileView();
+            }
+        });
+
+        // Prevent accidental navigation away
+        window.addEventListener('beforeunload', (e) => {
+            if (editingItem !== null) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
