@@ -1509,6 +1509,357 @@ function doPost(e) {
             
             document.getElementById('totalItems').textContent = total;
             document.getElementById('completedItems').textContent = completed;
+            document.getElementById('setupPanel').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('mobileAddBtn').style.display = 'flex';
+                document.getElementById('syncStatus').style.display = 'inline-block';
+                
+                // Initial sync from Google Sheets
+                syncFromSheets();
+                
+                // Set up regular syncing
+                setInterval(syncFromSheets, 5000); // Sync every 5 seconds
+            }
+
+            const savedSound = localStorage.getItem('aviSoundEnabled');
+            if (savedSound !== null) {
+                soundEnabled = savedSound === 'true';
+                updateSoundToggle();
+            }
+
+            // Update countdown
+            updateCountdown();
+            setInterval(updateCountdown, 60000);
+
+            // Check if on mobile
+            if (window.innerWidth <= 768) {
+                setupMobileView();
+            }
+        }
+
+        function setupMobileView() {
+            // Hide all add sections by default on mobile
+            document.querySelectorAll('.add-item-section').forEach(section => {
+                section.classList.add('mobile-hidden');
+            });
+        }
+
+        function toggleMobileAdd() {
+            const addSection = document.getElementById(`${currentCategory}-add`);
+            const overlay = document.getElementById('modalOverlay');
+            const btn = document.getElementById('mobileAddBtn');
+            
+            if (addSection.classList.contains('show')) {
+                closeMobileAdd();
+            } else {
+                addSection.classList.add('show');
+                overlay.classList.add('show');
+                btn.style.transform = 'rotate(45deg)';
+            }
+        }
+
+        function closeMobileAdd() {
+            document.querySelectorAll('.add-item-section').forEach(section => {
+                section.classList.remove('show');
+            });
+            document.getElementById('modalOverlay').classList.remove('show');
+            document.getElementById('mobileAddBtn').style.transform = 'rotate(0)';
+        }
+
+        function updateCountdown() {
+            const dueDate = new Date('2025-12-12');
+            const today = new Date();
+            const diffTime = Math.abs(dueDate - today);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('daysLeft').textContent = diffDays;
+        }
+
+        function saveSetup() {
+            userName = document.getElementById('userName').value || 'You';
+            sheetsUrl = document.getElementById('sheetsUrl').value;
+            
+            localStorage.setItem('aviUserName', userName);
+            localStorage.setItem('aviSheetsUrl', sheetsUrl);
+            
+            document.getElementById('setupPanel').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('mobileAddBtn').style.display = 'flex';
+            
+            if (sheetsUrl) {
+                document.getElementById('syncStatus').style.display = 'inline-block';
+                // Initial sync from Google Sheets
+                syncFromSheets();
+                // Set up regular syncing
+                setInterval(syncFromSheets, 5000);
+            }
+            
+            showNotification('🚀 Ready to go!', `Welcome ${userName}! Start adding items for Avi!`);
+            playSound('add');
+            
+            if (window.innerWidth <= 768) {
+                setupMobileView();
+            }
+        }
+
+        function switchCategory(category) {
+            currentCategory = category;
+            
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.category-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(category).classList.add('active');
+            
+            // Close mobile add if open
+            if (window.innerWidth <= 768) {
+                closeMobileAdd();
+            }
+        }
+
+        function addItem(category) {
+            const itemInput = document.getElementById(`${category}-item`);
+            const prioritySelect = document.getElementById(`${category}-priority`);
+            const priceInput = document.getElementById(`${category}-price`);
+            const linkInput = document.getElementById(`${category}-link`);
+            const notesInput = document.getElementById(`${category}-notes`);
+            
+            const itemName = itemInput.value.trim();
+            const priority = prioritySelect.value;
+            const price = parseFloat(priceInput.value) || 0;
+            const link = linkInput.value.trim();
+            const notes = notesInput.value.trim();
+            
+            if (!itemName) {
+                showNotification('⚠️ Oops!', 'Please enter an item name');
+                return;
+            }
+            
+            // Initialize category if doesn't exist
+            if (!checklistData[category]) {
+                checklistData[category] = [];
+            }
+            
+            const timestamp = new Date().toISOString();
+            
+            if (editingItem !== null) {
+                // Update existing item
+                const originalItem = checklistData[category][editingItem].name;
+                checklistData[category][editingItem] = {
+                    name: itemName,
+                    priority: priority,
+                    completed: checklistData[category][editingItem].completed,
+                    timestamp: timestamp,
+                    addedBy: userName,
+                    price: price,
+                    link: link,
+                    notes: notes
+                };
+                
+                if (sheetsUrl) {
+                    syncItemToSheets('update', category, checklistData[category][editingItem], originalItem);
+                }
+                
+                editingItem = null;
+                showNotification('✏️ Item updated!', `"${itemName}" has been updated`);
+                playSound('add');
+            } else {
+                // Add new item
+                const newItem = {
+                    name: itemName,
+                    priority: priority,
+                    completed: false,
+                    timestamp: timestamp,
+                    addedBy: userName,
+                    price: price,
+                    link: link,
+                    notes: notes
+                };
+                
+                checklistData[category].push(newItem);
+                
+                if (sheetsUrl) {
+                    syncItemToSheets('add', category, newItem);
+                }
+                
+                const emojis = ['👶', '🎉', '✨', '🌟', '💕', '🍼', '👣', '🎈', '🧸'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                showNotification(`${randomEmoji} Added!`, `"${itemName}" for Avi`);
+                playSound('add');
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
+            
+            // Clear inputs
+            itemInput.value = '';
+            prioritySelect.value = 'normal';
+            priceInput.value = '';
+            linkInput.value = '';
+            notesInput.value = '';
+            
+            // Update display
+            renderCategory(category);
+            updateStats();
+            updateBudget();
+            
+            // Close mobile add if open
+            if (window.innerWidth <= 768) {
+                closeMobileAdd();
+            }
+        }
+
+        function renderCategory(category) {
+            const container = document.getElementById(`${category}-items`);
+            const items = checklistData[category] || [];
+            
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">${getCategoryEmoji(category)}</div>
+                        <p>No ${category} items yet</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Tap + to add your first item!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = items.map((item, index) => {
+                const priorityClass = item.priority === 'high' ? 'high-priority' : '';
+                const addedByText = item.addedBy === userName ? 'you' : item.addedBy;
+                
+                return `
+                    <div class="checklist-item ${item.completed ? 'completed' : ''} ${priorityClass}">
+                        <div class="item-header">
+                            <input type="checkbox" 
+                                   class="item-checkbox"
+                                   ${item.completed ? 'checked' : ''} 
+                                   onchange="toggleItem('${category}', ${index})">
+                            <div class="item-main">
+                                <div class="item-name">
+                                    ${item.name} ${item.priority === 'high' ? '🔥' : ''}
+                                    ${item.price > 0 ? `<span class="item-price">$${item.price.toFixed(2)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        ${(item.notes || item.link) ? `
+                            <div class="item-details">
+                                ${item.notes ? `<div class="item-note">📝 ${item.notes}</div>` : ''}
+                                ${item.link ? `<a href="${item.link}" target="_blank" class="item-link">🔗 View Product</a>` : ''}
+                            </div>
+                        ` : ''}
+                        <div class="item-meta">
+                            Added ${formatDate(item.timestamp)} by ${addedByText}
+                        </div>
+                        <div class="item-actions">
+                            <button class="edit-btn" onclick="editItem('${category}', ${index})">Edit</button>
+                            <button class="delete-btn" onclick="deleteItem('${category}', ${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function editItem(category, index) {
+            const item = checklistData[category][index];
+            editingItem = index;
+            
+            // Populate form with item data
+            document.getElementById(`${category}-item`).value = item.name;
+            document.getElementById(`${category}-priority`).value = item.priority;
+            document.getElementById(`${category}-price`).value = item.price || '';
+            document.getElementById(`${category}-link`).value = item.link || '';
+            document.getElementById(`${category}-notes`).value = item.notes || '';
+            
+            // Show add section on mobile
+            if (window.innerWidth <= 768) {
+                const addSection = document.getElementById(`${category}-add`);
+                const overlay = document.getElementById('modalOverlay');
+                addSection.classList.add('show');
+                overlay.classList.add('show');
+            }
+            
+            // Scroll to form
+            document.getElementById(`${category}-add`).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function getCategoryEmoji(category) {
+            const emojis = {
+                nursery: '🏠',
+                clothing: '👕',
+                feeding: '🍼',
+                diapering: '🧷',
+                health: '🏥',
+                travel: '🚗',
+                mom: '💝',
+                documents: '📄'
+            };
+            return emojis[category] || '📦';
+        }
+
+        function toggleItem(category, index) {
+            checklistData[category][index].completed = !checklistData[category][index].completed;
+            localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
+            renderCategory(category);
+            updateStats();
+            updateBudget();
+            
+            if (sheetsUrl) {
+                syncItemToSheets('update', category, checklistData[category][index], checklistData[category][index].name);
+            }
+            
+            if (checklistData[category][index].completed) {
+                const encouragements = [
+                    'Great job! 🎉',
+                    'You\'re amazing! 💪',
+                    'One step closer! 🌟',
+                    'Avi will love it! 💕',
+                    'Fantastic! ✨',
+                    'Keep it up! 🚀'
+                ];
+                const msg = encouragements[Math.floor(Math.random() * encouragements.length)];
+                showNotification('✅ ' + msg, 'Getting ready for Avi!');
+                playSound('complete');
+            }
+        }
+
+        function deleteItem(category, index) {
+            const item = checklistData[category][index];
+            if (confirm(`Delete "${item.name}"?`)) {
+                checklistData[category].splice(index, 1);
+                localStorage.setItem('aviChecklist', JSON.stringify(checklistData));
+                renderCategory(category);
+                updateStats();
+                updateBudget();
+                
+                if (sheetsUrl) {
+                    syncItemToSheets('delete', category, item);
+                }
+                
+                showNotification('🗑️ Removed', `"${item.name}" deleted`);
+                playSound('delete');
+            }
+        }
+
+        function updateStats() {
+            let total = 0;
+            let completed = 0;
+            let urgent = 0;
+            
+            Object.keys(checklistData).forEach(category => {
+                const items = checklistData[category] || [];
+                items.forEach(item => {
+                    total++;
+                    if (item.completed) completed++;
+                    if (item.priority === 'high' && !item.completed) urgent++;
+                });
+            });
+            
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('completedItems').textContent = completed;
             document.getElementById('remainingItems').textContent = total - completed;
             document.getElementById('urgentItems').textContent = urgent;
             
@@ -1740,4 +2091,4 @@ function doPost(e) {
         });
     </script>
 </body>
-</html>
+</html>'
