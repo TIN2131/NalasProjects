@@ -554,10 +554,16 @@
 
         // Save data to localStorage
         function saveData() {
-            localStorage.setItem('aviTrackerItems', JSON.stringify(items));
-            localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
-            updateStats();
-        }
+    localStorage.setItem('aviTrackerItems', JSON.stringify(items));
+    localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
+    updateStats();
+    
+    // Trigger sync after save
+    clearTimeout(window.syncTimeout);
+    window.syncTimeout = setTimeout(() => {
+        syncWithSheets(true);
+    }, 1000);
+}
 
         // Render categories
         function renderCategories() {
@@ -841,7 +847,95 @@ async function syncWithSheets(silent = false) {
             body: 'data=' + encodeURIComponent(JSON.stringify(items))
         });
         
-        const readResponse = await fetch(`${SCRIPT_URL}?action=read`);
+        async function syncWithSheets(silent = false) {
+    if (!silent) {
+        showSyncStatus('Syncing...');
+    }
+    
+    try {
+        // Add timestamps to local items
+        items = items.map(item => ({
+            ...item,
+            id: item.id || Date.now().toString(),
+            last_modified: item.last_modified || new Date().toISOString(),
+            modified_by: item.modified_by || USER_NAME
+        }));
+        
+        // Save each item individually (more reliable)
+        for (const item of items) {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'update');
+                formData.append('data', JSON.stringify(item));
+                formData.append('user', USER_NAME);
+                
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+            } catch (err) {
+                console.log('Item sync error:', err);
+            }
+        }
+        
+        // Now read back from sheet
+        try {
+            const readResponse = await fetch(`${SCRIPT_URL}?action=read`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+            
+            if (readResponse.ok) {
+                const result = await readResponse.json();
+                
+                if (result.success && result.data) {
+                    // Merge remote data with local
+                    const remoteItems = result.data;
+                    const itemMap = new Map();
+                    
+                    // Add all remote items
+                    remoteItems.forEach(item => {
+                        if (item.id) {
+                            itemMap.set(item.id, item);
+                        }
+                    });
+                    
+                    // Add/update local items if they're newer
+                    items.forEach(localItem => {
+                        const remoteItem = itemMap.get(localItem.id);
+                        if (!remoteItem || 
+                            new Date(localItem.last_modified || 0) > new Date(remoteItem.last_modified || 0)) {
+                            itemMap.set(localItem.id, localItem);
+                        }
+                    });
+                    
+                    // Update local items
+                    items = Array.from(itemMap.values()).filter(item => item.id && item.name);
+                    saveData();
+                    renderItems();
+                    
+                    if (!silent) {
+                        showSyncStatus('✓ Synced!', 'success');
+                    }
+                }
+            }
+        } catch (readError) {
+            console.log('Read error:', readError);
+            // Even if read fails, the write might have worked
+            if (!silent) {
+                showSyncStatus('⚠️ Partial sync', 'warning');
+            }
+        }
+        
+    } catch (error) {
+        console.error('Sync error:', error);
+        if (!silent) {
+            showSyncStatus('✗ Sync failed', 'error');
+        }
+    }
+}
         const result = await readResponse.json();
         
         if (result.success) {
