@@ -401,6 +401,17 @@
             flex: 1;
         }
 
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 20px;
@@ -552,12 +563,19 @@
             }
         }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('aviTrackerItems', JSON.stringify(items));
-            localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
-            updateStats();
-        }
+            // Modified save function to include sync
+            const originalSaveData = saveData;
+            saveData = function() {
+                localStorage.setItem('aviTrackerItems', JSON.stringify(items));
+                localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
+                updateStats();
+                
+                // Trigger sync after save (debounced)
+                clearTimeout(window.syncTimeout);
+                window.syncTimeout = setTimeout(() => {
+                    syncWithSheets(true);
+                }, 2000);
+            }
 
         // Render categories
         function renderCategories() {
@@ -796,10 +814,167 @@
             }
         }
 
-        // Sync with Google Sheets (placeholder)
-        function syncWithSheets() {
-            alert('Google Sheets sync requires additional setup. Please follow these steps:\n\n1. Create a Google Sheet\n2. Set up Google Apps Script\n3. Get your sheet ID\n4. Configure API access\n\nFor now, you can export your data by copying this:\n\n' + JSON.stringify(items, null, 2));
+        // ============= GOOGLE SHEETS SYNC =============
+        // IMPORTANT: Replace this with your Google Apps Script Web App URL
+        const SCRIPT_URL = 'YOUR_SCRIPT_URL_HERE'; // <-- PASTE YOUR URL HERE!
+        
+        // User identifier (you can personalize this)
+        const USER_NAME = localStorage.getItem('userName') || promptForUserName();
+        
+        function promptForUserName() {
+            const name = prompt('Enter your name (so we know who made changes):', 'User');
+            if (name) {
+                localStorage.setItem('userName', name);
+                return name;
+            }
+            return 'Unknown';
         }
+        
+        // Auto-sync every 30 seconds
+        let syncInterval;
+        let lastSyncTime = 0;
+        
+        // Start auto-sync
+        function startAutoSync() {
+            // Initial sync
+            syncWithSheets(true);
+            
+            // Set up interval for auto-sync
+            syncInterval = setInterval(() => {
+                syncWithSheets(true); // Silent sync
+            }, 30000); // 30 seconds
+        }
+        
+        // Sync with Google Sheets
+        async function syncWithSheets(silent = false) {
+            if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzNFQRwZlkeNGYcfK7oHzilKMEcu6WaYBB_1y00UwpKPQoMTtSSCYmPgPCP1iZbCMAnnA/exec') {
+                if (!silent) {
+                    alert('Please add your Google Apps Script URL first!\n\n1. Follow the setup instructions\n2. Replace YOUR_SCRIPT_URL_HERE with your actual script URL\n3. Reload the page');
+                }
+                return;
+            }
+            
+            if (!silent) {
+                showSyncStatus('Syncing...');
+            }
+            
+            try {
+                // Add timestamps to local items if missing
+                items = items.map(item => ({
+                    ...item,
+                    last_modified: item.last_modified || new Date().toISOString(),
+                    modified_by: item.modified_by || USER_NAME
+                }));
+                
+                // Sync data with sheet
+                const response = await fetch(`${SCRIPT_URL}?action=sync&user=${USER_NAME}`, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'data=' + encodeURIComponent(JSON.stringify(items))
+                });
+                
+                // For no-cors mode, we can't read the response, so we'll do a read operation
+                const readResponse = await fetch(`${SCRIPT_URL}?action=read`);
+                const result = await readResponse.json();
+                
+                if (result.success) {
+                    // Merge remote data with local
+                    const remoteItems = result.data;
+                    const itemMap = new Map();
+                    
+                    // Add all remote items
+                    remoteItems.forEach(item => {
+                        itemMap.set(item.id, item);
+                    });
+                    
+                    // Add/update local items if they're newer
+                    items.forEach(localItem => {
+                        const remoteItem = itemMap.get(localItem.id);
+                        if (!remoteItem || 
+                            new Date(localItem.last_modified) > new Date(remoteItem.last_modified)) {
+                            itemMap.set(localItem.id, localItem);
+                        }
+                    });
+                    
+                    // Update local items
+                    items = Array.from(itemMap.values());
+                    saveData();
+                    renderItems();
+                    
+                    lastSyncTime = Date.now();
+                    
+                    if (!silent) {
+                        showSyncStatus('✓ Synced successfully!', 'success');
+                    }
+                } else {
+                    throw new Error(result.error || 'Sync failed');
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+                if (!silent) {
+                    showSyncStatus('✗ Sync failed. Will retry...', 'error');
+                }
+            }
+        }
+        
+        // Show sync status
+        function showSyncStatus(message, type = 'info') {
+            const existingStatus = document.getElementById('syncStatus');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            const status = document.createElement('div');
+            status.id = 'syncStatus';
+            status.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#9B88D3'};
+                color: white;
+                border-radius: 25px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                font-size: 14px;
+            `;
+            status.textContent = message;
+            document.body.appendChild(status);
+            
+            if (type !== 'info') {
+                setTimeout(() => {
+                    if (status.parentNode) {
+                        status.remove();
+                    }
+                }, 3000);
+            } else {
+                setTimeout(() => {
+                    if (status.parentNode) {
+                        status.remove();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Modified save function to include sync
+        const originalSaveData = saveData;
+        function saveData() {
+            originalSaveData();
+            // Trigger sync after save (debounced)
+            clearTimeout(window.syncTimeout);
+            window.syncTimeout = setTimeout(() => {
+                syncWithSheets(true);
+            }, 2000);
+        }
+        
+        // Start auto-sync when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(startAutoSync, 1000);
+        });
 
         // Close modal when clicking outside
         document.getElementById('itemModal').addEventListener('click', function(e) {
