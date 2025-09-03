@@ -650,6 +650,7 @@
                 renderItems();
             }
         }
+         syncWithSheets(true);
 
         // Open add modal
         function openAddModal() {
@@ -683,6 +684,7 @@
                 renderItems();
             }
         }
+ syncWithSheets(true);
 
         // Close modal
         function closeModal() {
@@ -690,6 +692,7 @@
             document.getElementById('itemForm').reset();
             editingItemId = null;
         }
+        syncWithSheets(true);
 
         // Handle form submission
         document.getElementById('itemForm').addEventListener('submit', function(e) {
