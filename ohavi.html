@@ -554,16 +554,10 @@
 
         // Save data to localStorage
         function saveData() {
-    localStorage.setItem('aviTrackerItems', JSON.stringify(items));
-    localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
-    updateStats();
-    
-    // Trigger sync after save
-    clearTimeout(window.syncTimeout);
-    window.syncTimeout = setTimeout(() => {
-        syncWithSheets(true);
-    }, 1000);
-}
+            localStorage.setItem('aviTrackerItems', JSON.stringify(items));
+            localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
+            updateStats();
+        }
 
         // Render categories
         function renderCategories() {
@@ -803,7 +797,8 @@
         }
 
         // Sync with Google Sheets (placeholder)
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNFQRwZlkeNGYcfK7oHzilKMEcu6WaYBB_1y00UwpKPQoMTtSSCYmPgPCP1iZbCMAnnA/exec';
+        // ============= GOOGLE SHEETS SYNC =============
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNFQRwZlkeNGYcfK7oHzilKMEcu6WaYBB_1y00UwpKPQoMTtSSCYmPgPCP1iZbCMAnnA/exec';
 
 const USER_NAME = localStorage.getItem('userName') || promptForUserName();
 
@@ -847,192 +842,7 @@ async function syncWithSheets(silent = false) {
             body: 'data=' + encodeURIComponent(JSON.stringify(items))
         });
         
-        async function syncWithSheets(silent = false) {
-    if (!silent) {
-        showSyncStatus('Syncing...');
-    }
-    
-    try {
-        // First, write all local items to sheet
-        for (const item of items) {
-            const params = new URLSearchParams({
-                action: 'write',
-                data: JSON.stringify({
-                    ...item,
-                    id: item.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
-                }),
-                user: USER_NAME
-            });
-            
-            // Use fetch with mode: 'no-cors' for writing
-            fetch(SCRIPT_URL + '?' + params.toString(), {
-                method: 'GET',
-                mode: 'no-cors'
-            }).catch(err => console.log('Write error:', err));
-        }
-        
-        // Wait a moment for writes to complete
-        function syncWithSheets(silent = false) {
-    if (!silent) {
-        showSyncStatus('Syncing...');
-    }
-    
-    try {
-        // First, write all local items to sheet
-        for (const item of items) {
-            const params = new URLSearchParams({
-                action: 'write',
-                data: JSON.stringify({
-                    ...item,
-                    id: item.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
-                }),
-                user: USER_NAME
-            });
-            
-            // Use fetch with mode: 'no-cors' for writing
-            fetch(SCRIPT_URL + '?' + params.toString(), {
-                method: 'GET',
-                mode: 'no-cors'
-            }).catch(err => console.log('Write error:', err));
-        }
-        
-        // Wait a moment for writes to complete, then read
-        setTimeout(() => {
-            // Read from sheet (without no-cors so we can read response)
-            const readUrl = SCRIPT_URL + '?action=read';
-            
-            fetch(readUrl)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success && result.data) {
-                        // Update local items with sheet data
-                        const sheetItems = result.data;
-                        
-                        // Only update if we got valid data
-                        if (sheetItems.length > 0 || items.length === 0) {
-                            items = sheetItems;
-                            localStorage.setItem('aviTrackerItems', JSON.stringify(items));
-                            renderItems();
-                            updateStats();
-                            
-                            if (!silent) {
-                                showSyncStatus('✓ Synced!', 'success');
-                            }
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Read error:', error);
-                    if (!silent) {
-                        showSyncStatus('⚠️ Sync in progress...', 'warning');
-                    }
-                });
-        }, 1000);
-            
-    } catch (error) {
-        console.error('Sync error:', error);
-        if (!silent) {
-            showSyncStatus('✗ Sync failed', 'error');
-        }
-    }
-}
-        
-        // Then read from sheet (without no-cors so we can read response)
-        const readUrl = SCRIPT_URL + '?action=read';
-        
-        fetch(readUrl)
-            .then(response => response.json())
-            .then(result => {
-                if (result.success && result.data) {
-                    // Update local items with sheet data
-                    const sheetItems = result.data;
-                    
-                    // Only update if we got valid data
-                    if (sheetItems.length > 0 || items.length === 0) {
-                        items = sheetItems;
-                        localStorage.setItem('aviTrackerItems', JSON.stringify(items));
-                        renderItems();
-                        updateStats();
-                        
-                        if (!silent) {
-                            showSyncStatus('✓ Synced!', 'success');
-                        }
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Read error:', error);
-                if (!silent) {
-                    showSyncStatus('⚠️ Sync in progress...', 'warning');
-                }
-            });
-            
-    } catch (error) {
-        console.error('Sync error:', error);
-        if (!silent) {
-            showSyncStatus('✗ Sync failed', 'error');
-        }
-    }
-}
-        
-        // Now read back from sheet
-        try {
-            const readResponse = await fetch(`${SCRIPT_URL}?action=read`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            });
-            
-            if (readResponse.ok) {
-                const result = await readResponse.json();
-                
-                if (result.success && result.data) {
-                    // Merge remote data with local
-                    const remoteItems = result.data;
-                    const itemMap = new Map();
-                    
-                    // Add all remote items
-                    remoteItems.forEach(item => {
-                        if (item.id) {
-                            itemMap.set(item.id, item);
-                        }
-                    });
-                    
-                    // Add/update local items if they're newer
-                    items.forEach(localItem => {
-                        const remoteItem = itemMap.get(localItem.id);
-                        if (!remoteItem || 
-                            new Date(localItem.last_modified || 0) > new Date(remoteItem.last_modified || 0)) {
-                            itemMap.set(localItem.id, localItem);
-                        }
-                    });
-                    
-                    // Update local items
-                    items = Array.from(itemMap.values()).filter(item => item.id && item.name);
-                    saveData();
-                    renderItems();
-                    
-                    if (!silent) {
-                        showSyncStatus('✓ Synced!', 'success');
-                    }
-                }
-            }
-        } catch (readError) {
-            console.log('Read error:', readError);
-            // Even if read fails, the write might have worked
-            if (!silent) {
-                showSyncStatus('⚠️ Partial sync', 'warning');
-            }
-        }
-        
-    } catch (error) {
-        console.error('Sync error:', error);
-        if (!silent) {
-            showSyncStatus('✗ Sync failed', 'error');
-        }
-    }
-}
+        const readResponse = await fetch(`${SCRIPT_URL}?action=read`);
         const result = await readResponse.json();
         
         if (result.success) {
