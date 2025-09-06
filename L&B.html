@@ -251,6 +251,11 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
+        .quick-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .custom-entry {
             background: #f8fafc;
             padding: 20px;
@@ -316,6 +321,11 @@
         .submit-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* Current Status Section */
@@ -742,6 +752,21 @@
             opacity: 0.5;
         }
 
+        /* Loading state */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             h1 {
@@ -830,28 +855,28 @@
             </div>
             
             <div class="quick-actions">
-                <button class="quick-btn" onclick="quickAdd('Lexie', 'Fed', '🍼')">
+                <button class="quick-btn" onclick="quickAdd('Lexie', 'Fed', '🍼')" id="btn-lexie-fed">
                     <span>🍼</span> Lexie Fed
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Lexie', 'Diaper Changed', '💩')">
+                <button class="quick-btn" onclick="quickAdd('Lexie', 'Diaper Changed', '💩')" id="btn-lexie-diaper">
                     <span>💩</span> Lexie Diaper
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Lexie', 'Sleeping', '😴')">
+                <button class="quick-btn" onclick="quickAdd('Lexie', 'Sleeping', '😴')" id="btn-lexie-sleep">
                     <span>😴</span> Lexie Sleep
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Abby', 'Ate Meal', '🍽️')">
+                <button class="quick-btn" onclick="quickAdd('Abby', 'Ate Meal', '🍽️')" id="btn-abby-meal">
                     <span>🍽️</span> Abby Ate
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Abby', 'Used Potty', '🚽')">
+                <button class="quick-btn" onclick="quickAdd('Abby', 'Used Potty', '🚽')" id="btn-abby-potty">
                     <span>🚽</span> Abby Potty
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Abby', 'Sleeping', '🛏️')">
+                <button class="quick-btn" onclick="quickAdd('Abby', 'Sleeping', '🛏️')" id="btn-abby-sleep">
                     <span>🛏️</span> Abby Sleep
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Both', 'Playing', '🎮')">
+                <button class="quick-btn" onclick="quickAdd('Both', 'Playing', '🎮')" id="btn-both-play">
                     <span>🎮</span> Play Time
                 </button>
-                <button class="quick-btn" onclick="quickAdd('Both', 'Story Time', '📚')">
+                <button class="quick-btn" onclick="quickAdd('Both', 'Story Time', '📚')" id="btn-both-story">
                     <span>📚</span> Story Time
                 </button>
             </div>
@@ -881,7 +906,7 @@
                         <label class="form-label">Notes</label>
                         <textarea class="form-textarea" id="notesInput" placeholder="Any additional details..."></textarea>
                     </div>
-                    <button type="submit" class="submit-btn">
+                    <button type="submit" class="submit-btn" id="submitBtn">
                         <span>➕</span> Add Entry
                     </button>
                 </form>
@@ -1016,12 +1041,17 @@
     </div>
 
     <script>
+        // ===== CONFIGURATION =====
+        // YOUR GOOGLE SCRIPT URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzg2bu4zQIxXo5Pwk2qk1VQ2n3Gp3n_o3IyORhFFnji5J2n93KQo32D9W2fbbJaP5CzjQ/exec';
+        
         // State management
-        let activities = JSON.parse(localStorage.getItem('babyActivities')) || [];
+        let activities = [];
         let soundEnabled = true;
         let adminMode = false;
         let logExpanded = false;
         let currentFilter = 'all';
+        let isLoading = false;
 
         // Audio context for sounds
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1167,9 +1197,13 @@
             }, 3000);
         }
 
-        function quickAdd(child, activity, emoji) {
+        async function quickAdd(child, activity, emoji) {
+            if (isLoading) return;
+            
+            // Disable all buttons
+            document.querySelectorAll('.quick-btn').forEach(btn => btn.disabled = true);
+            
             const entry = {
-                id: Date.now(),
                 timestamp: new Date().toISOString(),
                 child: child,
                 activity: activity,
@@ -1178,13 +1212,35 @@
                 notes: null
             };
             
-            activities.unshift(entry);
-            saveActivities();
-            refreshData();
-            showNotification(`${emoji} ${child}: ${activity}!`);
+            isLoading = true;
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=add`, {
+                    method: 'POST',
+                    body: JSON.stringify(entry)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${emoji} ${child}: ${activity}!`);
+                    await refreshData();
+                } else {
+                    showNotification('⚠️ Failed to add activity. Please try again.');
+                    console.error('Failed to add:', result);
+                }
+            } catch (error) {
+                console.error('Error adding activity:', error);
+                showNotification('⚠️ Connection error. Please check your internet.');
+            } finally {
+                isLoading = false;
+                // Re-enable all buttons
+                document.querySelectorAll('.quick-btn').forEach(btn => btn.disabled = false);
+            }
         }
 
-        function addCustomEntry() {
+        async function addCustomEntry() {
+            if (isLoading) return;
+            
             const child = document.getElementById('childSelect').value;
             const activity = document.getElementById('activityInput').value;
             const duration = document.getElementById('durationInput').value;
@@ -1195,8 +1251,12 @@
                 return;
             }
             
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Adding...';
+            
             const entry = {
-                id: Date.now(),
                 timestamp: new Date().toISOString(),
                 child: child,
                 activity: activity,
@@ -1205,16 +1265,35 @@
                 notes: notes || null
             };
             
-            activities.unshift(entry);
-            saveActivities();
-            refreshData();
-            
-            // Clear form
-            document.getElementById('activityInput').value = '';
-            document.getElementById('durationInput').value = '';
-            document.getElementById('notesInput').value = '';
-            
-            showNotification(`✅ ${child}: ${activity} added!`);
+            isLoading = true;
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=add`, {
+                    method: 'POST',
+                    body: JSON.stringify(entry)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Clear form
+                    document.getElementById('activityInput').value = '';
+                    document.getElementById('durationInput').value = '';
+                    document.getElementById('notesInput').value = '';
+                    
+                    showNotification(`✅ ${child}: ${activity} added!`);
+                    await refreshData();
+                } else {
+                    showNotification('⚠️ Failed to add activity. Please try again.');
+                    console.error('Failed to add:', result);
+                }
+            } catch (error) {
+                console.error('Error adding activity:', error);
+                showNotification('⚠️ Connection error. Please check your internet.');
+            } finally {
+                isLoading = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>➕</span> Add Entry';
+            }
         }
 
         function getActivityEmoji(activity) {
@@ -1248,46 +1327,73 @@
             return '⭐';
         }
 
-        function saveActivities() {
-            // No longer using localStorage - all data is in Google Sheets
-            // This function is kept for compatibility but does nothing
-        }
-
-        function refreshData() {
-            // Load activities from localStorage
-            activities = JSON.parse(localStorage.getItem('babyActivities')) || [];
-            
-            // Update last update time
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
-            
-            // Update status update time
-            if (activities.length > 0) {
-                const lastActivity = new Date(activities[0].timestamp);
-                const now = new Date();
-                const diff = Math.floor((now - lastActivity) / 60000);
+        async function refreshData() {
+            try {
+                // Show loading state if this is the first load
+                if (activities.length === 0) {
+                    document.getElementById('recentActivityList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⏳</div>
+                            <p>Loading activities...</p>
+                        </div>
+                    `;
+                }
                 
-                if (diff < 1) {
-                    document.getElementById('statusUpdateTime').textContent = 'Just now';
-                } else if (diff < 60) {
-                    document.getElementById('statusUpdateTime').textContent = `${diff} min ago`;
+                // Fetch data from Google Sheets
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=get`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    activities = result.activities || [];
+                    
+                    // Update last update time
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                    
+                    // Update status update time
+                    if (activities.length > 0) {
+                        const lastActivity = new Date(activities[0].timestamp);
+                        const now = new Date();
+                        const diff = Math.floor((now - lastActivity) / 60000);
+                        
+                        if (diff < 1) {
+                            document.getElementById('statusUpdateTime').textContent = 'Just now';
+                        } else if (diff < 60) {
+                            document.getElementById('statusUpdateTime').textContent = `${diff} min ago`;
+                        } else {
+                            const hours = Math.floor(diff / 60);
+                            document.getElementById('statusUpdateTime').textContent = `${hours}h ago`;
+                        }
+                    } else {
+                        document.getElementById('statusUpdateTime').textContent = 'No updates yet';
+                    }
+                    
+                    // Update all displays
+                    updateBabyStats();
+                    updateRecentActivities();
+                    updateFullLog();
                 } else {
-                    const hours = Math.floor(diff / 60);
-                    document.getElementById('statusUpdateTime').textContent = `${hours}h ago`;
+                    console.error('Failed to fetch data:', result);
+                    // Show error but don't clear existing data
+                    showNotification('⚠️ Unable to refresh data');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                
+                // Only show error on first load
+                if (activities.length === 0) {
+                    document.getElementById('recentActivityList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⚠️</div>
+                            <p>Unable to load activities</p>
+                            <p style="font-size: 0.9em; margin-top: 10px;">Please check your connection</p>
+                        </div>
+                    `;
                 }
             }
-            
-            // Update baby stats
-            updateBabyStats();
-            
-            // Update recent activities
-            updateRecentActivities();
-            
-            // Update full log
-            updateFullLog();
         }
 
         function updateBabyStats() {
@@ -1382,7 +1488,7 @@
                 
                 return `
                     <div class="activity-item">
-                        <div class="activity-icon">${activity.emoji}</div>
+                        <div class="activity-icon">${activity.emoji || '⭐'}</div>
                         <div class="activity-details">
                             <div class="activity-child">${activity.child}</div>
                             <div class="activity-text">${activity.activity}${activity.duration ? ` (${activity.duration} min)` : ''}</div>
@@ -1439,7 +1545,7 @@
                 
                 return `
                     <div class="log-item">
-                        <div class="log-icon">${activity.emoji}</div>
+                        <div class="log-icon">${activity.emoji || '⭐'}</div>
                         <div class="log-details">
                             <div class="log-header">
                                 <span class="log-child">${activity.child} - ${activity.activity}</span>
