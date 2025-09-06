@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Reimbursement Categorization Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+        
+        .upload-section.dragover {
+            background: #e7f3ff;
+            border-color: #667eea;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            transform: translateY(-2px);
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        .categories-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .categories-info h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .category-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .category-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .category-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .category-item p {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .summary-card.travel {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .summary-card.messenger {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .summary-card.tax {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .summary-card.other {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        
+        .summary-card h4 {
+            font-size: 0.9em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card .count {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .filter-input {
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1em;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .badge-travel {
+            background: #e7f5ff;
+            color: #1971c2;
+        }
+        
+        .badge-messenger {
+            background: #d3f9d8;
+            color: #2f9e44;
+        }
+        
+        .badge-tax {
+            background: #fff3bf;
+            color: #e67700;
+        }
+        
+        .badge-other {
+            background: #f3d9fa;
+            color: #9c36b5;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d3f9d8;
+            color: #2f9e44;
+            border: 1px solid #a9e34b;
+        }
+        
+        .status-error {
+            background: #ffe0e0;
+            color: #c92a2a;
+            border: 1px solid #ff6b6b;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Expense Reimbursement Categorization Tool</h1>
+            <p>Upload your expense file and automatically categorize reimbursements</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📁</div>
+                <h2>Upload Your Expense File</h2>
+                <p style="margin: 15px 0; color: #6c757d;">
+                    Drag and drop your Excel or CSV file here, or click to browse
+                </p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+                    <label for="fileInput" class="file-input-label">Choose File</label>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #6c757d;">
+                    Supported formats: Excel (.xlsx, .xls) or CSV
+                </p>
+            </div>
+            
+            <div class="categories-info">
+                <h3>📋 Reimbursement Categories</h3>
+                <div class="category-list">
+                    <div class="category-item">
+                        <h4>Travel Billed</h4>
+                        <p>Mileage, parking, flights, hotels, client meals</p>
+                    </div>
+                    <div class="category-item">
+                        <h4>Messenger Billed</h4>
+                        <p>FedEx, UPS, certified mail, postage, courier services</p>
+                    </div>
+                    <div class="category-item">
+                        <h4>Tax Return Computer Costs</h4>
+                        <p>Intuit, QuickBooks, tax software, e-filing fees</p>
+                    </div>
+                    <div class="category-item">
+                        <h4>Other Reimbursement</h4>
+                        <p>Filing fees, third-party services, misc client expenses</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-message" id="statusMessage"></div>
+            
+            <div class="loading" id="loadingSection">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px;">Processing your file...</p>
+            </div>
+            
+            <div class="results-section" id="resultsSection">
+                <h2 style="margin-bottom: 20px;">📊 Categorization Results</h2>
+                
+                <div class="summary-cards" id="summaryCards">
+                    <div class="summary-card travel">
+                        <h4>Travel Billed</h4>
+                        <div class="count" id="travelCount">0</div>
+                    </div>
+                    <div class="summary-card messenger">
+                        <h4>Messenger Billed</h4>
+                        <div class="count" id="messengerCount">0</div>
+                    </div>
+                    <div class="summary-card tax">
+                        <h4>Tax Computer Costs</h4>
+                        <div class="count" id="taxCount">0</div>
+                    </div>
+                    <div class="summary-card other">
+                        <h4>Other Reimbursement</h4>
+                        <div class="count" id="otherCount">0</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search descriptions...">
+                    <select class="filter-input" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Travel Billed">Travel Billed</option>
+                        <option value="Messenger Billed">Messenger Billed</option>
+                        <option value="Tax Return Computer Costs">Tax Return Computer Costs</option>
+                        <option value="Other Reimbursement Expenses Billed">Other Reimbursement</option>
+                    </select>
+                    <button class="btn btn-success" onclick="exportToCSV()">📥 Export CSV</button>
+                    <button class="btn btn-info" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                    <button class="btn btn-primary" onclick="resetTool()">🔄 New File</button>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Row #</th>
+                                <th>Description/Regarding</th>
+                                <th>Original Code</th>
+                                <th>Reimbursement Category</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <script>
+        let allExpenses = [];
+        let filteredExpenses = [];
+        
+        // Categorization rules
+        function categorizeExpense(description) {
+            if (!description) return 'Other Reimbursement Expenses Billed';
+            
+            const lower = description.toLowerCase();
+            
+            // Messenger Billed - Priority checks
+            if (lower.includes('fedex') || 
+                lower.includes('ups') || 
+                lower.includes('courier') ||
+                lower.includes('shipping') ||
+                lower.includes('postage') ||
+                lower.includes('messenger') ||
+                lower.includes('delivery') ||
+                lower.includes('certified mail') ||
+                lower.includes('usps') ||
+                (lower.includes('post office') && lower.includes('mail'))) {
+                return 'Messenger Billed';
+            }
+            
+            // Tax Return Computer Costs
+            if (lower.includes('intuit') ||
+                lower.includes('quickbooks') ||
+                lower.includes(' qb ') ||
+                lower.includes('qb ') || // at start
+                lower.includes('tax software') || 
+                lower.includes('e-filing') ||
+                lower.includes('efiling') ||
+                lower.includes('tax prep software')) {
+                return 'Tax Return Computer Costs';
+            }
+            
+            // Travel Billed
+            if (lower.includes('mileage') || 
+                lower.includes('parking') || 
+                lower.includes('uber') || 
+                lower.includes('lyft') ||
+                lower.includes('airfare') ||
+                lower.includes('flight') ||
+                lower.includes('hotel') ||
+                lower.includes('lodging') ||
+                lower.includes('taxi') ||
+                lower.includes('car rental') ||
+                (lower.includes('travel') && 
+                 (lower.includes('client') || lower.includes('to and from') || lower.includes('from home')))) {
+                // Exception: mileage to post office for mail is Messenger
+                if (lower.includes('mileage') && lower.includes('post office') && lower.includes('mail')) {
+                    return 'Messenger Billed';
+                }
+                return 'Travel Billed';
+            }
+            
+            // Client meals during business meetings - Travel Billed
+            if ((lower.includes('lunch') || 
+                 lower.includes('dinner') || 
+                 lower.includes('breakfast') ||
+                 lower.includes('meal')) && 
+                (lower.includes('with') || lower.includes('client') || lower.includes('meeting'))) {
+                return 'Travel Billed';
+            }
+            
+            // Other specific checks
+            if (lower.includes('filing fee') ||
+                lower.includes('dissolution fee') ||
+                lower.includes('registration fee') ||
+                lower.includes('state fee') ||
+                lower.includes('confirmation.com') ||
+                lower.includes('third party') ||
+                lower.includes('third-party')) {
+                return 'Other Reimbursement Expenses Billed';
+            }
+            
+            // Default category
+            return 'Other Reimbursement Expenses Billed';
+        }
+        
+        // File handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            const fileName = file.name.toLowerCase();
+            
+            showLoading(true);
+            showStatus('Processing file: ' + file.name, 'success');
+            
+            if (fileName.endsWith('.csv')) {
+                handleCSV(file);
+            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                handleExcel(file);
+            } else {
+                showStatus('Please upload a CSV or Excel file', 'error');
+                showLoading(false);
+            }
+        }
+        
+        function handleCSV(file) {
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    processData(results.data);
+                    showLoading(false);
+                },
+                error: function(error) {
+                    showStatus('Error parsing CSV: ' + error.message, 'error');
+                    showLoading(false);
+                }
+            });
+        }
+        
+        function handleExcel(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    // Convert to object format
+                    if (jsonData.length > 0) {
+                        const headers = jsonData[0];
+                        const rows = jsonData.slice(1).map(row => {
+                            const obj = {};
+                            headers.forEach((header, index) => {
+                                obj[header] = row[index] || '';
+                            });
+                            return obj;
+                        });
+                        processData(rows);
+                    }
+                    showLoading(false);
+                } catch (error) {
+                    showStatus('Error reading Excel file: ' + error.message, 'error');
+                    showLoading(false);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function processData(data) {
+            // Reset
+            allExpenses = [];
+            
+            // Find the column with descriptions
+            const possibleColumns = ['Regarding', 'Description', 'Expense Description', 'Details', 'Note', 'Notes'];
+            const codeColumns = ['Category Code (Regarding) (Expense Entry)', 'Category Code', 'Code', 'Category', 'Number', 'Expense Number'];
+            
+            let descColumn = null;
+            let codeColumn = null;
+            
+            if (data.length > 0) {
+                const firstRow = data[0];
+                const columns = Object.keys(firstRow);
+                
+                // Find description column
+                descColumn = possibleColumns.find(col => columns.some(c => c.toLowerCase().includes(col.toLowerCase()))) 
+                            || columns.find(c => c.toLowerCase().includes('regarding'))
+                            || columns.find(c => c.toLowerCase().includes('description'))
+                            || columns[0]; // Default to first column
+                
+                // Find code column
+                codeColumn = codeColumns.find(col => columns.some(c => c.toLowerCase().includes(col.toLowerCase())))
+                            || columns.find(c => c.toLowerCase().includes('code'))
+                            || columns.find(c => c.toLowerCase().includes('number'))
+                            || columns[1]; // Default to second column if exists
+                
+                // Get the actual column names
+                descColumn = columns.find(c => c.toLowerCase().includes(descColumn.toLowerCase())) || columns[0];
+                if (codeColumn && columns.length > 1) {
+                    codeColumn = columns.find(c => c.toLowerCase().includes(codeColumn.toLowerCase())) || columns[1];
+                }
+            }
+            
+            // Process each row
+            data.forEach((row, index) => {
+                const description = row[descColumn] || '';
+                const code = codeColumn ? (row[codeColumn] || '') : '';
+                
+                if (description) { // Only process rows with descriptions
+                    allExpenses.push({
+                        rowNumber: index + 1,
+                        description: description,
+                        originalCode: code.toString(),
+                        category: categorizeExpense(description)
+                    });
+                }
+            });
+            
+            if (allExpenses.length === 0) {
+                showStatus('No valid expense data found in the file', 'error');
+                return;
+            }
+            
+            showStatus(`Successfully processed ${allExpenses.length} expenses`, 'success');
+            displayResults();
+        }
+        
+        function displayResults() {
+            // Show results section
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            // Update summary
+            updateSummary();
+            
+            // Display table
+            filteredExpenses = [...allExpenses];
+            renderTable();
+        }
+        
+        function updateSummary() {
+            const counts = {
+                travel: 0,
+                messenger: 0,
+                tax: 0,
+                other: 0
+            };
+            
+            allExpenses.forEach(expense => {
+                if (expense.category.includes('Travel')) counts.travel++;
+                else if (expense.category.includes('Messenger')) counts.messenger++;
+                else if (expense.category.includes('Tax')) counts.tax++;
+                else counts.other++;
+            });
+            
+            document.getElementById('travelCount').textContent = counts.travel;
+            document.getElementById('messengerCount').textContent = counts.messenger;
+            document.getElementById('taxCount').textContent = counts.tax;
+            document.getElementById('otherCount').textContent = counts.other;
+        }
+        
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #6c757d;">No expenses match your filters</td></tr>';
+                return;
+            }
+            
+            filteredExpenses.forEach(expense => {
+                const row = tbody.insertRow();
+                
+                let badgeClass = 'badge-other';
+                if (expense.category.includes('Travel')) badgeClass = 'badge-travel';
+                else if (expense.category.includes('Messenger')) badgeClass = 'badge-messenger';
+                else if (expense.category.includes('Tax')) badgeClass = 'badge-tax';
+                
+                row.innerHTML = `
+                    <td>${expense.rowNumber}</td>
+                    <td>${expense.description}</td>
+                    <td>${expense.originalCode}</td>
+                    <td><span class="category-badge ${badgeClass}">${expense.category}</span></td>
+                `;
+            });
+        }
+        
+        // Filter functions
+        document.getElementById('searchInput').addEventListener('input', filterData);
+        document.getElementById('categoryFilter').addEventListener('change', filterData);
+        
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            filteredExpenses = allExpenses.filter(expense => {
+                const matchesSearch = !searchTerm || expense.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryFilter || expense.category === categoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderTable();
+        }
+        
+        // Export functions
+        function exportToCSV() {
+            if (allExpenses.length === 0) {
+                showStatus('No data to export', 'error');
+                return;
+            }
+            
+            let csv = 'Row Number,Description,Original Code,Reimbursement Category\n';
+            allExpenses.forEach(expense => {
+                csv += `${expense.rowNumber},"${expense.description.replace(/"/g, '""')}","${expense.originalCode}","${expense.category}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'categorized_expenses_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showStatus('CSV file exported successfully', 'success');
+        }
+        
+        function copyToClipboard() {
+            if (allExpenses.length === 0) {
+                showStatus('No data to copy', 'error');
+                return;
+            }
+            
+            let text = 'Row Number\tDescription\tOriginal Code\tReimbursement Category\n';
+            allExpenses.forEach(expense => {
+                text += `${expense.rowNumber}\t${expense.description}\t${expense.originalCode}\t${expense.category}\n`;
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('Data copied to clipboard! You can paste it directly into Excel.', 'success');
+            }).catch(() => {
+                showStatus('Failed to copy to clipboard', 'error');
+            });
+        }
+        
+        function resetTool() {
+            allExpenses = [];
+            filteredExpenses = [];
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            hideStatus();
+        }
+        
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loadingSection').style.display = show ? 'block' : 'none';
+        }
+        
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'status-message status-' + type;
+            statusEl.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(hideStatus, 5000);
+            }
+        }
+        
+        function hideStatus() {
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
