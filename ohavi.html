@@ -1,937 +1,671 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Avi's Arrival Tracker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Avi's Arrival Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #E6E0F8 0%, #F0E6F8 100%);
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #E6E0F8 0%, #F0E6F8 100%);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
 
-        .header {
-            background: linear-gradient(135deg, #9B88D3 0%, #B19CD9 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(155, 136, 211, 0.3);
-        }
+    .header {
+      background: linear-gradient(135deg, #9B88D3 0%, #B19CD9 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(155, 136, 211, 0.3);
+    }
 
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+    .header h1 { font-size: 24px; margin-bottom: 5px; }
+    .header .subtitle { font-size: 14px; opacity: 0.9; }
 
-        .header .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
+    .container { max-width: 100%; padding: 15px; }
 
-        .container {
-            max-width: 100%;
-            padding: 15px;
-        }
+    .stats-bar {
+      display: flex;
+      justify-content: space-around;
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+    .stat { text-align: center; }
+    .stat-value { font-size: 24px; font-weight: bold; color: #9B88D3; }
+    .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
 
-        .stat {
-            text-align: center;
-        }
+    .category-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
 
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #9B88D3;
-        }
+    .category-tab {
+      background: white;
+      border: 2px solid #9B88D3;
+      color: #9B88D3;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .category-tab.active { background: #9B88D3; color: white; }
 
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
+    .item-list {
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-        .category-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
+    .item {
+      background: #F8F6FD;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .item.completed { opacity: 0.6; background: #E8F5E8; }
 
-        .category-tab {
-            background: white;
-            border: 2px solid #9B88D3;
-            color: #9B88D3;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
-        }
+    .item-header { display: flex; align-items: center; margin-bottom: 10px; }
+    .item-checkbox { width: 24px; height: 24px; margin-right: 12px; cursor: pointer; accent-color: #9B88D3; }
+    .item-name { flex: 1; font-size: 16px; font-weight: 500; color: #333; }
 
-        .category-tab.active {
-            background: #9B88D3;
-            color: white;
-        }
+    .priority-badge {
+      padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-left: 8px;
+    }
+    .priority-high { background: #FFE4E4; color: #D32F2F; }
+    .priority-medium { background: #FFF3E0; color: #F57C00; }
+    .priority-low { background: #E8F5E9; color: #388E3C; }
 
-        .item-list {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+    .item-details { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; font-size: 14px; }
+    .item-price { color: #9B88D3; font-weight: 600; }
+    .item-link { color: #7B68EE; text-decoration: none; }
+    .item-notes { width: 100%; color: #666; font-style: italic; margin-top: 5px; }
 
-        .item {
-            background: #F8F6FD;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            position: relative;
-            transition: all 0.3s;
-        }
+    .item-actions { display: flex; gap: 10px; margin-top: 10px; }
 
-        .item.completed {
-            opacity: 0.6;
-            background: #E8F5E8;
-        }
+    .btn-small {
+      padding: 6px 12px; border: none; border-radius: 8px; font-size: 12px;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-edit { background: #E6E0F8; color: #9B88D3; }
+    .btn-delete { background: #FFE4E4; color: #D32F2F; }
 
-        .item-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+    .fab {
+      position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px;
+      background: linear-gradient(135deg, #9B88D3 0%, #B19CD9 100%);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(155,136,211,0.4);
+      transition: transform 0.3s; border: none;
+    }
+    .fab:active { transform: scale(0.95); }
 
-        .item-checkbox {
-            width: 24px;
-            height: 24px;
-            margin-right: 12px;
-            cursor: pointer;
-            accent-color: #9B88D3;
-        }
+    .modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 1000; padding: 20px; overflow-y: auto;
+    }
+    .modal.active { display: flex; align-items: center; justify-content: center; }
 
-        .item-name {
-            flex: 1;
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-        }
+    .modal-content {
+      background: white; border-radius: 20px; padding: 25px; width: 100%;
+      max-width: 500px; max-height: 90vh; overflow-y: auto;
+    }
 
-        .priority-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
+    .modal-header { font-size: 20px; color: #333; margin-bottom: 20px; font-weight: 600; }
 
-        .priority-high {
-            background: #FFE4E4;
-            color: #D32F2F;
-        }
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; margin-bottom: 6px; color: #666; font-size: 14px; font-weight: 500; }
 
-        .priority-medium {
-            background: #FFF3E0;
-            color: #F57C00;
-        }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 12px; border: 2px solid #E6E0F8; border-radius: 10px; font-size: 16px; transition: border-color 0.3s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #9B88D3; }
+    .form-textarea { resize: vertical; min-height: 80px; }
 
-        .priority-low {
-            background: #E8F5E9;
-            color: #388E3C;
-        }
+    .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
+    .btn { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-primary { background: linear-gradient(135deg, #9B88D3 0%, #B19CD9 100%); color: white; }
+    .btn-secondary { background: #F0F0F0; color: #666; }
 
-        .item-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 8px;
-            font-size: 14px;
-        }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex;
+      justify-content: space-around; padding: 12px 0 20px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #999; font-size: 12px; cursor: pointer; transition: color 0.3s; }
+    .nav-item.active { color: #9B88D3; }
+    .nav-icon { font-size: 20px; margin-bottom: 4px; }
 
-        .item-price {
-            color: #9B88D3;
-            font-weight: 600;
-        }
+    .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+    .empty-state-icon { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
 
-        .item-link {
-            color: #7B68EE;
-            text-decoration: none;
-        }
+    .category-manager {
+      background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .category-item { display: flex; align-items: center; padding: 10px; background: #F8F6FD; border-radius: 10px; margin-bottom: 10px; }
+    .category-name { flex: 1; font-weight: 500; }
+    .custom-category-input { display: flex; gap: 10px; margin-top: 15px; }
+    .custom-category-input input { flex: 1; }
 
-        .item-notes {
-            width: 100%;
-            color: #666;
-            font-style: italic;
-            margin-top: 5px;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-edit {
-            background: #E6E0F8;
-            color: #9B88D3;
-        }
-
-        .btn-delete {
-            background: #FFE4E4;
-            color: #D32F2F;
-        }
-
-        .fab {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #9B88D3 0%, #B19CD9 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(155, 136, 211, 0.4);
-            transition: transform 0.3s;
-            border: none;
-        }
-
-        .fab:active {
-            transform: scale(0.95);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 6px;
-            color: #666;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #E6E0F8;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #9B88D3;
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #9B88D3 0%, #B19CD9 100%);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #F0F0F0;
-            color: #666;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0 20px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #999;
-            font-size: 12px;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .nav-item.active {
-            color: #9B88D3;
-        }
-
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .category-manager {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .category-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #F8F6FD;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .category-name {
-            flex: 1;
-            font-weight: 500;
-        }
-
-        .custom-category-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .custom-category-input input {
-            flex: 1;
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
-        }
-    </style>
+    @media (max-width: 480px) {
+      .header h1 { font-size: 20px; }
+      .modal-content { padding: 20px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🍼 Avi's Arrival Tracker</h1>
-        <div class="subtitle">December 12, 2025</div>
+  <div class="header">
+    <h1>🍼 Avi's Arrival Tracker</h1>
+    <div class="subtitle">December 12, 2025</div>
+  </div>
+
+  <div class="container">
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value" id="totalItems">0</div>
+        <div class="stat-label">Total Items</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="completedItems">0</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="totalCost">$0</div>
+        <div class="stat-label">Total Cost</div>
+      </div>
     </div>
 
-    <div class="container">
-        <div class="stats-bar">
-            <div class="stat">
-                <div class="stat-value" id="totalItems">0</div>
-                <div class="stat-label">Total Items</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="completedItems">0</div>
-                <div class="stat-label">Completed</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="totalCost">$0</div>
-                <div class="stat-label">Total Cost</div>
-            </div>
-        </div>
-
-        <div class="category-tabs" id="categoryTabs">
-            <div class="category-tab active" data-category="all">All Items</div>
-        </div>
-
-        <div class="item-list" id="itemList">
-            <div class="empty-state">
-                <div class="empty-state-icon">👶</div>
-                <p>No items yet! Tap + to add your first item for Avi</p>
-            </div>
-        </div>
+    <div class="category-tabs" id="categoryTabs">
+      <div class="category-tab active" data-category="all" onclick="filterByCategory('all')">All Items</div>
     </div>
 
-    <button class="fab" onclick="openAddModal()">+</button>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="showView('items')">
-            <div class="nav-icon">📋</div>
-            <span>Items</span>
-        </div>
-        <div class="nav-item" onclick="showView('categories')">
-            <div class="nav-icon">📁</div>
-            <span>Categories</span>
-        </div>
-        <div class="nav-item" onclick="syncWithSheets()">
-            <div class="nav-icon">🔄</div>
-            <span>Sync</span>
-        </div>
+    <div class="item-list" id="itemList">
+      <div class="empty-state">
+        <div class="empty-state-icon">👶</div>
+        <p>No items yet! Tap + to add your first item for Avi</p>
+      </div>
     </div>
+  </div>
 
-    <!-- Add/Edit Item Modal -->
-    <div class="modal" id="itemModal">
-        <div class="modal-content">
-            <div class="modal-header" id="modalTitle">Add New Item</div>
-            <form id="itemForm">
-                <div class="form-group">
-                    <label class="form-label">Item Name *</label>
-                    <input type="text" class="form-input" id="itemName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Category *</label>
-                    <select class="form-select" id="itemCategory" required>
-                        <option value="">Select Category</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Priority</label>
-                    <select class="form-select" id="itemPriority">
-                        <option value="low">Low</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Price ($)</label>
-                    <input type="number" class="form-input" id="itemPrice" step="0.01" min="0">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Web Link</label>
-                    <input type="url" class="form-input" id="itemLink" placeholder="https://...">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Notes</label>
-                    <textarea class="form-textarea" id="itemNotes" placeholder="Add any notes..."></textarea>
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
+  <button class="fab" onclick="openAddModal()">+</button>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showView('items', this)">
+      <div class="nav-icon">📋</div>
+      <span>Items</span>
     </div>
+    <div class="nav-item" onclick="showView('categories', this)">
+      <div class="nav-icon">📁</div>
+      <span>Categories</span>
+    </div>
+    <div class="nav-item" onclick="syncWithSheets(false); this.classList.add('active'); setTimeout(()=>this.classList.remove('active'), 600);">
+      <div class="nav-icon">🔄</div>
+      <span>Sync</span>
+    </div>
+  </div>
 
-    <!-- Category Manager View -->
-    <div class="category-manager" id="categoryManager" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #333;">Manage Categories</h3>
-        <div id="categoryList"></div>
-        <div class="custom-category-input">
-            <input type="text" class="form-input" id="newCategoryInput" placeholder="New category name">
+  <!-- Add/Edit Item Modal -->
+  <div class="modal" id="itemModal">
+    <div class="modal-content">
+      <div class="modal-header" id="modalTitle">Add New Item</div>
+      <form id="itemForm">
+        <div class="form-group">
+          <label class="form-label">Item Name *</label>
+          <input type="text" class="form-input" id="itemName" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-select" id="itemCategory" required>
+            <option value="">Select Category</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-select" id="itemPriority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Price ($)</label>
+          <input type="number" class="form-input" id="itemPrice" step="0.01" min="0" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Web Link</label>
+          <input type="url" class="form-input" id="itemLink" placeholder="https://..." />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="itemNotes" placeholder="Add any notes..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category Manager View -->
+  <div class="category-manager" id="categoryManager" style="display: none;">
+    <h3 style="margin-bottom: 15px; color: #333;">Manage Categories</h3>
+    <div id="categoryList"></div>
+    <div class="custom-category-input">
+      <input type="text" class="form-input" id="newCategoryInput" placeholder="New category name" />
+      <button class="btn btn-primary" onclick="addCategory()">Add</button>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Data ----------
+    let items = [];
+    let categories = [
+      'Nursery','Clothing','Feeding','Diaper & Bath','Health & Safety','Travel','Toys & Books'
+    ];
+    // Track categories user intentionally removed so we don't auto-readd them from items
+    let categoryRemovals = [];
+
+    let currentCategory = 'all';
+    let editingItemId = null;
+    let currentView = 'items';
+
+    // ---------- Init ----------
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      normalizeCategoriesFromItems(); // <- ensures new categories from synced items appear
+      renderCategories();
+      renderItems();
+      updateStats();
+      setTimeout(startAutoSync, 800);
+    });
+
+    // ---------- Storage ----------
+    function loadData() {
+      const savedItems = localStorage.getItem('aviTrackerItems');
+      const savedCategories = localStorage.getItem('aviTrackerCategories');
+      const savedRemovals = localStorage.getItem('aviTrackerCategoryRemovals');
+
+      if (savedItems) items = JSON.parse(savedItems);
+      if (savedCategories) categories = JSON.parse(savedCategories);
+      if (savedRemovals) categoryRemovals = JSON.parse(savedRemovals);
+    }
+
+    function saveData() {
+      localStorage.setItem('aviTrackerItems', JSON.stringify(items));
+      localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
+      localStorage.setItem('aviTrackerCategoryRemovals', JSON.stringify(categoryRemovals));
+      updateStats();
+    }
+
+    // Ensure categories include any categories that appear on items (e.g., from Ingrid's device)
+    function normalizeCategoriesFromItems() {
+      const fromItems = new Set(items.map(i => i.category).filter(Boolean));
+      for (const cat of fromItems) {
+        if (!categories.includes(cat) && !categoryRemovals.includes(cat)) {
+          categories.push(cat);
+        }
+      }
+      // Keep unique + sorted-ish for stable UI
+      categories = Array.from(new Set(categories));
+      // If currentCategory no longer exists, fallback to 'all'
+      if (currentCategory !== 'all' && !categories.includes(currentCategory)) {
+        currentCategory = 'all';
+      }
+      saveData();
+    }
+
+    // ---------- UI: Categories ----------
+    function renderCategories() {
+      const tabs = document.getElementById('categoryTabs');
+      tabs.innerHTML = `<div class="category-tab ${currentCategory==='all'?'active':''}" data-category="all" onclick="filterByCategory('all')">All Items</div>`;
+
+      categories.forEach(cat => {
+        const active = currentCategory === cat ? 'active' : '';
+        tabs.innerHTML += `<div class="category-tab ${active}" data-category="${cat}" onclick="filterByCategory('${cat}')">${cat}</div>`;
+      });
+
+      // Update select options
+      const select = document.getElementById('itemCategory');
+      select.innerHTML = '<option value="">Select Category</option>';
+      categories.forEach(cat => {
+        select.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
+    }
+
+    function filterByCategory(category) {
+      currentCategory = category;
+      document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.category === category);
+      });
+      renderItems();
+    }
+
+    // ---------- UI: Items ----------
+    function renderItems() {
+      const container = document.getElementById('itemList');
+      const filtered = currentCategory === 'all' ? items : items.filter(i => i.category === currentCategory);
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">👶</div>
+            <p>No items in this category yet!</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="item ${item.completed ? 'completed' : ''}">
+          <div class="item-header">
+            <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem('${item.id}')">
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="priority-badge priority-${item.priority}">${(item.priority||'').toUpperCase()}</div>
+          </div>
+          <div class="item-details">
+            ${item.price ? `<span class="item-price">$${Number(item.price).toFixed(2)}</span>` : ''}
+            ${item.link ? `<a href="${encodeURI(item.link)}" target="_blank" class="item-link">View Item →</a>` : ''}
+          </div>
+          ${item.notes ? `<div class="item-notes">${escapeHtml(item.notes)}</div>` : ''}
+          <div class="item-actions">
+            <button class="btn-small btn-edit" onclick="editItem('${item.id}')">Edit</button>
+            <button class="btn-small btn-delete" onclick="deleteItem('${item.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats() {
+      const total = items.length;
+      const completed = items.filter(i => i.completed).length;
+      const totalCost = items.reduce((sum, i) => sum + (parseFloat(i.price) || 0), 0);
+
+      document.getElementById('totalItems').textContent = total;
+      document.getElementById('completedItems').textContent = completed;
+      document.getElementById('totalCost').textContent = `$${totalCost.toFixed(2)}`;
+    }
+
+    function toggleItem(id) {
+      const it = items.find(i => i.id === id);
+      if (it) {
+        it.completed = !it.completed;
+        it.last_modified = new Date().toISOString();
+        it.modified_by = USER_NAME;
+        saveData();
+        renderItems();
+      }
+    }
+
+    // ---------- Modal: Add/Edit ----------
+    function openAddModal() {
+      editingItemId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Item';
+      document.getElementById('itemForm').reset();
+      document.getElementById('itemModal').classList.add('active');
+    }
+
+    function editItem(id) {
+      const it = items.find(i => i.id === id);
+      if (!it) return;
+      editingItemId = id;
+      document.getElementById('modalTitle').textContent = 'Edit Item';
+      document.getElementById('itemName').value = it.name || '';
+      document.getElementById('itemCategory').value = it.category || '';
+      document.getElementById('itemPriority').value = it.priority || 'medium';
+      document.getElementById('itemPrice').value = it.price || '';
+      document.getElementById('itemLink').value = it.link || '';
+      document.getElementById('itemNotes').value = it.notes || '';
+      document.getElementById('itemModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('itemModal').classList.remove('active');
+      document.getElementById('itemForm').reset();
+      editingItemId = null;
+    }
+
+    document.getElementById('itemForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const itemData = {
+        name: document.getElementById('itemName').value.trim(),
+        category: document.getElementById('itemCategory').value.trim(),
+        priority: document.getElementById('itemPriority').value,
+        price: document.getElementById('itemPrice').value ? Number(document.getElementById('itemPrice').value) : '',
+        link: document.getElementById('itemLink').value.trim(),
+        notes: document.getElementById('itemNotes').value.trim(),
+      };
+      if (!itemData.name || !itemData.category) return;
+
+      // If user typed/selected a new category, ensure it's in the list (and remove from removals if present)
+      ensureCategoryExists(itemData.category);
+
+      if (editingItemId) {
+        const idx = items.findIndex(i => i.id === editingItemId);
+        if (idx !== -1) {
+          items[idx] = {
+            ...items[idx],
+            ...itemData,
+            last_modified: new Date().toISOString(),
+            modified_by: USER_NAME
+          };
+        }
+      } else {
+        items.push({
+          id: Date.now().toString(),
+          completed: false,
+          last_modified: new Date().toISOString(),
+          modified_by: USER_NAME,
+          ...itemData
+        });
+      }
+
+      saveData();
+      renderCategories(); // reflect any new category immediately
+      renderItems();
+      closeModal();
+    });
+
+    function ensureCategoryExists(cat) {
+      if (!categories.includes(cat)) {
+        categories.push(cat);
+        // If it was previously removed by the user, un-remove it now that it's in use
+        categoryRemovals = categoryRemovals.filter(c => c !== cat);
+        saveData();
+      }
+    }
+
+    // ---------- Views ----------
+    function showView(view, el) {
+      currentView = view;
+
+      // Update nav active
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      if (view === 'categories') {
+        document.getElementById('itemList').style.display = 'none';
+        document.getElementById('categoryTabs').style.display = 'none';
+        document.querySelector('.stats-bar').style.display = 'none';
+
+        const manager = document.getElementById('categoryManager');
+        manager.style.display = 'block';
+        manager.innerHTML = `
+          <h3 style="margin-bottom: 15px; color: #333;">Manage Categories</h3>
+          <div id="categoryListView">
+            ${categories.map(cat => `
+              <div class="category-item">
+                <div class="category-name">${escapeHtml(cat)}</div>
+                <button class="btn-small btn-delete" onclick="removeCategory('${escapeAttr(cat)}')">Remove</button>
+              </div>
+            `).join('')}
+          </div>
+          <div class="custom-category-input">
+            <input type="text" class="form-input" id="newCategoryInput" placeholder="New category name" />
             <button class="btn btn-primary" onclick="addCategory()">Add</button>
-        </div>
-    </div>
+          </div>
+        `;
+      } else {
+        document.getElementById('itemList').style.display = 'block';
+        document.getElementById('categoryTabs').style.display = 'flex';
+        document.querySelector('.stats-bar').style.display = 'flex';
+        document.getElementById('categoryManager').style.display = 'none';
+      }
+    }
 
-    <script>
-        // Data structure
-        let items = [];
-        let categories = ['Nursery', 'Clothing', 'Feeding', 'Diaper & Bath', 'Health & Safety', 'Travel', 'Toys & Books'];
-        let currentCategory = 'all';
-        let editingItemId = null;
-        let currentView = 'items';
+    function addCategory() {
+      const input = document.getElementById('newCategoryInput');
+      const newCat = (input.value || '').trim();
+      if (!newCat || categories.includes(newCat)) return;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            renderCategories();
-            renderItems();
-            updateStats();
-        });
+      categories.push(newCat);
+      // If previously removed, un-remove
+      categoryRemovals = categoryRemovals.filter(c => c !== newCat);
 
-        // Load data from localStorage
-        function loadData() {
-            const savedItems = localStorage.getItem('aviTrackerItems');
-            const savedCategories = localStorage.getItem('aviTrackerCategories');
-            
-            if (savedItems) {
-                items = JSON.parse(savedItems);
-            }
-            
-            if (savedCategories) {
-                categories = JSON.parse(savedCategories);
-            }
-        }
+      saveData();
+      renderCategories();
+      showView('categories', document.querySelectorAll('.bottom-nav .nav-item')[1]);
+      input.value = '';
+    }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('aviTrackerItems', JSON.stringify(items));
-            localStorage.setItem('aviTrackerCategories', JSON.stringify(categories));
-            updateStats();
-        }
+    function removeCategory(category) {
+      if (!confirm(`Remove "${category}" category? Items in this category won't be deleted.`)) return;
+      categories = categories.filter(c => c !== category);
+      // Remember user intent so normalize doesn't auto-add it back from items
+      if (!categoryRemovals.includes(category)) categoryRemovals.push(category);
+      saveData();
+      renderCategories();
+      showView('categories', document.querySelectorAll('.bottom-nav .nav-item')[1]);
+      // If current filter was the removed category, reset
+      if (currentCategory === category) filterByCategory('all');
+    }
 
-        // Render categories
-        function renderCategories() {
-            const tabsContainer = document.getElementById('categoryTabs');
-            tabsContainer.innerHTML = '<div class="category-tab active" data-category="all" onclick="filterByCategory(\'all\')">All Items</div>';
-            
-            categories.forEach(cat => {
-                tabsContainer.innerHTML += `<div class="category-tab" data-category="${cat}" onclick="filterByCategory('${cat}')">${cat}</div>`;
-            });
-            
-            // Update select options
-            const select = document.getElementById('itemCategory');
-            select.innerHTML = '<option value="">Select Category</option>';
-            categories.forEach(cat => {
-                select.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-        }
+    // ---------- Sync (Google Sheets) ----------
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNFQRwZlkeNGYcfK7oHzilKMEcu6WaYBB_1y00UwpKPQoMTtSSCYmPgPCP1iZbCMAnnA/exec';
+    const USER_NAME = localStorage.getItem('userName') || promptForUserName();
 
-        // Filter by category
-        function filterByCategory(category) {
-            currentCategory = category;
-            
-            // Update active tab
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.category === category) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            renderItems();
-        }
-
-        // Render items
-        function renderItems() {
-            const container = document.getElementById('itemList');
-            const filteredItems = currentCategory === 'all' 
-                ? items 
-                : items.filter(item => item.category === currentCategory);
-            
-            if (filteredItems.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👶</div>
-                        <p>No items in this category yet!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = filteredItems.map(item => `
-                <div class="item ${item.completed ? 'completed' : ''}">
-                    <div class="item-header">
-                        <input type="checkbox" class="item-checkbox" 
-                               ${item.completed ? 'checked' : ''} 
-                               onchange="toggleItem('${item.id}')">
-                        <div class="item-name">${item.name}</div>
-                        <div class="priority-badge priority-${item.priority}">${item.priority.toUpperCase()}</div>
-                    </div>
-                    <div class="item-details">
-                        ${item.price ? `<span class="item-price">$${item.price}</span>` : ''}
-                        ${item.link ? `<a href="${item.link}" target="_blank" class="item-link">View Item →</a>` : ''}
-                    </div>
-                    ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
-                    <div class="item-actions">
-                        <button class="btn-small btn-edit" onclick="editItem('${item.id}')">Edit</button>
-                        <button class="btn-small btn-delete" onclick="deleteItem('${item.id}')">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Update statistics
-        function updateStats() {
-            const total = items.length;
-            const completed = items.filter(item => item.completed).length;
-            const totalCost = items.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
-            
-            document.getElementById('totalItems').textContent = total;
-            document.getElementById('completedItems').textContent = completed;
-            document.getElementById('totalCost').textContent = `$${totalCost.toFixed(2)}`;
-        }
-
-        // Toggle item completion
-        function toggleItem(id) {
-            const item = items.find(i => i.id === id);
-            if (item) {
-                item.completed = !item.completed;
-                saveData();
-                renderItems();
-            }
-        }
-         syncWithSheets(true);
-
-        // Open add modal
-        function openAddModal() {
-            editingItemId = null;
-            document.getElementById('modalTitle').textContent = 'Add New Item';
-            document.getElementById('itemForm').reset();
-            document.getElementById('itemModal').classList.add('active');
-        }
-
-        // Edit item
-        function editItem(id) {
-            const item = items.find(i => i.id === id);
-            if (item) {
-                editingItemId = id;
-                document.getElementById('modalTitle').textContent = 'Edit Item';
-                document.getElementById('itemName').value = item.name;
-                document.getElementById('itemCategory').value = item.category;
-                document.getElementById('itemPriority').value = item.priority;
-                document.getElementById('itemPrice').value = item.price || '';
-                document.getElementById('itemLink').value = item.link || '';
-                document.getElementById('itemNotes').value = item.notes || '';
-                document.getElementById('itemModal').classList.add('active');
-            }
-        }
-
-        // Delete item
-        function deleteItem(id) {
-            if (confirm('Are you sure you want to delete this item?')) {
-                items = items.filter(i => i.id !== id);
-                saveData();
-                renderItems();
-            }
-        }
- syncWithSheets(true);
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('itemModal').classList.remove('active');
-            document.getElementById('itemForm').reset();
-            editingItemId = null;
-        }
-        syncWithSheets(true);
-
-        // Handle form submission
-        document.getElementById('itemForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const itemData = {
-                name: document.getElementById('itemName').value,
-                category: document.getElementById('itemCategory').value,
-                priority: document.getElementById('itemPriority').value,
-                price: document.getElementById('itemPrice').value,
-                link: document.getElementById('itemLink').value,
-                notes: document.getElementById('itemNotes').value,
-                completed: false
-            };
-            
-            if (editingItemId) {
-                const index = items.findIndex(i => i.id === editingItemId);
-                if (index !== -1) {
-                    items[index] = { ...items[index], ...itemData };
-                }
-            } else {
-                itemData.id = Date.now().toString();
-                items.push(itemData);
-            }
-            
-            saveData();
-            renderItems();
-            closeModal();
-        });
-
-        // Show different views
-        function showView(view) {
-            currentView = view;
-            
-            // Update nav
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.target.closest('.nav-item').classList.add('active');
-            
-            // Toggle views
-            if (view === 'categories') {
-                document.getElementById('itemList').style.display = 'none';
-                document.getElementById('categoryTabs').style.display = 'none';
-                document.querySelector('.stats-bar').style.display = 'none';
-                
-                // Show category manager
-                let categoryManager = document.getElementById('categoryManager');
-                if (!categoryManager) {
-                    categoryManager = document.createElement('div');
-                    categoryManager.id = 'categoryManager';
-                    categoryManager.className = 'category-manager';
-                    document.querySelector('.container').appendChild(categoryManager);
-                }
-                
-                categoryManager.style.display = 'block';
-                categoryManager.innerHTML = `
-                    <h3 style="margin-bottom: 15px; color: #333;">Manage Categories</h3>
-                    <div id="categoryListView">
-                        ${categories.map(cat => `
-                            <div class="category-item">
-                                <div class="category-name">${cat}</div>
-                                <button class="btn-small btn-delete" onclick="removeCategory('${cat}')">Remove</button>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="custom-category-input">
-                        <input type="text" class="form-input" id="newCategoryInput" placeholder="New category name">
-                        <button class="btn btn-primary" onclick="addCategory()">Add</button>
-                    </div>
-                `;
-            } else {
-                document.getElementById('itemList').style.display = 'block';
-                document.getElementById('categoryTabs').style.display = 'flex';
-                document.querySelector('.stats-bar').style.display = 'flex';
-                const categoryManager = document.getElementById('categoryManager');
-                if (categoryManager) {
-                    categoryManager.style.display = 'none';
-                }
-            }
-        }
-
-        // Add category
-        function addCategory() {
-            const input = document.getElementById('newCategoryInput');
-            const newCategory = input.value.trim();
-            
-            if (newCategory && !categories.includes(newCategory)) {
-                categories.push(newCategory);
-                saveData();
-                renderCategories();
-                showView('categories'); // Refresh the view
-                input.value = '';
-            }
-        }
-
-        // Remove category
-        function removeCategory(category) {
-            if (confirm(`Remove "${category}" category? Items in this category won't be deleted.`)) {
-                categories = categories.filter(c => c !== category);
-                saveData();
-                renderCategories();
-                showView('categories'); // Refresh the view
-            }
-        }
-
-        // Sync with Google Sheets (placeholder)
-        // ============= GOOGLE SHEETS SYNC =============
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNFQRwZlkeNGYcfK7oHzilKMEcu6WaYBB_1y00UwpKPQoMTtSSCYmPgPCP1iZbCMAnnA/exec';
-
-const USER_NAME = localStorage.getItem('userName') || promptForUserName();
-
-function promptForUserName() {
-    const name = prompt('Enter your name (so we know who made changes):', 'User');
-    if (name) {
+    function promptForUserName() {
+      const name = prompt('Enter your name (so we know who made changes):', 'User');
+      if (name) {
         localStorage.setItem('userName', name);
         return name;
+      }
+      return 'Unknown';
     }
-    return 'Unknown';
-}
 
-let syncInterval;
-let lastSyncTime = 0;
+    let syncInterval;
 
-function startAutoSync() {
-    syncWithSheets(true);
-    syncInterval = setInterval(() => {
-        syncWithSheets(true);
-    }, 30000);
-}
-
-async function syncWithSheets(silent = false) {
-    if (!silent) {
-        showSyncStatus('Syncing...');
+    function startAutoSync() {
+      syncWithSheets(true);
+      syncInterval = setInterval(() => syncWithSheets(true), 30000);
     }
-    
-    try {
-        items = items.map(item => ({
-            ...item,
-            last_modified: item.last_modified || new Date().toISOString(),
-            modified_by: item.modified_by || USER_NAME
+
+    async function syncWithSheets(silent = false) {
+      if (!silent) showSyncStatus('Syncing...');
+
+      try {
+        // Ensure metadata exists
+        items = items.map(it => ({
+          ...it,
+          last_modified: it.last_modified || new Date().toISOString(),
+          modified_by: it.modified_by || USER_NAME
         }));
-        
-        const response = await fetch(`${SCRIPT_URL}?action=sync&user=${USER_NAME}`, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'data=' + encodeURIComponent(JSON.stringify(items))
+
+        // POST local items up (categories are inferred across devices)
+        // (Keeping 'no-cors' to avoid Apps Script CORS issues; we read via the GET below)
+        await fetch(`${SCRIPT_URL}?action=sync&user=${encodeURIComponent(USER_NAME)}`, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'data=' + encodeURIComponent(JSON.stringify(items))
         });
-        
+
+        // Read merged items down
         const readResponse = await fetch(`${SCRIPT_URL}?action=read`);
         const result = await readResponse.json();
-        
-        if (result.success) {
-            const remoteItems = result.data;
-            const itemMap = new Map();
-            
-            remoteItems.forEach(item => {
-                itemMap.set(item.id, item);
-            });
-            
-            items.forEach(localItem => {
-                const remoteItem = itemMap.get(localItem.id);
-                if (!remoteItem || 
-                    new Date(localItem.last_modified) > new Date(remoteItem.last_modified)) {
-                    itemMap.set(localItem.id, localItem);
-                }
-            });
-            
-            items = Array.from(itemMap.values());
-            saveData();
-            renderItems();
-            
-            lastSyncTime = Date.now();
-            
-            if (!silent) {
-                showSyncStatus('✓ Synced successfully!', 'success');
-            }
-        } else {
-            throw new Error(result.error || 'Sync failed');
+
+        if (!result || !result.success) throw new Error(result?.error || 'Sync failed');
+
+        // Support legacy {data:[...]} shape; if future includes {items:[...],categories:[...]} we also handle
+        const remoteItems = Array.isArray(result.items) ? result.items
+                           : Array.isArray(result.data) ? result.data
+                           : [];
+
+        // Merge by id using last_modified
+        const map = new Map();
+        for (const r of remoteItems) map.set(r.id, r);
+        for (const l of items) {
+          const r = map.get(l.id);
+          if (!r || new Date(l.last_modified || 0) > new Date(r.last_modified || 0)) {
+            map.set(l.id, l);
+          }
         }
-    } catch (error) {
-        console.error('Sync error:', error);
-        if (!silent) {
-            showSyncStatus('✗ Sync failed. Will retry...', 'error');
-        }
-    }
-}
+        items = Array.from(map.values());
 
-function showSyncStatus(message, type = 'info') {
-    const existingStatus = document.getElementById('syncStatus');
-    if (existingStatus) {
-        existingStatus.remove();
-    }
-    
-    const status = document.createElement('div');
-    status.id = 'syncStatus';
-    status.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#9B88D3'};
-        color: white;
-        border-radius: 25px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-        font-size: 14px;
-    `;
-    status.textContent = message;
-    document.body.appendChild(status);
-    
-    if (type !== 'info') {
-        setTimeout(() => {
-            if (status.parentNode) {
-                status.remove();
-            }
-        }, 3000);
-    } else {
-        setTimeout(() => {
-            if (status.parentNode) {
-                status.remove();
-            }
-        }, 1000);
-    }
-}
+        // Derive/merge categories from items so new categories created elsewhere appear here
+        normalizeCategoriesFromItems();
+        renderCategories();
+        renderItems();
+        saveData();
 
-// Start auto-sync when page loads
-setTimeout(startAutoSync, 1000);
+        if (!silent) showSyncStatus('✓ Synced successfully!', 'success');
+      } catch (err) {
+        console.error('Sync error:', err);
+        if (!silent) showSyncStatus('✗ Sync failed. Will retry...', 'error');
+      }
+    }
 
-        // Close modal when clicking outside
-        document.getElementById('itemModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-    </script>
+    function showSyncStatus(message, type = 'info') {
+      const existing = document.getElementById('syncStatus');
+      if (existing) existing.remove();
+      const status = document.createElement('div');
+      status.id = 'syncStatus';
+      status.style.cssText = `
+        position: fixed; top: 20px; right: 20px; padding: 12px 20px;
+        background: ${type==='success' ? '#4CAF50' : type==='error' ? '#f44336' : '#9B88D3'};
+        color: white; border-radius: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 10000; animation: slideIn 0.3s ease; font-size: 14px;
+      `;
+      status.textContent = message;
+      document.body.appendChild(status);
+      setTimeout(() => status.remove(), type === 'info' ? 1000 : 3000);
+    }
+
+    // ---------- Helpers ----------
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+    function escapeAttr(str) {
+      return (str || '').replace(/["']/g, s => (s === '"' ? '&quot;' : '&#39;'));
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('itemModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+  </script>
 </body>
 </html>
