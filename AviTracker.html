@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Avi's Journey Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Avi Tracker">
+    <meta name="theme-color" content="#9b7bb8">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #9b7bb8;
+            --primary-light: #c8b6db;
+            --primary-dark: #7a5a99;
+            --accent: #e6d7f3;
+            --background: #f9f5fc;
+            --card-bg: #ffffff;
+            --text: #4a4a4a;
+            --text-light: #8a8a8a;
+            --success: #8bc34a;
+            --warning: #ffc107;
+            --info: #64b5f6;
+            --danger: #f44336;
+            --pink: #ff6b9d;
+            --blue: #4dabf7;
+            --shadow: 0 4px 6px rgba(155, 123, 184, 0.1);
+            --shadow-lg: 0 10px 25px rgba(155, 123, 184, 0.15);
+            --mom-color: #ff6b9d;
+            --dad-color: #4dabf7;
+            --pregnancy-color: #fec5e5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, var(--background) 0%, #f0e6f7 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            --background: #1a1a2e;
+            --card-bg: #16213e;
+            --text: #e0e0e0;
+            --text-light: #a0a0a0;
+            --accent: #3a3a5e;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 20px 25px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+            border-radius: 0 0 30px 30px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, -30px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 12px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 15px;
+        }
+
+        .baby-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        /* Mode Switcher */
+        .mode-switcher {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+            position: relative;
+            z-index: 2;
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .mode-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.8);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: var(--primary-dark);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mode-btn:not(.active):hover {
+            color: white;
+        }
+
+        /* Mode Content Display */
+        .pregnancy-mode-content {
+            display: none;
+        }
+
+        .baby-mode-content {
+            display: none;
+        }
+
+        body.pregnancy-mode .pregnancy-mode-content {
+            display: block;
+        }
+
+        body.baby-mode .baby-mode-content {
+            display: block;
+        }
+
+        /* Kick Counter Card */
+        .kick-counter-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kick-counter-card::before {
+            content: '👶';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.05;
+            top: -20px;
+            right: -20px;
+            transform: rotate(-15deg);
+        }
+
+        .kick-count-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: var(--pregnancy-color);
+            line-height: 1;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kick-count-label {
+            font-size: 14px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .kick-btn {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--pregnancy-color) 0%, #ff9ece 100%);
+            color: white;
+            font-size: 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(254, 197, 229, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kick-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(254, 197, 229, 0.3);
+        }
+
+        .kick-btn.pulse {
+            animation: kickPulse 0.5s ease;
+        }
+
+        @keyframes kickPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Kick Session */
+        .kick-session {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .session-timer {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .session-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .session-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .session-start {
+            background: linear-gradient(135deg, var(--success) 0%, #7cb342 100%);
+            color: white;
+        }
+
+        .session-stop {
+            background: linear-gradient(135deg, var(--danger) 0%, #e53935 100%);
+            color: white;
+        }
+
+        /* Kick Stats */
+        .kick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .kick-stat {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .kick-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--pregnancy-color);
+            margin-bottom: 5px;
+        }
+
+        .kick-stat-label {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        /* Movement Pattern */
+        .movement-pattern {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            margin-top: 15px;
+        }
+
+        .hour-block {
+            aspect-ratio: 1;
+            background: var(--accent);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .hour-block.active {
+            background: linear-gradient(135deg, var(--pregnancy-color) 0%, #ff9ece 100%);
+        }
+
+        .hour-block:hover::after {
+            content: attr(data-time);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* Voice Control FAB */
+        .voice-control-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .voice-control-fab:active {
+            transform: scale(0.95);
+        }
+
+        .voice-control-fab.listening {
+            background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+
+        /* Voice Modal */
+        .voice-modal {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            z-index: 998;
+            text-align: center;
+            min-width: 250px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .voice-modal.active {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+
+        .voice-modal .listening-animation {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .voice-modal .listening-animation span {
+            width: 4px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .voice-modal .listening-animation span:nth-child(2) { animation-delay: 0.1s; }
+        .voice-modal .listening-animation span:nth-child(3) { animation-delay: 0.2s; }
+        .voice-modal .listening-animation span:nth-child(4) { animation-delay: 0.3s; }
+        .voice-modal .listening-animation span:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(2); }
+        }
+
+        /* Parent Indicators */
+        .parent-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+            margin-top: 10px;
+        }
+
+        .parent-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            font-size: 11px;
+        }
+
+        .parent-indicator.active {
+            background: rgba(255,255,255,0.4);
+            font-weight: bold;
+        }
+
+        .parent-indicator .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card.syncing::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(155, 123, 184, 0.2), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .action-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .action-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .last-time {
+            font-size: 11px;
+            color: var(--text-light);
+            background: var(--accent);
+            padding: 4px 8px;
+            border-radius: 10px;
+        }
+
+        .last-time.by-mom {
+            background: rgba(255, 107, 157, 0.2);
+            color: var(--mom-color);
+        }
+
+        .last-time.by-dad {
+            background: rgba(77, 171, 247, 0.2);
+            color: var(--dad-color);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-left {
+            background: linear-gradient(135deg, #b8a3d1 0%, #9b7bb8 100%);
+            color: white;
+        }
+
+        .btn-right {
+            background: linear-gradient(135deg, #d4c4e4 0%, #b8a3d1 100%);
+            color: white;
+        }
+
+        .btn-pee {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+            color: #856404;
+        }
+
+        .btn-poop {
+            background: linear-gradient(135deg, #d4a373 0%, #c58a54 100%);
+            color: white;
+        }
+
+        .btn-sleep-start {
+            background: linear-gradient(135deg, #a8d5e5 0%, #87c3db 100%);
+            color: white;
+        }
+
+        .btn-sleep-end {
+            background: linear-gradient(135deg, #ffd4a3 0%, #ffbc7a 100%);
+            color: white;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn.selected {
+            box-shadow: 0 0 0 3px var(--primary), inset 0 0 20px rgba(0,0,0,0.1);
+            transform: scale(1.05);
+        }
+
+        /* Activity Log */
+        .activity-log {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-top: 25px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .log-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .log-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--background);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+
+        .log-item.new-entry {
+            animation: highlight 2s ease;
+        }
+
+        @keyframes highlight {
+            0% { background: var(--primary-light); }
+            100% { background: var(--background); }
+        }
+
+        .log-icon {
+            font-size: 20px;
+            margin-right: 12px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .log-details {
+            flex: 1;
+        }
+
+        .log-type {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .parent-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: normal;
+        }
+
+        .parent-badge.mom {
+            background: rgba(255, 107, 157, 0.2);
+            color: var(--mom-color);
+        }
+
+        .parent-badge.dad {
+            background: rgba(77, 171, 247, 0.2);
+            color: var(--dad-color);
+        }
+
+        .log-time {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .log-delete {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .log-delete:hover {
+            color: #e74c3c;
+        }
+
+        /* Timer Display */
+        .timer-display {
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            background: var(--accent);
+            border-radius: 10px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Notes Section */
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-note-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        /* Parent Setup - ONE TIME ONLY */
+        .parent-setup {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .one-time-notice {
+            background: var(--accent);
+            color: var(--primary-dark);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .parent-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .parent-select-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .parent-select-btn {
+            padding: 15px;
+            border: 2px solid var(--accent);
+            background: var(--card-bg);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .parent-select-btn.selected {
+            border-color: var(--primary);
+            background: var(--accent);
+        }
+
+        .parent-select-btn .emoji {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            font-size: 11px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 2s infinite;
+        }
+
+        .connection-status.offline .connection-dot {
+            background: var(--warning);
+            animation: none;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.warning { background: var(--warning); }
+        .toast.info { background: var(--info); }
+        .toast.danger { background: var(--danger); }
+
+        /* Export Button */
+        .export-btn {
+            background: linear-gradient(135deg, var(--success) 0%, #7cb342 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .btn {
+                font-size: 13px;
+                padding: 10px 15px;
+            }
+        }
+
+        /* Countdown to birth */
+        .countdown-banner {
+            background: linear-gradient(135deg, var(--pregnancy-color) 0%, #ff9ece 100%);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin: -20px -20px 20px -20px;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="pregnancy-mode">
+    <div class="container">
+        <!-- Connection Status -->
+        <div class="connection-status" id="connectionStatus">
+            <div class="connection-dot"></div>
+            <span id="connectionText">Connected</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="baby-icon" id="modeIcon">🤰</div>
+            <h1>Avi's Journey Tracker</h1>
+            <div class="subtitle" id="modeSubtitle">Tracking every kick & movement</div>
+            
+            <!-- Mode Switcher -->
+            <div class="mode-switcher">
+                <button class="mode-btn active" id="pregnancyModeBtn" onclick="switchMode('pregnancy')">
+                    <span>🤰</span>
+                    <span>Pregnancy</span>
+                </button>
+                <button class="mode-btn" id="babyModeBtn" onclick="switchMode('baby')">
+                    <span>👶</span>
+                    <span>Baby Care</span>
+                </button>
+            </div>
+
+            <div class="parent-indicators">
+                <div class="parent-indicator" id="momIndicator">
+                    <div class="dot" style="color: var(--mom-color);"></div>
+                    <span id="momName">Mom</span>
+                </div>
+                <div class="parent-indicator" id="dadIndicator">
+                    <div class="dot" style="color: var(--dad-color);"></div>
+                    <span id="dadName">Dad</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Countdown Banner (Pregnancy Mode) -->
+        <div class="countdown-banner pregnancy-mode-content" id="countdownBanner">
+            <!-- Countdown will be inserted here -->
+        </div>
+
+        <!-- Parent Setup (ONE TIME ONLY - shown on first use) -->
+        <div class="parent-setup" id="parentSetup" style="display: none;">
+            <div class="one-time-notice">
+                🎉 ONE-TIME SETUP - You'll never see this again!
+            </div>
+            <div class="section-title">
+                <span>👋</span> Welcome! Who are you?
+            </div>
+            <input type="text" class="parent-input" id="parentNameInput" placeholder="Enter your name (e.g., Ingrid or Dan)">
+            <div class="parent-select-buttons">
+                <div class="parent-select-btn" onclick="selectParentRole('mom')">
+                    <div class="emoji">👩</div>
+                    <div class="label">Mom</div>
+                </div>
+                <div class="parent-select-btn" onclick="selectParentRole('dad')">
+                    <div class="emoji">👨</div>
+                    <div class="label">Dad</div>
+                </div>
+            </div>
+            <button class="btn btn-full" style="background: var(--primary); grid-column: 1/-1;" onclick="saveParentSetup()">
+                Start Tracking Forever
+            </button>
+        </div>
+
+        <!-- PREGNANCY MODE CONTENT -->
+        <div class="pregnancy-mode-content">
+            <!-- Kick Counter -->
+            <div class="kick-counter-card">
+                <div class="kick-count-display" id="kickCount">0</div>
+                <div class="kick-count-label">Kicks Today</div>
+                <button class="kick-btn" id="kickBtn" onclick="recordKick()">
+                    👣
+                </button>
+                <div style="font-size: 12px; color: var(--text-light); margin-top: 10px;">
+                    Tap when you feel movement
+                </div>
+            </div>
+
+            <!-- Kick Stats -->
+            <div class="kick-stats">
+                <div class="kick-stat">
+                    <div class="kick-stat-value" id="lastHourKicks">0</div>
+                    <div class="kick-stat-label">Last Hour</div>
+                </div>
+                <div class="kick-stat">
+                    <div class="kick-stat-value" id="sessionKicks">0</div>
+                    <div class="kick-stat-label">This Session</div>
+                </div>
+                <div class="kick-stat">
+                    <div class="kick-stat-value" id="dailyGoal">0/10</div>
+                    <div class="kick-stat-label">Daily Goal</div>
+                </div>
+            </div>
+
+            <!-- Kick Session Timer -->
+            <div class="kick-session">
+                <div class="section-title">
+                    <span>⏱️</span> Counting Session
+                </div>
+                <div class="session-timer" id="sessionTimer">00:00</div>
+                <div class="session-controls">
+                    <button class="session-btn session-start" onclick="startKickSession()">
+                        Start Session
+                    </button>
+                    <button class="session-btn session-stop" onclick="endKickSession()">
+                        End Session
+                    </button>
+                </div>
+            </div>
+
+            <!-- Movement Pattern -->
+            <div class="movement-pattern">
+                <div class="section-title">
+                    <span>📊</span> Today's Movement Pattern
+                </div>
+                <div class="pattern-grid" id="patternGrid">
+                    <!-- Will be populated with hour blocks -->
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 11px; color: var(--text-light);">
+                    <span>12am</span>
+                    <span>6am</span>
+                    <span>12pm</span>
+                    <span>6pm</span>
+                    <span>11pm</span>
+                </div>
+            </div>
+
+            <!-- Pregnancy Notes -->
+            <div class="action-card">
+                <div class="section-title">
+                    <span>📝</span> Notes & Symptoms
+                </div>
+                <textarea class="notes-input" id="pregnancyNoteInput" placeholder="How are you feeling? Any symptoms, cravings, or milestones..." rows="3"></textarea>
+                <button class="add-note-btn" onclick="addPregnancyNote()">Add Note</button>
+            </div>
+
+            <!-- Pregnancy Activity Log -->
+            <div class="activity-log">
+                <div class="log-header">
+                    <div class="section-title" style="margin: 0;">
+                        <span>📊</span> Today's Activity
+                    </div>
+                </div>
+                <div class="log-list" id="pregnancyActivityLog">
+                    <!-- Log items will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BABY MODE CONTENT -->
+        <div class="baby-mode-content">
+            <!-- Stats Overview -->
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-value" id="todayFeedings">0</div>
+                    <div class="stat-label">Feedings Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="todayDiapers">0</div>
+                    <div class="stat-label">Diapers Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="sleepHours">0h</div>
+                    <div class="stat-label">Sleep Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="lastFeedSide">-</div>
+                    <div class="stat-label">Last Feed Side</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="section-title">
+                    <span>🍼</span> Breastfeeding
+                </div>
+                <div class="action-card">
+                    <div class="action-header">
+                        <div class="action-title">
+                            <span class="action-icon">🤱</span>
+                            <span>Feed Baby</span>
+                        </div>
+                        <div class="last-time" id="lastFeedTime">Never</div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-left" onclick="recordFeeding('left')">
+                            Left Side
+                        </button>
+                        <button class="btn btn-right" onclick="recordFeeding('right')">
+                            Right Side
+                        </button>
+                    </div>
+                    <div id="feedingTimer" class="timer-display" style="display: none;">00:00</div>
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">
+                    <span>🍼</span> Diaper Change
+                </div>
+                <div class="action-card">
+                    <div class="action-header">
+                        <div class="action-title">
+                            <span class="action-icon">👶</span>
+                            <span>Diaper Activity</span>
+                        </div>
+                        <div class="last-time" id="lastDiaperTime">Never</div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-pee" onclick="recordDiaper('pee')">
+                            💧 Pee
+                        </button>
+                        <button class="btn btn-poop" onclick="recordDiaper('poop')">
+                            💩 Poop
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">
+                    <span>😴</span> Sleep Tracking
+                </div>
+                <div class="action-card">
+                    <div class="action-header">
+                        <div class="action-title">
+                            <span class="action-icon">🌙</span>
+                            <span>Sleep Time</span>
+                        </div>
+                        <div class="last-time" id="lastSleepTime">Never</div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sleep-start" onclick="recordSleep('start')">
+                            😴 Start Sleep
+                        </button>
+                        <button class="btn btn-sleep-end" onclick="recordSleep('end')">
+                            👁️ Wake Up
+                        </button>
+                    </div>
+                    <div id="sleepTimer" class="timer-display" style="display: none;">00:00</div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="section-title" style="margin-top: 20px;">
+                    <span>📝</span> Quick Notes
+                </div>
+                <div class="action-card">
+                    <textarea class="notes-input" id="noteInput" placeholder="Add a note (e.g., fussy, good mood, milestone...)" rows="2"></textarea>
+                    <button class="add-note-btn" onclick="addNote()">Add Note</button>
+                </div>
+            </div>
+
+            <!-- Baby Activity Log -->
+            <div class="activity-log">
+                <div class="log-header">
+                    <div class="section-title" style="margin: 0;">
+                        <span>📊</span> Today's Activity
+                    </div>
+                </div>
+                <div class="log-list" id="activityLog">
+                    <!-- Log items will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings (shown in both modes) -->
+        <div class="settings-panel">
+            <div class="section-title">
+                <span>⚙️</span> Settings
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Voice Commands</span>
+                <div class="toggle active" id="voiceToggle" onclick="toggleSetting('voice')">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Sound Notifications</span>
+                <div class="toggle active" id="soundToggle" onclick="toggleSetting('sound')">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item pregnancy-mode-content">
+                <span class="setting-label">Kick Count Reminders</span>
+                <div class="toggle active" id="kickReminderToggle" onclick="toggleSetting('kickReminder')">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item baby-mode-content">
+                <span class="setting-label">Feeding Reminders (every 3 hours)</span>
+                <div class="toggle active" id="reminderToggle" onclick="toggleSetting('reminder')">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Dark Mode</span>
+                <div class="toggle" id="darkToggle" onclick="toggleSetting('dark')">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <button class="export-btn" onclick="exportData()">
+                📊 Export Today's Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Voice Control FAB -->
+    <button class="voice-control-fab" id="voiceButton" onclick="toggleVoiceControl()">
+        🎤
+    </button>
+
+    <!-- Voice Modal -->
+    <div class="voice-modal" id="voiceModal">
+        <div class="voice-status" id="voiceStatus">Listening...</div>
+        <div class="listening-animation">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="voice-transcript" id="voiceTranscript" style="margin-top: 10px; font-size: 12px; color: var(--text-light);"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMessage">Activity recorded!</span>
+    </div>
+
+    <script>
+        // ==========================================
+        // FIREBASE CONFIGURATION
+        // ==========================================
+        
+        // TODO: Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        let database;
+        let activitiesRef;
+        let kicksRef;
+        let isOnline = false;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            activitiesRef = database.ref('activities');
+            kicksRef = database.ref('kicks');
+            
+            // Monitor connection status
+            const connectedRef = database.ref('.info/connected');
+            connectedRef.on('value', (snap) => {
+                isOnline = snap.val() === true;
+                updateConnectionStatus(isOnline);
+            });
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            showToast('⚠️ Offline mode - data won\'t sync', 'warning');
+        }
+
+        // ==========================================
+        // GLOBAL STATE
+        // ==========================================
+        
+        const DUE_DATE = new Date('2025-12-12');
+        let currentMode = 'pregnancy'; // Default to pregnancy mode
+        let currentUser = {
+            name: '',
+            role: '', // 'mom' or 'dad'
+            id: ''
+        };
+        
+        // Pregnancy mode state
+        let kicks = [];
+        let kickSession = {
+            active: false,
+            startTime: null,
+            kicks: 0
+        };
+        
+        // Baby mode state
+        let activities = [];
+        let currentFeedingSide = null;
+        let lastFeedingSide = null;
+        let feedingStartTime = null;
+        let feedingTimer = null;
+        let sleepStartTime = null;
+        let sleepTimer = null;
+        
+        // Settings
+        let settings = {
+            voice: true,
+            sound: true,
+            reminder: true,
+            kickReminder: true,
+            dark: false
+        };
+        
+        // Voice recognition
+        let recognition = null;
+        let isListening = false;
+        let voiceEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+        
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        
+        function init() {
+            checkUserSetup();
+            loadSettings();
+            loadSavedMode();
+            initVoiceRecognition();
+            setupFirebaseListeners();
+            
+            if (currentMode === 'pregnancy') {
+                initPregnancyMode();
+            } else {
+                initBabyMode();
+            }
+            
+            // Update countdown
+            updateCountdown();
+            setInterval(updateCountdown, 60000); // Update every minute
+            
+            // Check reminders
+            setInterval(checkReminders, 60000);
+            
+            // Update timers
+            setInterval(updateTimers, 1000);
+        }
+        
+        function loadSavedMode() {
+            const savedMode = localStorage.getItem('trackingMode');
+            if (savedMode) {
+                currentMode = savedMode;
+                // Update UI to reflect saved mode
+                if (currentMode === 'baby') {
+                    document.body.className = 'baby-mode';
+                    document.getElementById('pregnancyModeBtn').classList.remove('active');
+                    document.getElementById('babyModeBtn').classList.add('active');
+                    document.getElementById('modeIcon').textContent = '👶';
+                    document.getElementById('modeSubtitle').textContent = 'Synced between Mom & Dad';
+                }
+            }
+        }
+        
+        function switchMode(mode) {
+            currentMode = mode;
+            localStorage.setItem('trackingMode', mode);
+            
+            // Update body class
+            document.body.className = mode === 'pregnancy' ? 'pregnancy-mode' : 'baby-mode';
+            
+            // Update mode buttons
+            document.getElementById('pregnancyModeBtn').classList.toggle('active', mode === 'pregnancy');
+            document.getElementById('babyModeBtn').classList.toggle('active', mode === 'baby');
+            
+            // Update header
+            if (mode === 'pregnancy') {
+                document.getElementById('modeIcon').textContent = '🤰';
+                document.getElementById('modeSubtitle').textContent = 'Tracking every kick & movement';
+                initPregnancyMode();
+            } else {
+                document.getElementById('modeIcon').textContent = '👶';
+                document.getElementById('modeSubtitle').textContent = 'Synced between Mom & Dad';
+                initBabyMode();
+            }
+        }
+        
+        // ==========================================
+        // PREGNANCY MODE FUNCTIONS
+        // ==========================================
+        
+        function initPregnancyMode() {
+            loadKicks();
+            updateKickStats();
+            renderMovementPattern();
+            renderPregnancyLog();
+        }
+        
+        function recordKick() {
+            const kick = {
+                timestamp: Date.now(),
+                parent: {
+                    name: currentUser.name,
+                    role: currentUser.role,
+                    id: currentUser.id
+                }
+            };
+            
+            // Add animation
+            const btn = document.getElementById('kickBtn');
+            btn.classList.add('pulse');
+            setTimeout(() => btn.classList.remove('pulse'), 500);
+            
+            // Save kick
+            if (kicksRef) {
+                const newRef = kicksRef.push();
+                kick.id = newRef.key;
+                newRef.set(kick);
+            } else {
+                kick.id = Date.now().toString();
+                kicks.push(kick);
+                saveLocalKicks();
+            }
+            
+            // Update session if active
+            if (kickSession.active) {
+                kickSession.kicks++;
+            }
+            
+            updateKickStats();
+            renderMovementPattern();
+            renderPregnancyLog();
+            
+            showToast('👣 Kick recorded!', 'success');
+            playSound();
+        }
+        
+        function startKickSession() {
+            kickSession = {
+                active: true,
+                startTime: Date.now(),
+                kicks: 0
+            };
+            showToast('⏱️ Counting session started', 'info');
+        }
+        
+        function endKickSession() {
+            if (kickSession.active) {
+                const duration = Math.floor((Date.now() - kickSession.startTime) / 1000);
+                showToast(`Session ended: ${kickSession.kicks} kicks in ${formatDuration(duration)}`, 'success');
+                
+                // Save session summary
+                if (database) {
+                    database.ref('kickSessions').push({
+                        startTime: kickSession.startTime,
+                        endTime: Date.now(),
+                        kicks: kickSession.kicks,
+                        duration: duration,
+                        parent: currentUser
+                    });
+                }
+                
+                kickSession = {
+                    active: false,
+                    startTime: null,
+                    kicks: 0
+                };
+            }
+        }
+        
+        function updateKickStats() {
+            const today = new Date().toDateString();
+            const todayKicks = kicks.filter(k => 
+                new Date(k.timestamp).toDateString() === today
+            );
+            
+            // Today's total
+            document.getElementById('kickCount').textContent = todayKicks.length;
+            
+            // Last hour
+            const oneHourAgo = Date.now() - (60 * 60 * 1000);
+            const lastHourKicks = todayKicks.filter(k => k.timestamp > oneHourAgo);
+            document.getElementById('lastHourKicks').textContent = lastHourKicks.length;
+            
+            // Session kicks
+            document.getElementById('sessionKicks').textContent = kickSession.kicks;
+            
+            // Daily goal (typically 10 kicks in 2 hours)
+            const goal = 10;
+            document.getElementById('dailyGoal').textContent = `${Math.min(todayKicks.length, goal)}/${goal}`;
+            
+            // Check if goal reached
+            if (todayKicks.length === goal) {
+                const alreadyNotified = localStorage.getItem('goalNotified_' + today);
+                if (!alreadyNotified) {
+                    showToast('🎉 Daily kick goal reached!', 'success');
+                    localStorage.setItem('goalNotified_' + today, 'true');
+                }
+            }
+        }
+        
+        function renderMovementPattern() {
+            const grid = document.getElementById('patternGrid');
+            const today = new Date().toDateString();
+            const todayKicks = kicks.filter(k => 
+                new Date(k.timestamp).toDateString() === today
+            );
+            
+            // Create 24 hour blocks
+            let html = '';
+            for (let hour = 0; hour < 24; hour++) {
+                const hourKicks = todayKicks.filter(k => {
+                    const kickHour = new Date(k.timestamp).getHours();
+                    return kickHour === hour;
+                });
+                
+                const isActive = hourKicks.length > 0;
+                const timeLabel = hour === 0 ? '12am' : hour < 12 ? `${hour}am` : hour === 12 ? '12pm' : `${hour-12}pm`;
+                
+                html += `<div class="hour-block ${isActive ? 'active' : ''}" data-time="${timeLabel}: ${hourKicks.length} kicks"></div>`;
+            }
+            
+            grid.innerHTML = html;
+        }
+        
+        function addPregnancyNote() {
+            const noteInput = document.getElementById('pregnancyNoteInput');
+            const note = noteInput.value.trim();
+            
+            if (note) {
+                const activity = {
+                    type: 'pregnancy_note',
+                    note: note,
+                    timestamp: Date.now(),
+                    parent: {
+                        name: currentUser.name,
+                        role: currentUser.role,
+                        id: currentUser.id
+                    }
+                };
+                
+                if (activitiesRef) {
+                    const newRef = activitiesRef.push();
+                    activity.id = newRef.key;
+                    newRef.set(activity);
+                } else {
+                    activity.id = Date.now().toString();
+                    activities.unshift(activity);
+                    saveLocalData();
+                }
+                
+                noteInput.value = '';
+                renderPregnancyLog();
+                showToast('📝 Note added', 'success');
+            }
+        }
+        
+        function renderPregnancyLog() {
+            const logList = document.getElementById('pregnancyActivityLog');
+            const today = new Date().toDateString();
+            
+            // Combine kicks and notes
+            const todayKicks = kicks.filter(k => 
+                new Date(k.timestamp).toDateString() === today
+            );
+            const todayNotes = activities.filter(a => 
+                a.type === 'pregnancy_note' && 
+                new Date(a.timestamp).toDateString() === today
+            );
+            
+            const allEvents = [
+                ...todayKicks.map(k => ({...k, type: 'kick'})),
+                ...todayNotes
+            ].sort((a, b) => b.timestamp - a.timestamp);
+            
+            if (allEvents.length === 0) {
+                logList.innerHTML = '<div style="text-align: center; color: var(--text-light); padding: 20px;">No activity recorded today</div>';
+                return;
+            }
+            
+            logList.innerHTML = allEvents.slice(0, 20).map(event => {
+                let icon, type, details;
+                
+                if (event.type === 'kick') {
+                    icon = '👣';
+                    type = 'Baby Kick';
+                    details = '';
+                } else if (event.type === 'pregnancy_note') {
+                    icon = '📝';
+                    type = 'Note';
+                    details = event.note;
+                }
+                
+                const time = new Date(event.timestamp).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+                
+                const parentBadge = event.parent ? 
+                    `<span class="parent-badge ${event.parent.role}">${event.parent.name}</span>` : '';
+                
+                return `
+                    <div class="log-item">
+                        <div class="log-icon">${icon}</div>
+                        <div class="log-details">
+                            <div class="log-type">
+                                ${type}
+                                ${parentBadge}
+                            </div>
+                            <div class="log-time">${time} ${details ? '• ' + details : ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateCountdown() {
+            const now = new Date();
+            const diff = DUE_DATE - now;
+            
+            if (diff <= 0) {
+                document.getElementById('countdownBanner').innerHTML = '🎉 Baby Avi has arrived! 🎉';
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const weeks = Math.floor(days / 7);
+            const remainingDays = days % 7;
+            
+            let countdownText = `📅 ${days} days until Avi arrives`;
+            if (weeks > 0) {
+                countdownText = `📅 ${weeks} week${weeks > 1 ? 's' : ''} ${remainingDays > 0 ? `and ${remainingDays} day${remainingDays > 1 ? 's' : ''}` : ''} until Avi!`;
+            }
+            
+            document.getElementById('countdownBanner').innerHTML = countdownText;
+        }
+        
+        // ==========================================
+        // BABY MODE FUNCTIONS
+        // ==========================================
+        
+        function initBabyMode() {
+            loadActivities();
+            updateStats();
+            renderActivityLog();
+        }
+        
+        function recordFeeding(side) {
+            if (feedingStartTime && currentFeedingSide === side) {
+                // End feeding
+                const duration = Math.floor((Date.now() - feedingStartTime) / 1000);
+                const activity = {
+                    type: 'feeding',
+                    side: side,
+                    timestamp: feedingStartTime,
+                    endTime: Date.now(),
+                    duration: duration,
+                    parent: {
+                        name: currentUser.name,
+                        role: currentUser.role,
+                        id: currentUser.id
+                    }
+                };
+                
+                saveActivity(activity);
+                lastFeedingSide = side;
+                feedingStartTime = null;
+                currentFeedingSide = null;
+                clearInterval(feedingTimer);
+                document.getElementById('feedingTimer').style.display = 'none';
+                
+                document.querySelectorAll('.btn-left, .btn-right').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                showToast(`🍼 Feeding ended (${formatDuration(duration)})`, 'success');
+            } else {
+                // Start feeding
+                feedingStartTime = Date.now();
+                currentFeedingSide = side;
+                
+                document.querySelectorAll('.btn-left, .btn-right').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                event.target?.classList.add('selected');
+                
+                document.getElementById('feedingTimer').style.display = 'block';
+                
+                showToast(`🤱 Started ${side} side feeding`, 'info');
+            }
+        }
+        
+        function recordDiaper(type) {
+            const activity = {
+                type: 'diaper',
+                diaperType: type,
+                timestamp: Date.now(),
+                parent: {
+                    name: currentUser.name,
+                    role: currentUser.role,
+                    id: currentUser.id
+                }
+            };
+            
+            saveActivity(activity);
+            
+            const icon = type === 'pee' ? '💧' : '💩';
+            showToast(`${icon} ${type === 'pee' ? 'Pee' : 'Poop'} recorded`, 'success');
+            playSound();
+        }
+        
+        function recordSleep(action) {
+            if (action === 'start') {
+                if (!sleepStartTime) {
+                    sleepStartTime = Date.now();
+                    document.getElementById('sleepTimer').style.display = 'block';
+                    showToast('😴 Sleep started', 'info');
+                    
+                    event.target?.classList.add('selected');
+                }
+            } else if (action === 'end' && sleepStartTime) {
+                const duration = Math.floor((Date.now() - sleepStartTime) / 1000);
+                const activity = {
+                    type: 'sleep',
+                    startTime: sleepStartTime,
+                    endTime: Date.now(),
+                    duration: duration,
+                    timestamp: sleepStartTime,
+                    parent: {
+                        name: currentUser.name,
+                        role: currentUser.role,
+                        id: currentUser.id
+                    }
+                };
+                
+                saveActivity(activity);
+                sleepStartTime = null;
+                clearInterval(sleepTimer);
+                document.getElementById('sleepTimer').style.display = 'none';
+                
+                document.querySelectorAll('.btn-sleep-start').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                showToast(`👁️ Woke up (${formatDuration(duration)})`, 'success');
+            }
+        }
+        
+        function addNote() {
+            const noteInput = document.getElementById('noteInput');
+            const note = noteInput.value.trim();
+            
+            if (note) {
+                const activity = {
+                    type: 'note',
+                    note: note,
+                    timestamp: Date.now(),
+                    parent: {
+                        name: currentUser.name,
+                        role: currentUser.role,
+                        id: currentUser.id
+                    }
+                };
+                
+                saveActivity(activity);
+                noteInput.value = '';
+                showToast('📝 Note added', 'success');
+            }
+        }
+        
+        function saveActivity(activity) {
+            if (activitiesRef) {
+                const newRef = activitiesRef.push();
+                activity.id = newRef.key;
+                newRef.set(activity);
+            } else {
+                activity.id = Date.now().toString();
+                activities.unshift(activity);
+                saveLocalData();
+                updateStats();
+                renderActivityLog();
+            }
+        }
+        
+        // ==========================================
+        // SHARED FUNCTIONS
+        // ==========================================
+        
+        function checkUserSetup() {
+            const saved = localStorage.getItem('babyTrackerUser');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                updateUserUI();
+                // User already set up, hide setup panel
+                document.getElementById('parentSetup').style.display = 'none';
+            } else {
+                // First time user, show setup
+                document.getElementById('parentSetup').style.display = 'block';
+            }
+        }
+        
+        function selectParentRole(role) {
+            document.querySelectorAll('.parent-select-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.closest('.parent-select-btn').classList.add('selected');
+            currentUser.role = role;
+        }
+        
+        function saveParentSetup() {
+            const name = document.getElementById('parentNameInput').value.trim();
+            if (!name || !currentUser.role) {
+                showToast('Please enter your name and select a role', 'warning');
+                return;
+            }
+            
+            currentUser.name = name;
+            currentUser.id = `${currentUser.role}_${Date.now()}`;
+            
+            // Save to localStorage - THIS IS PERMANENT
+            localStorage.setItem('babyTrackerUser', JSON.stringify(currentUser));
+            
+            // Hide setup panel FOREVER
+            document.getElementById('parentSetup').style.display = 'none';
+            updateUserUI();
+            
+            // Save to Firebase
+            if (database) {
+                database.ref(`parents/${currentUser.role}`).set({
+                    name: currentUser.name,
+                    id: currentUser.id
+                });
+            }
+            
+            showToast(`Welcome ${name}! You're all set up forever! 🎉`, 'success');
+        }
+        
+        function updateUserUI() {
+            if (currentUser.role === 'mom') {
+                document.getElementById('momIndicator').classList.add('active');
+                document.getElementById('momName').textContent = currentUser.name;
+            } else {
+                document.getElementById('dadIndicator').classList.add('active');
+                document.getElementById('dadName').textContent = currentUser.name;
+            }
+            
+            if (database) {
+                const otherRole = currentUser.role === 'mom' ? 'dad' : 'mom';
+                database.ref(`parents/${otherRole}/name`).once('value', (snapshot) => {
+                    const otherName = snapshot.val();
+                    if (otherName) {
+                        document.getElementById(otherRole + 'Name').textContent = otherName;
+                    }
+                });
+            }
+        }
+        
+        function setupFirebaseListeners() {
+            if (!database) return;
+            
+            // Listen for activities
+            if (activitiesRef) {
+                activitiesRef.orderByChild('timestamp').limitToLast(100).on('child_added', (snapshot) => {
+                    const activity = snapshot.val();
+                    if (activity) {
+                        activity.id = snapshot.key;
+                        
+                        const exists = activities.find(a => a.id === activity.id);
+                        if (!exists) {
+                            activities.unshift(activity);
+                            if (currentMode === 'baby') {
+                                updateStats();
+                                renderActivityLog();
+                            }
+                            
+                            if (activity.parent && activity.parent.id !== currentUser.id) {
+                                const parentName = activity.parent.name || 'Partner';
+                                showNotificationForActivity(activity, parentName);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Listen for kicks
+            if (kicksRef) {
+                kicksRef.orderByChild('timestamp').limitToLast(200).on('child_added', (snapshot) => {
+                    const kick = snapshot.val();
+                    if (kick) {
+                        kick.id = snapshot.key;
+                        
+                        const exists = kicks.find(k => k.id === kick.id);
+                        if (!exists) {
+                            kicks.push(kick);
+                            if (currentMode === 'pregnancy') {
+                                updateKickStats();
+                                renderMovementPattern();
+                                renderPregnancyLog();
+                            }
+                            
+                            if (kick.parent && kick.parent.id !== currentUser.id) {
+                                showToast(`${kick.parent.name} felt a kick! 👣`, 'info');
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // ==========================================
+        // VOICE RECOGNITION
+        // ==========================================
+        
+        function initVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                console.log('Voice recognition not supported');
+                document.getElementById('voiceButton').style.display = 'none';
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('voiceButton').classList.add('listening');
+                document.getElementById('voiceModal').classList.add('active');
+                document.getElementById('voiceStatus').textContent = 'Listening...';
+                document.getElementById('voiceTranscript').textContent = '';
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('voiceButton').classList.remove('listening');
+                document.getElementById('voiceModal').classList.remove('active');
+            };
+            
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                
+                document.getElementById('voiceTranscript').textContent = transcript;
+                
+                if (event.results[event.results.length - 1].isFinal) {
+                    processVoiceCommand(transcript.toLowerCase());
+                }
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Voice recognition error:', event.error);
+                isListening = false;
+                document.getElementById('voiceButton').classList.remove('listening');
+                document.getElementById('voiceModal').classList.remove('active');
+                
+                if (event.error === 'no-speech') {
+                    showToast('No speech detected. Try again.', 'warning');
+                }
+            };
+        }
+        
+        function toggleVoiceControl() {
+            if (!voiceEnabled || !recognition) {
+                showToast('Voice commands are disabled', 'warning');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        function processVoiceCommand(command) {
+            console.log('Processing command:', command);
+            
+            if (currentMode === 'pregnancy') {
+                // Pregnancy mode commands
+                if (command.includes('kick') || command.includes('movement') || command.includes('move')) {
+                    recordKick();
+                    speak('Kick recorded');
+                } else if (command.includes('start session') || command.includes('start counting')) {
+                    startKickSession();
+                    speak('Counting session started');
+                } else if (command.includes('end session') || command.includes('stop counting')) {
+                    endKickSession();
+                    speak('Session ended');
+                } else if (command.includes('how many')) {
+                    const today = new Date().toDateString();
+                    const todayKicks = kicks.filter(k => 
+                        new Date(k.timestamp).toDateString() === today
+                    );
+                    speak(`${todayKicks.length} kicks today`);
+                }
+            } else {
+                // Baby mode commands
+                if (command.includes('left') && (command.includes('feed') || command.includes('side') || command.includes('breast'))) {
+                    recordFeeding('left');
+                    speak('Started left side feeding');
+                } else if (command.includes('right') && (command.includes('feed') || command.includes('side') || command.includes('breast'))) {
+                    recordFeeding('right');
+                    speak('Started right side feeding');
+                } else if (command.includes('poop') || command.includes('poopy')) {
+                    recordDiaper('poop');
+                    speak('Poop diaper recorded');
+                } else if (command.includes('pee') || command.includes('wet')) {
+                    recordDiaper('pee');
+                    speak('Wet diaper recorded');
+                } else if ((command.includes('sleep') || command.includes('nap')) && command.includes('start')) {
+                    recordSleep('start');
+                    speak('Sleep started');
+                } else if (command.includes('wake') || command.includes('awake')) {
+                    recordSleep('end');
+                    speak('Baby is awake');
+                }
+            }
+        }
+        
+        function speak(text) {
+            if (!settings.sound || !speechSynthesis) return;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+            speechSynthesis.speak(utterance);
+        }
+        
+        // ==========================================
+        // UTILITIES
+        // ==========================================
+        
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todayActivities = activities.filter(a => 
+                new Date(a.timestamp).toDateString() === today
+            );
+            
+            const feedings = todayActivities.filter(a => a.type === 'feeding').length;
+            document.getElementById('todayFeedings').textContent = feedings;
+            
+            const diapers = todayActivities.filter(a => a.type === 'diaper').length;
+            document.getElementById('todayDiapers').textContent = diapers;
+            
+            const sleepActivities = todayActivities.filter(a => a.type === 'sleep');
+            const totalSleep = sleepActivities.reduce((acc, a) => acc + (a.duration || 0), 0);
+            const hours = Math.floor(totalSleep / 3600);
+            const minutes = Math.floor((totalSleep % 3600) / 60);
+            document.getElementById('sleepHours').textContent = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+            
+            const lastFeed = activities.find(a => a.type === 'feeding' && a.duration);
+            if (lastFeed) {
+                lastFeedingSide = lastFeed.side;
+                document.getElementById('lastFeedSide').textContent = 
+                    lastFeedingSide === 'left' ? 'Left ←' : 'Right →';
+            } else {
+                document.getElementById('lastFeedSide').textContent = '-';
+            }
+            
+            updateLastTimes();
+        }
+        
+        function updateLastTimes() {
+            const lastFeed = activities.find(a => a.type === 'feeding');
+            const lastDiaper = activities.find(a => a.type === 'diaper');
+            const lastSleep = activities.find(a => a.type === 'sleep');
+            
+            if (lastFeed) {
+                const timeEl = document.getElementById('lastFeedTime');
+                timeEl.textContent = formatTimeAgo(new Date(lastFeed.timestamp));
+                if (lastFeed.parent) {
+                    timeEl.className = `last-time by-${lastFeed.parent.role}`;
+                }
+            }
+            
+            if (lastDiaper) {
+                const timeEl = document.getElementById('lastDiaperTime');
+                timeEl.textContent = formatTimeAgo(new Date(lastDiaper.timestamp));
+                if (lastDiaper.parent) {
+                    timeEl.className = `last-time by-${lastDiaper.parent.role}`;
+                }
+            }
+            
+            if (lastSleep) {
+                const timeEl = document.getElementById('lastSleepTime');
+                timeEl.textContent = formatTimeAgo(new Date(lastSleep.timestamp));
+                if (lastSleep.parent) {
+                    timeEl.className = `last-time by-${lastSleep.parent.role}`;
+                }
+            }
+        }
+        
+        function renderActivityLog() {
+            const logList = document.getElementById('activityLog');
+            const today = new Date().toDateString();
+            const todayActivities = activities.filter(a => 
+                a.type !== 'pregnancy_note' &&
+                new Date(a.timestamp).toDateString() === today
+            );
+            
+            if (todayActivities.length === 0) {
+                logList.innerHTML = '<div style="text-align: center; color: var(--text-light); padding: 20px;">No activities recorded today</div>';
+                return;
+            }
+            
+            logList.innerHTML = todayActivities.slice(0, 20).map(activity => {
+                let icon, type, details;
+                
+                switch (activity.type) {
+                    case 'feeding':
+                        icon = '🤱';
+                        type = `${activity.side === 'left' ? 'Left' : 'Right'} Side`;
+                        details = activity.duration ? `Duration: ${formatDuration(activity.duration)}` : 'In progress...';
+                        break;
+                    case 'diaper':
+                        icon = activity.diaperType === 'pee' ? '💧' : '💩';
+                        type = activity.diaperType === 'pee' ? 'Pee' : 'Poop';
+                        details = '';
+                        break;
+                    case 'sleep':
+                        icon = '😴';
+                        type = 'Sleep';
+                        details = `Duration: ${formatDuration(activity.duration)}`;
+                        break;
+                    case 'note':
+                        icon = '📝';
+                        type = 'Note';
+                        details = activity.note;
+                        break;
+                }
+                
+                const time = new Date(activity.timestamp).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+                
+                const parentBadge = activity.parent ? 
+                    `<span class="parent-badge ${activity.parent.role}">${activity.parent.name}</span>` : '';
+                
+                return `
+                    <div class="log-item ${activity.isNew ? 'new-entry' : ''}">
+                        <div class="log-icon">${icon}</div>
+                        <div class="log-details">
+                            <div class="log-type">
+                                ${type}
+                                ${parentBadge}
+                            </div>
+                            <div class="log-time">${time} ${details ? '• ' + details : ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateTimers() {
+            // Kick session timer
+            if (kickSession.active) {
+                const elapsed = Math.floor((Date.now() - kickSession.startTime) / 1000);
+                document.getElementById('sessionTimer').textContent = formatTimer(elapsed);
+            }
+            
+            // Feeding timer
+            if (feedingStartTime) {
+                const elapsed = Math.floor((Date.now() - feedingStartTime) / 1000);
+                document.getElementById('feedingTimer').textContent = formatTimer(elapsed);
+            }
+            
+            // Sleep timer
+            if (sleepStartTime) {
+                const elapsed = Math.floor((Date.now() - sleepStartTime) / 1000);
+                document.getElementById('sleepTimer').textContent = formatTimer(elapsed);
+            }
+        }
+        
+        function formatTimer(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        
+        function formatDuration(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m`;
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+        
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMessage.textContent = message;
+            toast.className = 'toast show ' + type;
+            
+            switch(type) {
+                case 'success': toastIcon.textContent = '✓'; break;
+                case 'warning': toastIcon.textContent = '⚠️'; break;
+                case 'info': toastIcon.textContent = 'ℹ️'; break;
+                case 'danger': toastIcon.textContent = '✕'; break;
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function showNotificationForActivity(activity, parentName) {
+            let message = '';
+            
+            switch (activity.type) {
+                case 'feeding':
+                    message = `${parentName} started ${activity.side} side feeding`;
+                    break;
+                case 'diaper':
+                    message = `${parentName} changed ${activity.diaperType} diaper`;
+                    break;
+                case 'sleep':
+                    message = `${parentName} recorded sleep`;
+                    break;
+            }
+            
+            if (message) {
+                showToast(message, 'info');
+                playSound();
+            }
+        }
+        
+        function playSound() {
+            if (!settings.sound) return;
+            
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        function checkReminders() {
+            if (currentMode === 'pregnancy' && settings.kickReminder) {
+                // Check if no kicks in last 2 hours
+                const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+                const recentKicks = kicks.filter(k => k.timestamp > twoHoursAgo);
+                
+                if (recentKicks.length === 0) {
+                    const lastReminder = localStorage.getItem('lastKickReminder');
+                    const now = Date.now();
+                    if (!lastReminder || now - parseInt(lastReminder) > 3600000) {
+                        showToast('👣 Time to count kicks!', 'warning');
+                        speak('Time to count baby kicks');
+                        localStorage.setItem('lastKickReminder', now.toString());
+                    }
+                }
+            } else if (currentMode === 'baby' && settings.reminder) {
+                const lastFeed = activities.find(a => a.type === 'feeding');
+                if (lastFeed) {
+                    const timeSince = Date.now() - lastFeed.timestamp;
+                    const threeHours = 3 * 60 * 60 * 1000;
+                    
+                    if (timeSince >= threeHours && timeSince < threeHours + 60000) {
+                        const lastReminder = localStorage.getItem('lastFeedReminder');
+                        const now = Date.now();
+                        if (!lastReminder || now - parseInt(lastReminder) > 3600000) {
+                            showToast('🍼 Time for feeding! (3 hours since last)', 'warning');
+                            playSound();
+                            localStorage.setItem('lastFeedReminder', now.toString());
+                        }
+                    }
+                }
+            }
+        }
+        
+        function toggleSetting(type) {
+            const toggle = document.getElementById(type + 'Toggle');
+            toggle.classList.toggle('active');
+            settings[type] = toggle.classList.contains('active');
+            saveSettings();
+            
+            if (type === 'dark') {
+                document.body.classList.toggle('dark-mode', settings.dark);
+            } else if (type === 'voice') {
+                voiceEnabled = settings.voice;
+                showToast(voiceEnabled ? 'Voice commands enabled' : 'Voice commands disabled', 'info');
+            }
+        }
+        
+        function loadSettings() {
+            const saved = localStorage.getItem('babyTrackerSettings');
+            if (saved) {
+                settings = JSON.parse(saved);
+                Object.keys(settings).forEach(key => {
+                    const toggle = document.getElementById(key + 'Toggle');
+                    if (toggle) {
+                        if (settings[key]) {
+                            toggle.classList.add('active');
+                        } else {
+                            toggle.classList.remove('active');
+                        }
+                    }
+                });
+                
+                if (settings.dark) {
+                    document.body.classList.add('dark-mode');
+                }
+                
+                voiceEnabled = settings.voice !== false;
+            }
+        }
+        
+        function saveSettings() {
+            localStorage.setItem('babyTrackerSettings', JSON.stringify(settings));
+        }
+        
+        function updateConnectionStatus(online) {
+            const statusEl = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('connectionText');
+            
+            if (online) {
+                statusEl.classList.remove('offline');
+                textEl.textContent = 'Connected';
+            } else {
+                statusEl.classList.add('offline');
+                textEl.textContent = 'Offline';
+            }
+        }
+        
+        function loadActivities() {
+            const saved = localStorage.getItem('babyTrackerActivities');
+            if (saved) {
+                activities = JSON.parse(saved);
+            }
+        }
+        
+        function loadKicks() {
+            const saved = localStorage.getItem('babyTrackerKicks');
+            if (saved) {
+                kicks = JSON.parse(saved);
+            }
+        }
+        
+        function saveLocalData() {
+            localStorage.setItem('babyTrackerActivities', JSON.stringify(activities.slice(0, 100)));
+        }
+        
+        function saveLocalKicks() {
+            localStorage.setItem('babyTrackerKicks', JSON.stringify(kicks.slice(-200)));
+        }
+        
+        function exportData() {
+            const today = new Date().toDateString();
+            let csvContent = '';
+            
+            if (currentMode === 'pregnancy') {
+                const todayKicks = kicks.filter(k => 
+                    new Date(k.timestamp).toDateString() === today
+                );
+                
+                csvContent = "Type,Time,Parent\n" + 
+                    todayKicks.map(k => {
+                        const time = new Date(k.timestamp).toLocaleString();
+                        const parent = k.parent ? k.parent.name : '';
+                        return `Kick,"${time}","${parent}"`;
+                    }).join("\n");
+            } else {
+                const todayActivities = activities.filter(a => 
+                    new Date(a.timestamp).toDateString() === today
+                );
+                
+                csvContent = "Type,Details,Time,Duration,Parent\n" + 
+                    todayActivities.map(a => {
+                        let details = '';
+                        if (a.type === 'feeding') details = a.side;
+                        if (a.type === 'diaper') details = a.diaperType;
+                        if (a.type === 'note') details = a.note;
+                        
+                        const duration = a.duration ? formatDuration(a.duration) : '';
+                        const time = new Date(a.timestamp).toLocaleString();
+                        const parent = a.parent ? a.parent.name : '';
+                        
+                        return `${a.type},"${details}","${time}","${duration}","${parent}"`;
+                    }).join("\n");
+            }
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `avi-tracker-${currentMode}-${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('📊 Data exported!', 'success');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+        
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
