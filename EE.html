@@ -124,6 +124,8 @@
         .kpi-card.info { border-left-color: #3b82f6; }
         .kpi-card.danger { border-left-color: #ef4444; }
         .kpi-card.purple { border-left-color: #8b5cf6; }
+        .kpi-card.teal { border-left-color: #14b8a6; }
+        .kpi-card.pink { border-left-color: #ec4899; }
 
         .kpi-label {
             color: #6b7280;
@@ -154,6 +156,45 @@
         .kpi-change.negative {
             color: #ef4444;
         }
+
+        .revenue-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .breakdown-item {
+            text-align: center;
+        }
+
+        .breakdown-label {
+            font-size: 10px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
+
+        .breakdown-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .revenue-type-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .type-new { background: #dcfce7; color: #14532d; }
+        .type-expanded { background: #e0e7ff; color: #312e81; }
+        .type-recurring { background: #fef3c7; color: #713f12; }
 
         .table-controls {
             padding: 20px 25px;
@@ -566,25 +607,56 @@
             
             <div class="kpi-card success">
                 <div class="kpi-label">
-                    <span>💰</span> Total Revenue
+                    <span>💰</span> Total New Revenue
                 </div>
                 <div class="kpi-value">$9.74M</div>
-                <div class="kpi-change">
-                    <span>↑</span> 23% vs Last Quarter
+                <div class="revenue-breakdown">
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">New Clients</div>
+                        <div class="breakdown-value">$4.2M</div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Expanded</div>
+                        <div class="breakdown-value">$3.1M</div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Recurring</div>
+                        <div class="breakdown-value">$2.4M</div>
+                    </div>
                 </div>
             </div>
             
             <div class="kpi-card warning">
                 <div class="kpi-label">
-                    <span>📊</span> Avg per Employee
+                    <span>🆕</span> New Clients (Never Before)
                 </div>
-                <div class="kpi-value">$20K</div>
+                <div class="kpi-value">1,012</div>
                 <div class="kpi-change">
-                    <span>↑</span> 8% Growth
+                    <span>↑</span> $4.2M Revenue
                 </div>
             </div>
             
             <div class="kpi-card info">
+                <div class="kpi-label">
+                    <span>📈</span> Expanded Services
+                </div>
+                <div class="kpi-value">743</div>
+                <div class="kpi-change">
+                    <span>↑</span> $3.1M Cross-Sell
+                </div>
+            </div>
+            
+            <div class="kpi-card teal">
+                <div class="kpi-label">
+                    <span>🔄</span> Recurring Growth
+                </div>
+                <div class="kpi-value">456</div>
+                <div class="kpi-change">
+                    <span>↑</span> $2.4M Same Service
+                </div>
+            </div>
+            
+            <div class="kpi-card purple">
                 <div class="kpi-label">
                     <span>🎯</span> Above Target
                 </div>
@@ -604,7 +676,7 @@
                 </div>
             </div>
             
-            <div class="kpi-card purple">
+            <div class="kpi-card pink">
                 <div class="kpi-label">
                     <span>🏅</span> Qualified for Bonus
                 </div>
