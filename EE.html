@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Performance Dashboard - New Client Acquisition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1900px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-select option {
+            background: #667eea;
+        }
+
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 25px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .kpi-card.primary { border-left-color: #667eea; }
+        .kpi-card.success { border-left-color: #10b981; }
+        .kpi-card.warning { border-left-color: #f59e0b; }
+        .kpi-card.info { border-left-color: #3b82f6; }
+        .kpi-card.danger { border-left-color: #ef4444; }
+        .kpi-card.purple { border-left-color: #8b5cf6; }
+
+        .kpi-label {
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-change.negative {
+            color: #ef4444;
+        }
+
+        .table-controls {
+            padding: 20px 25px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .toggle-btn:first-child {
+            border-radius: 6px 0 0 6px;
+        }
+
+        .toggle-btn:last-child {
+            border-radius: 0 6px 6px 0;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .show-select {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .export-btn {
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .export-btn:hover {
+            background: #059669;
+        }
+
+        .table-container {
+            background: white;
+            padding: 0 25px 25px;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table th:hover {
+            background: #f3f4f6;
+        }
+
+        .sort-icon {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        .data-table td {
+            padding: 12px;
+            font-size: 13px;
+            color: #1f2937;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .data-table tr.highlighted {
+            background: #fef3c7;
+        }
+
+        .employee-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .employee-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .employee-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .employee-id {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+        .rank-2 { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: white; }
+        .rank-3 { background: linear-gradient(135deg, #fb923c, #ea580c); color: white; }
+        .rank-other { background: #f3f4f6; color: #6b7280; }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-qualified { background: #d1fae5; color: #065f46; }
+        .status-near { background: #fed7aa; color: #92400e; }
+        .status-below { background: #fee2e2; color: #991b1b; }
+
+        .progress-bar {
+            width: 100px;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #5a67d8;
+        }
+
+        .incentive-section {
+            margin: 25px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .incentive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .incentive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tier-card {
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .tier-platinum { border-color: #8b5cf6; background: #faf5ff; }
+        .tier-gold { border-color: #f59e0b; background: #fffbeb; }
+        .tier-silver { border-color: #6b7280; background: #f9fafb; }
+        .tier-bronze { border-color: #a16207; background: #fef3c7; }
+
+        .tier-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .tier-requirements {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .tier-bonus {
+            font-size: 20px;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 1200px) {
+            .kpi-section {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .filters {
+                width: 100%;
+            }
+            
+            .filter-select {
+                flex: 1;
+            }
+            
+            .table-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .view-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🏆 Employee Performance Dashboard - New Client Acquisition</h1>
+            <div class="header-controls">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="employeeSearch" placeholder="Search employees by name, ID, or department...">
+                </div>
+                <div class="filters">
+                    <select class="filter-select" id="yearFilter">
+                        <option value="2025">FY 2025</option>
+                        <option value="2024">FY 2024</option>
+                        <option value="2023">FY 2023</option>
+                    </select>
+                    <select class="filter-select" id="quarterFilter">
+                        <option value="all">All Quarters</option>
+                        <option value="q1">Q1</option>
+                        <option value="q2">Q2</option>
+                        <option value="q3">Q3</option>
+                        <option value="q4">Q4</option>
+                    </select>
+                    <select class="filter-select" id="serviceFilter">
+                        <option value="all">All Service Lines</option>
+                        <option value="tax">Tax</option>
+                        <option value="audit">Audit</option>
+                        <option value="advisory">Advisory</option>
+                        <option value="business">Business</option>
+                    </select>
+                    <select class="filter-select" id="regionFilter">
+                        <option value="all">All Regions</option>
+                        <option value="north">North</option>
+                        <option value="south">South</option>
+                        <option value="east">East</option>
+                        <option value="west">West</option>
+                    </select>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="near">Near Target</option>
+                        <option value="below">Below Target</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards Section -->
+        <div class="kpi-section">
+            <div class="kpi-card primary">
+                <div class="kpi-label">
+                    <span>👤</span> Total Employees
+                </div>
+                <div class="kpi-value">487</div>
+                <div class="kpi-change">
+                    <span>↑</span> 12 New This Quarter
+                </div>
+            </div>
+            
+            <div class="kpi-card success">
+                <div class="kpi-label">
+                    <span>💰</span> Total Revenue
+                </div>
+                <div class="kpi-value">$9.74M</div>
+                <div class="kpi-change">
+                    <span>↑</span> 23% vs Last Quarter
+                </div>
+            </div>
+            
+            <div class="kpi-card warning">
+                <div class="kpi-label">
+                    <span>📊</span> Avg per Employee
+                </div>
+                <div class="kpi-value">$20K</div>
+                <div class="kpi-change">
+                    <span>↑</span> 8% Growth
+                </div>
+            </div>
+            
+            <div class="kpi-card info">
+                <div class="kpi-label">
+                    <span>🎯</span> Above Target
+                </div>
+                <div class="kpi-value">127</div>
+                <div class="kpi-change">
+                    26% of Staff
+                </div>
+            </div>
+            
+            <div class="kpi-card danger">
+                <div class="kpi-label">
+                    <span>⚠️</span> Need Support
+                </div>
+                <div class="kpi-value">198</div>
+                <div class="kpi-change negative">
+                    <span>↓</span> 41% Below Target
+                </div>
+            </div>
+            
+            <div class="kpi-card purple">
+                <div class="kpi-label">
+                    <span>🏅</span> Qualified for Bonus
+                </div>
+                <div class="kpi-value">89</div>
+                <div class="kpi-change">
+                    $1.2M Total Payout
+                </div>
+            </div>
+        </div>
+
+        <!-- Incentive Tiers -->
+        <div class="incentive-section">
+            <div class="incentive-header">
+                <h3 class="table-title">💎 Incentive Program Tiers</h3>
+                <button class="export-btn">View Full Program Details</button>
+            </div>
+            <div class="incentive-grid">
+                <div class="tier-card tier-platinum">
+                    <div class="tier-name">🏆 Platinum</div>
+                    <div class="tier-requirements">30+ Clients & $1M+ Revenue</div>
+                    <div class="tier-bonus">$25,000</div>
+                </div>
+                <div class="tier-card tier-gold">
+                    <div class="tier-name">🥇 Gold</div>
+                    <div class="tier-requirements">20+ Clients & $750K+ Revenue</div>
+                    <div class="tier-bonus">$15,000</div>
+                </div>
+                <div class="tier-card tier-silver">
+                    <div class="tier-name">🥈 Silver</div>
+                    <div class="tier-requirements">15+ Clients & $500K+ Revenue</div>
+                    <div class="tier-bonus">$8,000</div>
+                </div>
+                <div class="tier-card tier-bronze">
+                    <div class="tier-name">🥉 Bronze</div>
+                    <div class="tier-requirements">10+ Clients & $250K+ Revenue</div>
+                    <div class="tier-bonus">$3,000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Controls -->
+        <div class="table-controls">
+            <h3 class="table-title">📊 Employee Performance Rankings</h3>
+            <div class="view-controls">
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="toggleView('all')">All Employees</button>
+                    <button class="toggle-btn" onclick="toggleView('top')">Top 50</button>
+                    <button class="toggle-btn" onclick="toggleView('qualified')">Qualified Only</button>
+                </div>
+                <select class="show-select" id="rowsPerPage">
+                    <option value="25">Show 25</option>
+                    <option value="50" selected>Show 50</option>
+                    <option value="100">Show 100</option>
+                    <option value="all">Show All</option>
+                </select>
+                <button class="export-btn" onclick="exportData()">📥 Export to Excel</button>
+            </div>
+        </div>
+
+        <!-- Main Data Table -->
+        <div class="table-container">
+            <table class="data-table" id="performanceTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Rank <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(1)">Employee <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(2)">Service Line <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(3)">Region <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(4)">New Clients <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(5)">Total Revenue <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(6)">Avg Client Size <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(7)">Target % <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(8)">Status <span class="sort-icon">⇅</span></th>
+                        <th onclick="sortTable(9)">Est. Bonus <span class="sort-icon">⇅</span></th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table rows will be dynamically generated -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="page-btn" onclick="previousPage()" id="prevBtn">← Previous</button>
+            <span class="page-info">
+                Showing <span id="startRow">1</span> to <span id="endRow">50</span> of <span id="totalRows">487</span> employees
+            </span>
+            <button class="page-btn" onclick="nextPage()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for 500 employees
+        const employees = [];
+        const firstNames = ['Sarah', 'Michael', 'Emily', 'James', 'Lisa', 'Robert', 'Jennifer', 'David', 'Maria', 'John', 'Patricia', 'Christopher', 'Linda', 'Daniel', 'Barbara', 'Matthew', 'Elizabeth', 'Joseph', 'Susan', 'Thomas'];
+        const lastNames = ['Johnson', 'Chen', 'Rodriguez', 'Wilson', 'Thompson', 'Martinez', 'Anderson', 'Taylor', 'Moore', 'Jackson', 'Brown', 'Davis', 'Miller', 'Garcia', 'Jones', 'Williams', 'Lee', 'White', 'Harris', 'Clark'];
+        const roles = ['Partner', 'Director', 'Senior Manager', 'Manager', 'Senior Associate', 'Associate', 'Senior Consultant', 'Consultant', 'Analyst', 'Senior Analyst'];
+        const serviceLines = ['Tax', 'Audit', 'Advisory', 'Business'];
+        const regions = ['North', 'South', 'East', 'West'];
+
+        // Generate 487 employees
+        for (let i = 1; i <= 487; i++) {
+            const newClients = Math.floor(Math.random() * 50) + (i <= 50 ? 20 : i <= 150 ? 10 : 0);
+            const avgClientSize = Math.floor(Math.random() * 40000) + 10000;
+            const totalRevenue = newClients * avgClientSize;
+            const target = i <= 20 ? 1000000 : i <= 100 ? 750000 : i <= 200 ? 500000 : 250000;
+            const targetPercent = Math.round((totalRevenue / target) * 100);
+            
+            let status, bonus;
+            if (targetPercent >= 100) {
+                status = 'Qualified';
+                if (newClients >= 30 && totalRevenue >= 1000000) {
+                    bonus = 25000;
+                } else if (newClients >= 20 && totalRevenue >= 750000) {
+                    bonus = 15000;
+                } else if (newClients >= 15 && totalRevenue >= 500000) {
+                    bonus = 8000;
+                } else if (newClients >= 10 && totalRevenue >= 250000) {
+                    bonus = 3000;
+                } else {
+                    bonus = 1000;
+                }
+            } else if (targetPercent >= 80) {
+                status = 'Near Target';
+                bonus = 0;
+            } else {
+                status = 'Below Target';
+                bonus = 0;
+            }
+
+            employees.push({
+                rank: i,
+                id: `EMP${String(i).padStart(4, '0')}`,
+                firstName: firstNames[Math.floor(Math.random() * firstNames.length)],
+                lastName: lastNames[Math.floor(Math.random() * lastNames.length)],
+                role: roles[Math.floor(Math.random() * roles.length)],
+                serviceLine: serviceLines[Math.floor(Math.random() * serviceLines.length)],
+                region: regions[Math.floor(Math.random() * regions.length)],
+                newClients: newClients,
+                totalRevenue: totalRevenue,
+                avgClientSize: avgClientSize,
+                targetPercent: targetPercent,
+                status: status,
+                bonus: bonus
+            });
+        }
+
+        // Sort employees by total revenue (descending)
+        employees.sort((a, b) => b.totalRevenue - a.totalRevenue);
+        employees.forEach((emp, index) => emp.rank = index + 1);
+
+        // Pagination variables
+        let currentPage = 1;
+        let rowsPerPage = 50;
+        let currentFilter = 'all';
+        let filteredEmployees = [...employees];
+
+        // Function to render table
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = rowsPerPage === 'all' ? filteredEmployees.length : Math.min(start + parseInt(rowsPerPage), filteredEmployees.length);
+            
+            for (let i = start; i < end; i++) {
+                const emp = filteredEmployees[i];
+                const row = document.createElement('tr');
+                if (emp.status === 'Qualified' && emp.rank <= 10) {
+                    row.className = 'highlighted';
+                }
+                
+                row.innerHTML = `
+                    <td>
+                        <span class="rank-badge ${emp.rank <= 3 ? 'rank-' + emp.rank : 'rank-other'}">
+                            #${emp.rank}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="employee-cell">
+                            <div class="employee-avatar">${emp.firstName[0]}${emp.lastName[0]}</div>
+                            <div class="employee-details">
+                                <span class="employee-name">${emp.firstName} ${emp.lastName}</span>
+                                <span class="employee-id">${emp.id} • ${emp.role}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${emp.serviceLine}</td>
+                    <td>${emp.region}</td>
+                    <td><strong>${emp.newClients}</strong></td>
+                    <td><strong>$${emp.totalRevenue.toLocaleString()}</strong></td>
+                    <td>$${emp.avgClientSize.toLocaleString()}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <strong>${emp.targetPercent}%</strong>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${Math.min(emp.targetPercent, 100)}%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${emp.status.toLowerCase().replace(' ', '')}">
+                            ${emp.status}
+                        </span>
+                    </td>
+                    <td>
+                        ${emp.bonus > 0 ? '<strong style="color: #059669;">$' + emp.bonus.toLocaleString() + '</strong>' : '-'}
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="viewDetails('${emp.id}')">View</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            updatePagination(start + 1, end, filteredEmployees.length);
+        }
+
+        // Function to update pagination info
+        function updatePagination(start, end, total) {
+            document.getElementById('startRow').textContent = start;
+            document.getElementById('endRow').textContent = end;
+            document.getElementById('totalRows').textContent = total;
+            
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = end >= total;
+        }
+
+        // Pagination functions
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        function nextPage() {
+            const maxPage = Math.ceil(filteredEmployees.length / (rowsPerPage === 'all' ? filteredEmployees.length : parseInt(rowsPerPage)));
+            if (currentPage < maxPage) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        // Sort table function
+        let sortColumn = -1;
+        let sortDirection = 1;
+        
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = -sortDirection;
+            } else {
+                sortColumn = column;
+                sortDirection = 1;
+            }
+            
+            const sortKeys = ['rank', 'lastName', 'serviceLine', 'region', 'newClients', 'totalRevenue', 'avgClientSize', 'targetPercent', 'status', 'bonus'];
+            const key = sortKeys[column];
+            
+            filteredEmployees.sort((a, b) => {
+                let aVal = a[key];
+                let bVal = b[key];
+                
+                if (typeof aVal === 'string') {
+                    return sortDirection * aVal.localeCompare(bVal);
+                }
+                return sortDirection * (aVal - bVal);
+            });
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Filter functions
+        function applyFilters() {
+            filteredEmployees = employees.filter(emp => {
+                let matches = true;
+                
+                const serviceFilter = document.getElementById('serviceFilter').value;
+                if (serviceFilter !== 'all' && emp.serviceLine.toLowerCase() !== serviceFilter) {
+                    matches = false;
+                }
+                
+                const regionFilter = document.getElementById('regionFilter').value;
+                if (regionFilter !== 'all' && emp.region.toLowerCase() !== regionFilter) {
+                    matches = false;
+                }
+                
+                const statusFilter = document.getElementById('statusFilter').value;
+                if (statusFilter !== 'all') {
+                    if (statusFilter === 'qualified' && emp.status !== 'Qualified') matches = false;
+                    if (statusFilter === 'near' && emp.status !== 'Near Target') matches = false;
+                    if (statusFilter === 'below' && emp.status !== 'Below Target') matches = false;
+                }
+                
+                const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+                if (searchTerm) {
+                    const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+                    const matchesSearch = fullName.includes(searchTerm) || 
+                                         emp.id.toLowerCase().includes(searchTerm) ||
+                                         emp.serviceLine.toLowerCase().includes(searchTerm) ||
+                                         emp.role.toLowerCase().includes(searchTerm);
+                    if (!matchesSearch) matches = false;
+                }
+                
+                return matches;
+            });
+            
+            // Apply view filter
+            if (currentFilter === 'top') {
+                filteredEmployees = filteredEmployees.slice(0, 50);
+            } else if (currentFilter === 'qualified') {
+                filteredEmployees = filteredEmployees.filter(emp => emp.status === 'Qualified');
+            }
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Toggle view function
+        function toggleView(view) {
+            currentFilter = view;
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+        }
+
+        // View details function
+        function viewDetails(empId) {
+            const emp = employees.find(e => e.id === empId);
+            alert(`Employee Details:\n\nName: ${emp.firstName} ${emp.lastName}\nID: ${emp.id}\nRole: ${emp.role}\nService Line: ${emp.serviceLine}\nRegion: ${emp.region}\n\nPerformance:\nNew Clients: ${emp.newClients}\nTotal Revenue: $${emp.totalRevenue.toLocaleString()}\nTarget Achievement: ${emp.targetPercent}%\nStatus: ${emp.status}\nEstimated Bonus: $${emp.bonus.toLocaleString()}\n\nThis would open a detailed view with:\n• Monthly performance trends\n• Client list and details\n• Comparison to peers\n• Historical performance\n• Goals and targets`);
+        }
+
+        // Export function
+        function exportData() {
+            alert('Exporting data to Excel...\n\nThis would generate an Excel file with:\n• All employee performance data\n• Filtering applied\n• Conditional formatting\n• Charts and visualizations\n• Incentive calculations');
+        }
+
+        // Event listeners
+        document.getElementById('serviceFilter').addEventListener('change', applyFilters);
+        document.getElementById('regionFilter').addEventListener('change', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('yearFilter').addEventListener('change', applyFilters);
+        document.getElementById('quarterFilter').addEventListener('change', applyFilters);
+        document.getElementById('employeeSearch').addEventListener('input', applyFilters);
+        
+        document.getElementById('rowsPerPage').addEventListener('change', function() {
+            rowsPerPage = this.value === 'all' ? 'all' : parseInt(this.value);
+            currentPage = 1;
+            renderTable();
+        });
+
+        // Initialize table on load
+        renderTable();
+        
+        // Update KPIs based on current data
+        function updateKPIs() {
+            const totalEmployees = employees.length;
+            const qualified = employees.filter(e => e.status === 'Qualified').length;
+            const nearTarget = employees.filter(e => e.status === 'Near Target').length;
+            const belowTarget = employees.filter(e => e.status === 'Below Target').length;
+            const totalRevenue = employees.reduce((sum, e) => sum + e.totalRevenue, 0);
+            const totalBonus = employees.reduce((sum, e) => sum + e.bonus, 0);
+            
+            // Update the actual KPI values if needed
+            console.log(`Total Employees: ${totalEmployees}`);
+            console.log(`Qualified: ${qualified} (${Math.round(qualified/totalEmployees*100)}%)`);
+            console.log(`Total Revenue: $${(totalRevenue/1000000).toFixed(2)}M`);
+            console.log(`Total Bonus Payout: $${(totalBonus/1000000).toFixed(2)}M`);
+        }
+        
+        updateKPIs();
+    </script>
+</body>
+</html>
