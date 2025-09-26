@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PracticePro365 Pipeline Management Process</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 16px;
+            font-style: italic;
+        }
+        
+        .flow-container {
+            position: relative;
+            padding: 20px;
+        }
+        
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .flow-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 180px;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .flow-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .flow-box.primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .flow-box.success {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .flow-box.loss {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+        }
+        
+        .flow-box.warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #2d3748;
+        }
+        
+        .flow-box.info {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        
+        .small-text {
+            font-size: 11px;
+            font-weight: normal;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .stop-text {
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Split Section */
+        .split-section {
+            display: flex;
+            justify-content: center;
+            margin: 50px 0;
+            position: relative;
+        }
+        
+        .split-wrapper {
+            display: flex;
+            gap: 150px;
+            position: relative;
+            padding-top: 60px;
+        }
+        
+        .split-connector {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 60px;
+        }
+        
+        .split-connector::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 30px;
+            background: #4a5568;
+        }
+        
+        .split-connector::after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 25px;
+            right: 25px;
+            height: 4px;
+            background: #4a5568;
+        }
+        
+        .loss-branch, .win-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .loss-branch::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 60px;
+            background: #4a5568;
+        }
+        
+        .loss-branch::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-top: 10px solid #4a5568;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+        }
+        
+        .win-branch::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 60px;
+            background: #4a5568;
+        }
+        
+        .win-branch::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-top: 10px solid #4a5568;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+        }
+        
+        .arrow-down {
+            width: 4px;
+            height: 40px;
+            background: #4a5568;
+            margin: 20px auto;
+            position: relative;
+        }
+        
+        .arrow-down.long {
+            height: 80px;
+        }
+        
+        .arrow-down::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-top: 14px solid #4a5568;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+        }
+        
+        .continue-section {
+            margin-top: 30px;
+        }
+        
+        .split-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin: 40px 0;
+        }
+        
+        .branch {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+        
+        .branch-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .branch-header.new {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .branch-header.expanded {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .branch-subtitle {
+            font-size: 12px;
+            font-weight: normal;
+            margin-top: 5px;
+            opacity: 0.95;
+        }
+        
+        .branch-content {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 0 0 12px 12px;
+            border: 2px solid #e2e8f0;
+            border-top: none;
+        }
+        
+        .branch-step {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .branch-step h4 {
+            margin: 0 0 10px 0;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        
+        .branch-step ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #4a5568;
+            font-size: 13px;
+        }
+        
+        .emoji {
+            font-size: 24px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .notification-box {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #2d3748;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 500px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .notification-detail {
+            font-size: 13px;
+            font-style: italic;
+            margin-top: 8px;
+            color: #1a202c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PracticePro365 Pipeline Management Process</h1>
+        <div class="subtitle">Lead-to-Revenue Workflow Automation</div>
+        
+        <div class="flow-container">
+            <!-- Initial Lead Entry -->
+            <div class="flow-row">
+                <div class="flow-box primary">
+                    <span class="emoji">🚀</span><br>
+                    Lead Entry<br>
+                    <span class="small-text">(Partner/Any User)<br>Direct in Dynamics</span>
+                </div>
+            </div>
+            
+            <!-- Split to Loss/Win -->
+            <div class="split-section">
+                <div class="split-wrapper">
+                    <div class="split-connector"></div>
+                    <div class="loss-branch">
+                        <div class="flow-box loss">
+                            <span class="emoji">❌</span><br>
+                            LOSS<br>
+                            <span class="small-text">Record entry in system</span>
+                            <span class="stop-text">⛔ Process Stops Here</span>
+                        </div>
+                    </div>
+                    
+                    <div class="win-branch">
+                        <div class="flow-box success">
+                            <span class="emoji">✅</span><br>
+                            WIN<br>
+                            <span class="small-text">Continue to assignment</span>
+                        </div>
+                        <div class="arrow-down long"></div>
+                        <div class="flow-box info">
+                            <span class="emoji">👥</span><br>
+                            Assignment to<br>Operations Support
+                            <span class="small-text">Specialist</span>
+                        </div>
+                        
+                        <div class="continue-section">
+                            <div class="arrow-down"></div>
+                            
+                            <!-- Notification Level -->
+                            <div class="notification-box">
+                                <span class="emoji">📧</span> <strong>Email Notification</strong><br>
+                                <div class="notification-detail">
+                                    Sent to: Assigned Operations Support Specialist<br>
+                                    Message: "New lead has been won and assigned to you"
+                                </div>
+                                <hr style="border: 0; border-top: 1px solid rgba(0,0,0,0.1); margin: 15px 0;">
+                                <span class="emoji">📊</span> <strong>Personal View Dashboard</strong><br>
+                                <span style="font-size: 12px;">Custom view for tracking assigned items</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="arrow-down" style="margin-bottom: 40px;"></div>
+            
+            <!-- Split Paths -->
+            <div class="split-container">
+                <!-- New Business Branch -->
+                <div class="branch">
+                    <div class="branch-header new">
+                        🆕 NEW BUSINESS PATH
+                        <div class="branch-subtitle">New Engagement for Newly Created Client</div>
+                    </div>
+                    <div class="branch-content">
+                        <div class="branch-step">
+                            <h4>Step 1: New Client Onboarding</h4>
+                            <ul>
+                                <li>Create new account in system</li>
+                                <li>Collect complete client information</li>
+                                <li>Initial setup and configuration</li>
+                            </ul>
+                        </div>
+                        <div class="arrow-down" style="height: 20px;"></div>
+                        <div class="branch-step">
+                            <h4>Step 2: 📋 New Business Tracker</h4>
+                            <ul>
+                                <li>Service type & fee structure</li>
+                                <li>Referral source & contact details</li>
+                                <li>Engagement letter fee reference</li>
+                                <li style="opacity: 0.7;"><em>Originator/Closer (optional but tracked)</em></li>
+                            </ul>
+                        </div>
+                        <div class="arrow-down" style="height: 20px;"></div>
+                        <div class="branch-step" style="background: #e6fffa; border: 2px solid #38b2ac;">
+                            <h4>Step 3: 📄 New Engagement Creation</h4>
+                            <ul>
+                                <li><strong>Generate engagement letter</strong></li>
+                                <li>Set up engagement in system</li>
+                                <li>Define scope of services</li>
+                                <li>Establish billing parameters</li>
+                                <li>Link to new client record</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Expanded Services Branch -->
+                <div class="branch">
+                    <div class="branch-header expanded">
+                        ➕ EXPANDED SERVICES PATH
+                        <div class="branch-subtitle">Existing Client Enhancement</div>
+                    </div>
+                    <div class="branch-content">
+                        <div class="branch-step">
+                            <h4>Step 1: Existing Account Selection</h4>
+                            <ul>
+                                <li>Search & select existing client</li>
+                                <li>Prevent duplicate account creation</li>
+                                <li>Link to current client record</li>
+                                <li>Verify existing service lines</li>
+                            </ul>
+                        </div>
+                        <div class="arrow-down" style="height: 20px;"></div>
+                        <div class="branch-step">
+                            <h4>Step 2: 📝 Engagement Creation</h4>
+                            <ul>
+                                <li><strong>Option 1:</strong> Expanded Services</li>
+                                <li><strong>Option 2:</strong> Recurring Work</li>
+                                <li><strong>Option 3:</strong> New Projects</li>
+                            </ul>
+                            <div style="background: #fff5f5; padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 3px solid #fc8181;">
+                                <small>⚠️ Note: Prevents misclassification as "New Business"</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
