@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Business Intelligence Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e293b;
+            --secondary: #334155;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-left h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .header-left .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .date-range {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .date-range:hover {
+            border-color: var(--accent);
+        }
+
+        .tabs {
+            background: white;
+            padding: 0 40px;
+            display: flex;
+            gap: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 16px 0;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .tab:hover {
+            color: var(--text);
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .dashboard {
+            padding: 32px 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .metric-subtext {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .metric-change {
+            font-weight: 600;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--light);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--light);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: var(--text);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        .client-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-new {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-expansion {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-closed {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .revenue-cell {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .person-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            background: var(--light);
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 4px;
+            color: var(--text-secondary);
+        }
+
+        .person-tag.originator {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .person-tag.closer {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .split-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .summary-box {
+            background: var(--light);
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .mini-chart {
+            height: 200px;
+            padding: 16px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, #60a5fa 100%);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .table-footer {
+            padding: 16px;
+            background: var(--light);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .industry-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .priority-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .priority-high {
+            background: var(--danger);
+        }
+
+        .priority-medium {
+            background: var(--warning);
+        }
+
+        .priority-low {
+            background: var(--success);
+        }
+
+        .expandable-row {
+            cursor: pointer;
+        }
+
+        .expandable-row:hover {
+            background: #f8fafc;
+        }
+
+        .row-details {
+            display: none;
+            background: #fafbfc;
+            border-left: 3px solid var(--accent);
+        }
+
+        .row-details.expanded {
+            display: table-row;
+        }
+
+        .details-content {
+            padding: 16px 24px;
+            font-size: 13px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header-right, .tabs, .btn-action {
+                display: none;
+            }
+            .section {
+                break-inside: avoid;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Business Intelligence Dashboard</h1>
+            <div class="subtitle">Executive Performance Metrics & Pipeline Analysis</div>
+        </div>
+        <div class="header-right">
+            <select class="date-range">
+                <option>Q4 2024 (Current)</option>
+                <option>Q3 2024</option>
+                <option>Q2 2024</option>
+                <option>Full Year 2024</option>
+                <option>Custom Range</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('new-business')">New Business Pipeline</div>
+        <div class="tab" onclick="switchTab('expanded-services')">Service Expansion</div>
+        <div class="tab" onclick="switchTab('industry-analysis')">Industry Intelligence</div>
+        <div class="tab" onclick="switchTab('performance')">Team Performance</div>
+    </div>
+
+    <!-- New Business Pipeline Tab -->
+    <div id="new-business" class="tab-content active">
+        <div class="dashboard">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Pipeline Value</div>
+                    <div class="metric-value">$8.4M</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 23%</span>
+                        <span>vs Q3 2024</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">New Clients (Closed)</div>
+                    <div class="metric-value">47</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 12</span>
+                        <span>from last quarter</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Average Deal Size</div>
+                    <div class="metric-value">$178K</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ $23K</span>
+                        <span>improvement</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Win Rate</div>
+                    <div class="metric-value">38.2%</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 4.1%</span>
+                        <span>efficiency gain</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg. Sales Cycle</div>
+                    <div class="metric-value">52 days</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↓ 8 days</span>
+                        <span>faster close</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Active New Business Opportunities</div>
+                    <div class="section-actions">
+                        <button class="btn-action">Export</button>
+                        <button class="btn-action">Filter</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Industry / Sector</th>
+                            <th>Services</th>
+                            <th>Est. Annual Value</th>
+                            <th>Originators</th>
+                            <th>Closers</th>
+                            <th>Stage</th>
+                            <th>Close Probability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="expandable-row" onclick="toggleRow(this)">
+                            <td>
+                                <span class="priority-indicator priority-high"></span>
+                                <span class="client-name">Quantum Technologies Inc.</span>
+                            </td>
+                            <td>
+                                <span class="industry-tag">Technology</span>
+                                <span class="industry-tag">SaaS</span>
+                            </td>
+                            <td>Tax, Audit, Advisory</td>
+                            <td class="revenue-cell">$425,000</td>
+                            <td>
+                                <span class="person-tag originator">S. Chen</span>
+                                <span class="person-tag originator">M. Ross</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">S. Chen</span>
+                                <span class="person-tag closer">D. Kim</span>
+                                <span class="person-tag closer">E. Wilson</span>
+                            </td>
+                            <td><span class="badge badge-pending">Negotiation</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 60px;">
+                                        <div class="progress-fill" style="width: 85%;"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">85%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="row-details">
+                            <td colspan="8">
+                                <div class="details-content">
+                                    <div class="details-grid">
+                                        <div class="detail-item">
+                                            <span class="detail-label">First Contact</span>
+                                            <span class="detail-value">Sep 15, 2024</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Decision Maker</span>
+                                            <span class="detail-value">Jennifer Wu, CFO</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Expected Close</span>
+                                            <span class="detail-value">Nov 30, 2024</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Service Breakdown</span>
+                                            <span class="detail-value">Tax: $150K | Audit: $175K | Advisory: $100K</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Competition</span>
+                                            <span class="detail-value">PwC, Deloitte</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Next Action</span>
+                                            <span class="detail-value">Final proposal review - Nov 22</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="priority-indicator priority-high"></span>
+                                <span class="client-name">MedTech Solutions</span>
+                            </td>
+                            <td>
+                                <span class="industry-tag">Healthcare</span>
+                                <span class="industry-tag">Medical Devices</span>
+                            </td>
+                            <td>Audit, Tax</td>
+                            <td class="revenue-cell">$285,000</td>
+                            <td>
+                                <span class="person-tag originator">L. Park</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">L. Park</span>
+                                <span class="person-tag closer">J. Martinez</span>
+                            </td>
+                            <td><span class="badge badge-pending">Proposal</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 60px;">
+                                        <div class="progress-fill" style="width: 70%;"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">70%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="priority-indicator priority-medium"></span>
+                                <span class="client-name">Global Finance Partners</span>
+                            </td>
+                            <td>
+                                <span class="industry-tag">Financial Services</span>
+                                <span class="industry-tag">Investment</span>
+                            </td>
+                            <td>Advisory, Tax</td>
+                            <td class="revenue-cell">$340,000</td>
+                            <td>
+                                <span class="person-tag originator">D. Kim</span>
+                                <span class="person-tag originator">R. Lee</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">D. Kim</span>
+                            </td>
+                            <td><span class="badge badge-pending">Discovery</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 60px;">
+                                        <div class="progress-fill" style="width: 45%;"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">45%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="priority-indicator priority-low"></span>
+                                <span class="client-name">EcoManufacturing Corp</span>
+                            </td>
+                            <td>
+                                <span class="industry-tag">Manufacturing</span>
+                                <span class="industry-tag">CleanTech</span>
+                            </td>
+                            <td>Tax</td>
+                            <td class="revenue-cell">$125,000</td>
+                            <td>
+                                <span class="person-tag originator">M. Ross</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">E. Wilson</span>
+                            </td>
+                            <td><span class="badge badge-closed">Closed Won</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 60px;">
+                                        <div class="progress-fill" style="width: 100%;"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: var(--success);">100%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="priority-indicator priority-medium"></span>
+                                <span class="client-name">RetailChain International</span>
+                            </td>
+                            <td>
+                                <span class="industry-tag">Retail</span>
+                                <span class="industry-tag">E-commerce</span>
+                            </td>
+                            <td>Audit, Advisory</td>
+                            <td class="revenue-cell">$195,000</td>
+                            <td>
+                                <span class="person-tag originator">J. Martinez</span>
+                                <span class="person-tag originator">S. Chen</span>
+                                <span class="person-tag originator">L. Park</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">S. Chen</span>
+                                <span class="person-tag closer">L. Park</span>
+                            </td>
+                            <td><span class="badge badge-pending">Negotiation</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 60px;">
+                                        <div class="progress-fill" style="width: 75%;"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">75%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="table-footer">
+                    <span>Showing 5 of 142 active opportunities</span>
+                    <span>Total Pipeline: $8.4M | Weighted: $3.2M</span>
+                </div>
+            </div>
+
+            <div class="split-columns">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Recently Closed - New Business</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Value</th>
+                                <th>Close Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="client-name">DataSync Corporation</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">Technology • Cloud Services</div>
+                                </td>
+                                <td class="revenue-cell">$320,000</td>
+                                <td>Nov 15, 2024</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="client-name">HealthFirst Medical Group</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">Healthcare • Clinics</div>
+                                </td>
+                                <td class="revenue-cell">$185,000</td>
+                                <td>Nov 12, 2024</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="client-name">AutoParts Global</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">Manufacturing • Automotive</div>
+                                </td>
+                                <td class="revenue-cell">$145,000</td>
+                                <td>Nov 8, 2024</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="client-name">FinanceHub LLC</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">Financial • FinTech</div>
+                                </td>
+                                <td class="revenue-cell">$275,000</td>
+                                <td>Nov 5, 2024</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Service Line Distribution</div>
+                    </div>
+                    <div class="mini-chart">
+                        <canvas id="serviceDistChart"></canvas>
+                    </div>
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span class="summary-label">Tax Services</span>
+                            <span class="summary-value">$2.8M (33%)</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Audit Services</span>
+                            <span class="summary-value">$3.1M (37%)</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Advisory Services</span>
+                            <span class="summary-value">$2.5M (30%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Expansion Tab -->
+    <div id="expanded-services" class="tab-content">
+        <div class="dashboard">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Expansion Revenue</div>
+                    <div class="metric-value">$3.8M</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 34%</span>
+                        <span>growth YoY</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Clients Expanded</div>
+                    <div class="metric-value">89</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 23</span>
+                        <span>this quarter</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Cross-Sell Rate</div>
+                    <div class="metric-value">42.3%</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 8.2%</span>
+                        <span>improvement</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg. Expansion Value</div>
+                    <div class="metric-value">$42.7K</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ $5.3K</span>
+                        <span>per client</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Retention Impact</div>
+                    <div class="metric-value">96.2%</div>
+                    <div class="metric-subtext">
+                        <span class="metric-change positive">↑ 3.1%</span>
+                        <span>retention lift</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Service Expansion Opportunities - Existing Clients</div>
+                    <div class="section-actions">
+                        <button class="btn-action">Export</button>
+                        <button class="btn-action">Prioritize</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Current Services</th>
+                            <th>Expansion Opportunity</th>
+                            <th>Additional Revenue</th>
+                            <th>Client Since</th>
+                            <th>Originator</th>
+                            <th>Closer</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="client-name">TechVentures Holdings</td>
+                            <td>Tax Only</td>
+                            <td>→ Audit + Advisory</td>
+                            <td class="revenue-cell">$185,000</td>
+                            <td>2021</td>
+                            <td><span class="person-tag originator">M. Ross</span></td>
+                            <td><span class="person-tag closer">S. Chen</span></td>
+                            <td><span class="badge badge-expansion">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td class="client-name">MedCare Network</td>
+                            <td>Audit Only</td>
+                            <td>→ Tax + Advisory</td>
+                            <td class="revenue-cell">$220,000</td>
+                            <td>2020</td>
+                            <td>
+                                <span class="person-tag originator">L. Park</span>
+                                <span class="person-tag originator">D. Kim</span>
+                            </td>
+                            <td><span class="person-tag closer">L. Park</span></td>
+                            <td><span class="badge badge-expansion">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td class="client-name">Global Logistics Inc</td>
+                            <td>Tax + Audit</td>
+                            <td>→ Advisory (Digital)</td>
+                            <td class="revenue-cell">$125,000</td>
+                            <td>2019</td>
+                            <td><span class="person-tag originator">J. Martinez</span></td>
+                            <td>
+                                <span class="person-tag closer">E. Wilson</span>
+                                <span class="person-tag closer">D. Kim</span>
+                            </td>
+                            <td><span class="badge badge-pending">Proposal</span></td>
+                        </tr>
+                        <tr>
+                            <td class="client-name">FinanceCore Systems</td>
+                            <td>Advisory Only</td>
+                            <td>→ Audit</td>
+                            <td class="revenue-cell">$165,000</td>
+                            <td>2022</td>
+                            <td><span class="person-tag originator">D. Kim</span></td>
+                            <td><span class="person-tag closer">D. Kim</span></td>
+                            <td><span class="badge badge-closed">Won</span></td>
+                        </tr>
+                        <tr>
+                            <td class="client-name">RetailMax Corporation</td>
+                            <td>Tax Only</td>
+                            <td>→ Audit</td>
+                            <td class="revenue-cell">$145,000</td>
+                            <td>2018</td>
+                            <td>
+                                <span class="person-tag originator">S. Chen</span>
+                                <span class="person-tag originator">R. Lee</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">S. Chen</span>
+                                <span class="person-tag closer">L. Park</span>
+                                <span class="person-tag closer">J. Martinez</span>
+                            </td>
+                            <td><span class="badge badge-expansion">Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Service Expansion Patterns Analysis</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Expansion Path</th>
+                            <th>Frequency</th>
+                            <th>Success Rate</th>
+                            <th>Avg. Revenue Lift</th>
+                            <th>Avg. Time to Expand</th>
+                            <th>Top Performers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Tax → Audit</strong></td>
+                            <td>34 clients</td>
+                            <td>76%</td>
+                            <td class="revenue-cell">+$142K</td>
+                            <td>18 months</td>
+                            <td>
+                                <span class="person-tag">S. Chen</span>
+                                <span class="person-tag">M. Ross</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tax → Advisory</strong></td>
+                            <td>28 clients</td>
+                            <td>68%</td>
+                            <td class="revenue-cell">+$98K</td>
+                            <td>24 months</td>
+                            <td>
+                                <span class="person-tag">D. Kim</span>
+                                <span class="person-tag">L. Park</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Audit → Advisory</strong></td>
+                            <td>22 clients</td>
+                            <td>82%</td>
+                            <td class="revenue-cell">+$125K</td>
+                            <td>12 months</td>
+                            <td>
+                                <span class="person-tag">J. Martinez</span>
+                                <span class="person-tag">E. Wilson</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Single → Full Service</strong></td>
+                            <td>15 clients</td>
+                            <td>53%</td>
+                            <td class="revenue-cell">+$285K</td>
+                            <td>36 months</td>
+                            <td>
+                                <span class="person-tag">S. Chen</span>
+                                <span class="person-tag">D. Kim</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Advisory → Tax + Audit</strong></td>
+                            <td>8 clients</td>
+                            <td>88%</td>
+                            <td class="revenue-cell">+$195K</td>
+                            <td>6 months</td>
+                            <td>
+                                <span class="person-tag">R. Lee</span>
+                                <span class="person-tag">M. Ross</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Industry Intelligence Tab -->
+    <div id="industry-analysis" class="tab-content">
+        <div class="dashboard">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Industry & Sector Performance Matrix</div>
+                    <div class="section-actions">
+                        <button class="btn-action">Full Report</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Industry</th>
+                            <th>Key Sectors</th>
+                            <th>Total Clients</th>
+                            <th>New (Q4)</th>
+                            <th>Revenue</th>
+                            <th>Growth Rate</th>
+                            <th>Avg. Deal Size</th>
+                            <th>Market Share</th>
+                            <th>Opportunity Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Technology</strong></td>
+                            <td>
+                                <span class="industry-tag">SaaS</span>
+                                <span class="industry-tag">FinTech</span>
+                                <span class="industry-tag">AI/ML</span>
+                            </td>
+                            <td>142</td>
+                            <td style="color: var(--success); font-weight: 600;">+18</td>
+                            <td class="revenue-cell">$4.2M</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="metric-change positive">↑ 45%</span>
+                                </div>
+                            </td>
+                            <td>$182K</td>
+                            <td>12.3%</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 95%; background: var(--success);"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: var(--success);">95</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Healthcare</strong></td>
+                            <td>
+                                <span class="industry-tag">MedTech</span>
+                                <span class="industry-tag">Pharma</span>
+                                <span class="industry-tag">Hospitals</span>
+                            </td>
+                            <td>98</td>
+                            <td style="color: var(--success); font-weight: 600;">+12</td>
+                            <td class="revenue-cell">$3.8M</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="metric-change positive">↑ 28%</span>
+                                </div>
+                            </td>
+                            <td>$225K</td>
+                            <td>8.7%</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 88%; background: var(--success);"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: var(--success);">88</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Financial Services</strong></td>
+                            <td>
+                                <span class="industry-tag">Banking</span>
+                                <span class="industry-tag">Insurance</span>
+                                <span class="industry-tag">Investment</span>
+                            </td>
+                            <td>76</td>
+                            <td style="color: var(--warning); font-weight: 600;">+8</td>
+                            <td class="revenue-cell">$3.1M</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="metric-change positive">↑ 18%</span>
+                                </div>
+                            </td>
+                            <td>$265K</td>
+                            <td>6.2%</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 72%; background: var(--warning);"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: var(--warning);">72</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manufacturing</strong></td>
+                            <td>
+                                <span class="industry-tag">Automotive</span>
+                                <span class="industry-tag">Industrial</span>
+                                <span class="industry-tag">CleanTech</span>
+                            </td>
+                            <td>65</td>
+                            <td style="color: var(--warning); font-weight: 600;">+5</td>
+                            <td class="revenue-cell">$2.2M</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="metric-change positive">↑ 12%</span>
+                                </div>
+                            </td>
+                            <td>$142K</td>
+                            <td>4.8%</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 65%; background: var(--warning);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">65</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Retail & E-commerce</strong></td>
+                            <td>
+                                <span class="industry-tag">Digital</span>
+                                <span class="industry-tag">Omnichannel</span>
+                                <span class="industry-tag">DTC</span>
+                            </td>
+                            <td>48</td>
+                            <td style="color: var(--danger); font-weight: 600;">+3</td>
+                            <td class="revenue-cell">$1.5M</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="metric-change negative">↓ 5%</span>
+                                </div>
+                            </td>
+                            <td>$98K</td>
+                            <td>3.2%</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 45%; background: var(--danger);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">45</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Emerging Sectors - High Growth Opportunities</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>Industry</th>
+                            <th>YoY Growth</th>
+                            <th>Pipeline Value</th>
+                            <th>Target Companies</th>
+                            <th>Lead Team</th>
+                            <th>Strategic Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Artificial Intelligence</strong></td>
+                            <td>Technology</td>
+                            <td><span class="metric-change positive" style="font-size: 16px;">↑ 120%</span></td>
+                            <td class="revenue-cell">$1.8M</td>
+                            <td>23 targets</td>
+                            <td>
+                                <span class="person-tag">S. Chen</span>
+                                <span class="person-tag">D. Kim</span>
+                            </td>
+                            <td><span class="badge badge-new">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Clean Energy</strong></td>
+                            <td>Manufacturing</td>
+                            <td><span class="metric-change positive" style="font-size: 16px;">↑ 85%</span></td>
+                            <td class="revenue-cell">$1.2M</td>
+                            <td>18 targets</td>
+                            <td>
+                                <span class="person-tag">M. Ross</span>
+                                <span class="person-tag">L. Park</span>
+                            </td>
+                            <td><span class="badge badge-new">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Digital Health</strong></td>
+                            <td>Healthcare</td>
+                            <td><span class="metric-change positive" style="font-size: 16px;">↑ 72%</span></td>
+                            <td class="revenue-cell">$980K</td>
+                            <td>15 targets</td>
+                            <td>
+                                <span class="person-tag">J. Martinez</span>
+                                <span class="person-tag">E. Wilson</span>
+                            </td>
+                            <td><span class="badge badge-expansion">High</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cryptocurrency/Blockchain</strong></td>
+                            <td>Financial Services</td>
+                            <td><span class="metric-change positive" style="font-size: 16px;">↑ 65%</span></td>
+                            <td class="revenue-cell">$750K</td>
+                            <td>12 targets</td>
+                            <td>
+                                <span class="person-tag">D. Kim</span>
+                                <span class="person-tag">R. Lee</span>
+                            </td>
+                            <td><span class="badge badge-expansion">High</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="split-columns">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Geographic Distribution</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Region</th>
+                                <th>Clients</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>West Coast</td>
+                                <td>142</td>
+                                <td class="revenue-cell">$5.2M</td>
+                            </tr>
+                            <tr>
+                                <td>East Coast</td>
+                                <td>98</td>
+                                <td class="revenue-cell">$3.8M</td>
+                            </tr>
+                            <tr>
+                                <td>Midwest</td>
+                                <td>65</td>
+                                <td class="revenue-cell">$2.1M</td>
+                            </tr>
+                            <tr>
+                                <td>South</td>
+                                <td>48</td>
+                                <td class="revenue-cell">$1.5M</td>
+                            </tr>
+                            <tr>
+                                <td>International</td>
+                                <td>22</td>
+                                <td class="revenue-cell">$980K</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Competitor Analysis</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Competitor</th>
+                                <th>Win Rate</th>
+                                <th>Key Advantage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Big 4 Firms</td>
+                                <td>32%</td>
+                                <td>Personal service</td>
+                            </tr>
+                            <tr>
+                                <td>Regional Firms</td>
+                                <td>58%</td>
+                                <td>Industry expertise</td>
+                            </tr>
+                            <tr>
+                                <td>Boutique Firms</td>
+                                <td>71%</td>
+                                <td>Full service offering</td>
+                            </tr>
+                            <tr>
+                                <td>No Incumbent</td>
+                                <td>84%</td>
+                                <td>First mover</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Performance Tab -->
+    <div id="performance" class="tab-content">
+        <div class="dashboard">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Individual Performance Metrics - Q4 2024</div>
+                    <div class="section-actions">
+                        <button class="btn-action">Download Report</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Team Member</th>
+                            <th>Role</th>
+                            <th>New Business</th>
+                            <th>Expansions</th>
+                            <th>Total Revenue</th>
+                            <th>Deals</th>
+                            <th>Win Rate</th>
+                            <th>Avg Cycle</th>
+                            <th>Pipeline</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Sarah Chen</strong></td>
+                            <td>
+                                <span class="person-tag originator">Originator</span>
+                                <span class="person-tag closer">Closer</span>
+                            </td>
+                            <td class="revenue-cell">$1.8M</td>
+                            <td class="revenue-cell">$620K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$2.42M</td>
+                            <td>18</td>
+                            <td>44%</td>
+                            <td>42 days</td>
+                            <td>$1.2M</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 98%; background: var(--success);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">152%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>David Kim</strong></td>
+                            <td>
+                                <span class="person-tag originator">Originator</span>
+                                <span class="person-tag closer">Closer</span>
+                            </td>
+                            <td class="revenue-cell">$1.5M</td>
+                            <td class="revenue-cell">$580K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$2.08M</td>
+                            <td>15</td>
+                            <td>40%</td>
+                            <td>48 days</td>
+                            <td>$980K</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 92%; background: var(--success);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">139%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lisa Park</strong></td>
+                            <td>
+                                <span class="person-tag originator">Originator</span>
+                                <span class="person-tag closer">Closer</span>
+                            </td>
+                            <td class="revenue-cell">$1.2M</td>
+                            <td class="revenue-cell">$450K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$1.65M</td>
+                            <td>14</td>
+                            <td>38%</td>
+                            <td>55 days</td>
+                            <td>$750K</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 85%; background: var(--success);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">110%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mike Ross</strong></td>
+                            <td>
+                                <span class="person-tag originator">Originator</span>
+                            </td>
+                            <td class="revenue-cell">$980K</td>
+                            <td class="revenue-cell">$380K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$1.36M</td>
+                            <td>12</td>
+                            <td>35%</td>
+                            <td>62 days</td>
+                            <td>$620K</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 78%; background: var(--warning);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">91%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>John Martinez</strong></td>
+                            <td>
+                                <span class="person-tag originator">Originator</span>
+                                <span class="person-tag closer">Closer</span>
+                            </td>
+                            <td class="revenue-cell">$850K</td>
+                            <td class="revenue-cell">$420K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$1.27M</td>
+                            <td>11</td>
+                            <td>42%</td>
+                            <td>45 days</td>
+                            <td>$580K</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 75%; background: var(--warning);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">85%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Emma Wilson</strong></td>
+                            <td>
+                                <span class="person-tag closer">Closer</span>
+                            </td>
+                            <td class="revenue-cell">$750K</td>
+                            <td class="revenue-cell">$350K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$1.10M</td>
+                            <td>10</td>
+                            <td>48%</td>
+                            <td>38 days</td>
+                            <td>$480K</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 73%; background: var(--warning);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">73%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Robert Lee</strong></td>
+                            <td>
+                                <span class="person-tag originator">Originator</span>
+                                <span class="person-tag closer">Closer</span>
+                            </td>
+                            <td class="revenue-cell">$620K</td>
+                            <td class="revenue-cell">$280K</td>
+                            <td class="revenue-cell" style="font-weight: 700;">$900K</td>
+                            <td>8</td>
+                            <td>32%</td>
+                            <td>68 days</td>
+                            <td>$420K</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar" style="width: 80px;">
+                                        <div class="progress-fill" style="width: 65%; background: var(--danger);"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">60%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="table-footer">
+                    <span>Team Total: $12.58M | Average Performance: 103% of target</span>
+                    <span>Top Performer: Sarah Chen (152% of target)</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Team Collaboration Matrix - Multi-Attribution Analysis</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Deal/Client</th>
+                            <th>Total Value</th>
+                            <th>Originators</th>
+                            <th>Closers</th>
+                            <th>Attribution Split</th>
+                            <th>Collaboration Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="client-name">Quantum Technologies Inc.</td>
+                            <td class="revenue-cell">$425,000</td>
+                            <td>
+                                <span class="person-tag originator">S. Chen (60%)</span>
+                                <span class="person-tag originator">M. Ross (40%)</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">S. Chen (40%)</span>
+                                <span class="person-tag closer">D. Kim (35%)</span>
+                                <span class="person-tag closer">E. Wilson (25%)</span>
+                            </td>
+                            <td>Origination: 60/40 | Closing: 40/35/25</td>
+                            <td><span class="badge badge-new">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td class="client-name">Global Finance Partners</td>
+                            <td class="revenue-cell">$340,000</td>
+                            <td>
+                                <span class="person-tag originator">D. Kim (70%)</span>
+                                <span class="person-tag originator">R. Lee (30%)</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">D. Kim (100%)</span>
+                            </td>
+                            <td>Origination: 70/30 | Closing: 100</td>
+                            <td><span class="badge badge-expansion">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td class="client-name">RetailChain International</td>
+                            <td class="revenue-cell">$195,000</td>
+                            <td>
+                                <span class="person-tag originator">J. Martinez (40%)</span>
+                                <span class="person-tag originator">S. Chen (35%)</span>
+                                <span class="person-tag originator">L. Park (25%)</span>
+                            </td>
+                            <td>
+                                <span class="person-tag closer">S. Chen (60%)</span>
+                                <span class="person-tag closer">L. Park (40%)</span>
+                            </td>
+                            <td>Origination: 40/35/25 | Closing: 60/40</td>
+                            <td><span class="badge badge-new">Excellent</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function toggleRow(row) {
+            const details = row.nextElementSibling;
+            if (details && details.classList.contains('row-details')) {
+                details.classList.toggle('expanded');
+            }
+        }
+
+        // Simple chart for service distribution
+        const ctx = document.getElementById('serviceDistChart');
+        if (ctx) {
+            new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tax', 'Audit', 'Advisory'],
+                    datasets: [{
+                        data: [33, 37, 30],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
