@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operating Dashboard - Partner Book Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Professional Corporate Color Palette */
+            --primary-color: #1e293b;
+            --secondary-color: #475569;
+            --accent-color: #0ea5e9;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            
+            /* Background Colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-dark: #0f172a;
+            
+            /* Text Colors */
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --text-inverse: #ffffff;
+            
+            /* Border & Shadow */
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Professional Header Bar */
+        .top-bar {
+            background: var(--bg-dark);
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .top-bar-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .company-logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-inverse);
+            letter-spacing: -0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-inverse);
+            font-size: 14px;
+        }
+
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Enhanced Dashboard Header */
+        .dashboard-header {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .header-title-section {
+            flex: 1;
+        }
+
+        .dashboard-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .action-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .action-btn.primary {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .action-btn.primary:hover {
+            background: #0284c7;
+        }
+
+        /* Professional Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 140px;
+        }
+
+        .filter-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-select {
+            padding: 8px 36px 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 18px;
+        }
+
+        .filter-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        /* Enhanced Navigation Tabs */
+        .tabs-container {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 6px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--accent-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Professional KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .kpi-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--bg-tertiary);
+        }
+
+        .kpi-icon.billings { 
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe); 
+            color: #1e40af;
+        }
+        .kpi-icon.avg { 
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0); 
+            color: #065f46;
+        }
+        .kpi-icon.csg { 
+            background: linear-gradient(135deg, #fef3c7, #fde68a); 
+            color: #92400e;
+        }
+        .kpi-icon.industry { 
+            background: linear-gradient(135deg, #e9d5ff, #d8b4fe); 
+            color: #6b21a8;
+        }
+        .kpi-icon.clients { 
+            background: linear-gradient(135deg, #fce7f3, #fbcfe8); 
+            color: #9f1239;
+        }
+
+        .kpi-trend {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .kpi-trend.up {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .kpi-trend.down {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .kpi-content {
+            margin-top: 12px;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .kpi-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .kpi-progress {
+            margin-top: 16px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #0284c7);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Professional Data Sections */
+        .data-section {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.25px;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .btn.primary {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .btn.primary:hover {
+            background: #0284c7;
+        }
+
+        /* Professional Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table th {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .data-table th:first-child {
+            border-top-left-radius: 6px;
+        }
+
+        .data-table th:last-child {
+            border-top-right-radius: 6px;
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .data-table tbody tr {
+            transition: background 0.15s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Expandable Rows */
+        .expandable-row {
+            cursor: pointer;
+        }
+
+        .expandable-row td:first-child {
+            position: relative;
+            padding-left: 36px;
+        }
+
+        .expandable-row td:first-child::before {
+            content: '›';
+            position: absolute;
+            left: 16px;
+            display: inline-block;
+            transition: transform 0.2s ease;
+            font-size: 18px;
+            color: var(--text-tertiary);
+        }
+
+        .expandable-row.expanded td:first-child::before {
+            transform: rotate(90deg);
+        }
+
+        .sub-row {
+            display: none;
+            background: var(--bg-secondary);
+        }
+
+        .sub-row.show {
+            display: table-row;
+        }
+
+        .sub-row td {
+            padding-left: 56px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Chart Containers */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 24px;
+        }
+
+        .chart-container {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-placeholder {
+            height: 320px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px dashed var(--border-color);
+        }
+
+        /* Professional Metric Badges */
+        .metric-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .metric-badge.positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .metric-badge.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .metric-badge.neutral {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-secondary);
+        }
+
+        /* Detail Grid Layout */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        .summary-panel {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+        }
+
+        .summary-panel .section-title {
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Scrollbar Styling */
+        .scroll-container {
+            overflow-x: auto;
+            margin: -8px;
+            padding: 8px;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 5px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 5px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 16px;
+            }
+
+            .dashboard-header {
+                padding: 20px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .dashboard-title {
+                font-size: 24px;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .tabs {
+                overflow-x: scroll;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .data-section {
+                padding: 20px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+
+            .section-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .top-bar,
+            .header-actions,
+            .section-actions,
+            .filter-bar {
+                display: none;
+            }
+
+            .dashboard-container {
+                padding: 0;
+            }
+
+            .data-section,
+            .kpi-card,
+            .chart-container {
+                break-inside: avoid;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Professional Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="company-logo">Singer Lewak</div>
+            <div class="user-info">
+                <span>Operating Dashboard</span>
+                <span style="color: var(--text-tertiary);">|</span>
+                <span>FY 2025</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Enhanced Header Section -->
+        <div class="dashboard-header">
+            <div class="header-top">
+                <div class="header-title-section">
+                    <h1 class="dashboard-title">Operating Dashboard</h1>
+                    <p class="dashboard-subtitle">Partner Book Analysis & Performance Metrics</p>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn">
+                        <span style="margin-right: 6px;">📥</span> Export
+                    </button>
+                    <button class="action-btn primary">
+                        <span style="margin-right: 6px;">📊</span> Full Report
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Fiscal Year</label>
+                    <select class="filter-select">
+                        <option>2025</option>
+                        <option>2024</option>
+                        <option>2023</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Period</label>
+                    <select class="filter-select">
+                        <option>August 2025</option>
+                        <option>July 2025</option>
+                        <option>June 2025</option>
+                        <option>Q2 2025</option>
+                        <option>Q1 2025</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Partner</label>
+                    <select class="filter-select">
+                        <option>All Partners</option>
+                        <option>Amanda Schlank</option>
+                        <option>Andrea Link</option>
+                        <option>Andrea Roschke</option>
+                        <option>Bill Osborn</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Service Line</label>
+                    <select class="filter-select">
+                        <option>All Services</option>
+                        <option>Tax</option>
+                        <option>Assurance</option>
+                        <option>Advisory</option>
+                        <option>Consulting</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Location</label>
+                    <select class="filter-select">
+                        <option>All Locations</option>
+                        <option>Greater Los Angeles</option>
+                        <option>Northern California</option>
+                        <option>Pacific Northwest</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Navigation Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('market-overview')">Market Overview</button>
+                <button class="tab" onclick="switchTab('job-profitability')">Job Profitability</button>
+                <button class="tab" onclick="switchTab('partners-book')">Partners Book</button>
+                <button class="tab" onclick="switchTab('utilization')">Utilization & Allocation</button>
+                <button class="tab" onclick="switchTab('markdowns')">Markdowns</button>
+                <button class="tab" onclick="switchTab('revenue-analysis')">Revenue Analysis</button>
+            </div>
+        </div>
+
+        <!-- Market Overview Tab -->
+        <div id="market-overview" class="tab-content active">
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-icon billings">💰</div>
+                        <span class="kpi-trend up">↑ 12.5%</span>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-label">Total Billings</div>
+                        <div class="kpi-value">$9.76M</div>
+                        <div class="kpi-subtitle">YTD Performance</div>
+                    </div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-icon avg">📊</div>
+                        <span class="kpi-trend up">↑ 8.3%</span>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-label">Average Billings</div>
+                        <div class="kpi-value">$143.56K</div>
+                        <div class="kpi-subtitle">Per Client</div>
+                    </div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-icon csg">🏢</div>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-label">Top Client Segment</div>
+                        <div class="kpi-value">Closely Held</div>
+                        <div class="kpi-subtitle">Businesses</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-icon industry">🏭</div>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-label">Top Industry</div>
+                        <div class="kpi-value">Individual</div>
+                        <div class="kpi-subtitle">99 Clients</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-icon clients">👥</div>
+                        <span class="kpi-trend up">↑ 5.2%</span>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-label">Total Clients</div>
+                        <div class="kpi-value">3,000</div>
+                        <div class="kpi-subtitle">Active Engagements</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Partner Billings by CSG -->
+            <div class="data-section">
+                <div class="section-header">
+                    <h2 class="section-title">Partner Billings by Client Segment</h2>
+                    <div class="section-actions">
+                        <button class="btn">Export</button>
+                        <button class="btn primary">View Details</button>
+                    </div>
+                </div>
+                <div class="scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Partner</th>
+                                <th>Bankruptcy</th>
+                                <th>Closely Held</th>
+                                <th>Credit Unions</th>
+                                <th>Franchise</th>
+                                <th>Government</th>
+                                <th>High Net Worth</th>
+                                <th>Individuals</th>
+                                <th>International</th>
+                                <th>Not For Profit</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="expandable-row" onclick="toggleRow(this)">
+                                <td><strong>Amanda Schlank</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>$51,839</td>
+                                <td>-</td>
+                                <td>$442</td>
+                                <td><strong>$52,281</strong></td>
+                            </tr>
+                            <tr class="sub-row">
+                                <td colspan="11">Q1: $12,570 | Q2: $13,540 | Q3: $13,171 | Q4 (Projected): $13,000</td>
+                            </tr>
+                            <tr class="expandable-row" onclick="toggleRow(this)">
+                                <td><strong>Andrea Link</strong></td>
+                                <td>-</td>
+                                <td>$59,863</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>$51,839</td>
+                                <td>-</td>
+                                <td>$189</td>
+                                <td><strong>$111,891</strong></td>
+                            </tr>
+                            <tr class="sub-row">
+                                <td colspan="11">Q1: $27,972 | Q2: $28,450 | Q3: $27,969 | Q4 (Projected): $27,500</td>
+                            </tr>
+                            <tr class="expandable-row" onclick="toggleRow(this)">
+                                <td><strong>Andrea Roschke</strong></td>
+                                <td>-</td>
+                                <td>$74,439</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>$31,055</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>$1,525</td>
+                                <td><strong>$107,019</strong></td>
+                            </tr>
+                            <tr class="sub-row">
+                                <td colspan="11">Q1: $26,754 | Q2: $27,200 | Q3: $26,565 | Q4 (Projected): $26,500</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Partner Billings by Industry -->
+            <div class="data-section">
+                <div class="section-header">
+                    <h2 class="section-title">Partner Billings by Industry</h2>
+                    <div class="section-actions">
+                        <button class="btn">Filter</button>
+                        <button class="btn">Export</button>
+                    </div>
+                </div>
+                <div class="scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Partner</th>
+                                <th>Agriculture</th>
+                                <th>Mining</th>
+                                <th>Utilities</th>
+                                <th>Construction</th>
+                                <th>Manufacturing</th>
+                                <th>Wholesale</th>
+                                <th>Retail</th>
+                                <th>Transportation</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Amanda Schlank</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>$1,950</td>
+                                <td>$3,000</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><strong>$4,950</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Andrea Link</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><strong>$0</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Andrea Roschke</strong></td>
+                                <td>$4,370</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>$9,385</td>
+                                <td>$6,700</td>
+                                <td>-</td>
+                                <td>$4,520</td>
+                                <td>-</td>
+                                <td><strong>$24,975</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Profitability Tab -->
+        <div id="job-profitability" class="tab-content">
+            <div class="detail-grid">
+                <div class="summary-panel">
+                    <h3 class="section-title">Performance Summary</h3>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Revenue</span>
+                        <span class="summary-value">$13.92M</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Standard Cost</span>
+                        <span class="summary-value">$3.65M</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Gross Profit</span>
+                        <span class="summary-value metric-badge positive">$10.27M (73.8%)</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Markdowns</span>
+                        <span class="summary-value metric-badge negative">$5.22M</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Net Revenue</span>
+                        <span class="summary-value">$8.70M</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Realization %</span>
+                        <span class="summary-value">62.5%</span>
+                    </div>
+                </div>
+
+                <div class="data-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Partner Performance Details</h2>
+                        <div class="section-actions">
+                            <button class="btn">View by Client</button>
+                            <button class="btn primary">Detailed Report</button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Partner</th>
+                                <th>Billings</th>
+                                <th>Hours</th>
+                                <th>Production</th>
+                                <th>Markdowns</th>
+                                <th>Net Revenue</th>
+                                <th>Realization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Amanda Schlank</strong></td>
+                                <td>$27,942</td>
+                                <td>234</td>
+                                <td>$83,955</td>
+                                <td class="metric-badge negative">-$67,270</td>
+                                <td>$16,685</td>
+                                <td class="metric-badge negative">19.9%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Andrea Link</strong></td>
+                                <td>$112,333</td>
+                                <td>744</td>
+                                <td>$226,931</td>
+                                <td class="metric-badge negative">-$95,535</td>
+                                <td>$131,396</td>
+                                <td class="metric-badge positive">57.9%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Andrea Roschke</strong></td>
+                                <td>$107,019</td>
+                                <td>386</td>
+                                <td>$134,482</td>
+                                <td class="metric-badge negative">-$43,268</td>
+                                <td>$91,214</td>
+                                <td class="metric-badge positive">67.8%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bill Osborn</strong></td>
+                                <td>$85,811</td>
+                                <td>1,542</td>
+                                <td>$543,556</td>
+                                <td class="metric-badge negative">-$60,113</td>
+                                <td>$483,443</td>
+                                <td class="metric-badge positive">88.9%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partners Book Tab -->
+        <div id="partners-book" class="tab-content">
+            <div class="data-section">
+                <div class="section-header">
+                    <h2 class="section-title">Book Summary by Service Line</h2>
+                    <div class="section-actions">
+                        <button class="btn">Summary View</button>
+                        <button class="btn primary">Client Detail</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Book Hrs</th>
+                            <th>Production</th>
+                            <th>Markdowns</th>
+                            <th>Realization %</th>
+                            <th>Standard Cost</th>
+                            <th>Gross Profit</th>
+                            <th>GP %</th>
+                            <th>Revenue Standard</th>
+                            <th>GP Standard</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="expandable-row" onclick="toggleRow(this)">
+                            <td><strong>Assurance & Advisory</strong></td>
+                            <td>234</td>
+                            <td>$83,956</td>
+                            <td class="metric-badge negative">-$2,014K</td>
+                            <td>2399%</td>
+                            <td>$18,258</td>
+                            <td>-$2,032K</td>
+                            <td>101%</td>
+                            <td>$38,325K</td>
+                            <td>$21,900K</td>
+                        </tr>
+                        <tr class="sub-row">
+                            <td>Greater Los Angeles</td>
+                            <td>234</td>
+                            <td>$83,956</td>
+                            <td>-$818K</td>
+                            <td>975%</td>
+                            <td>$18,258</td>
+                            <td>-$837K</td>
+                            <td>102%</td>
+                            <td>$21,000K</td>
+                            <td>$12,000K</td>
+                        </tr>
+                        <tr class="sub-row">
+                            <td>Northern California</td>
+                            <td>0</td>
+                            <td>$0</td>
+                            <td>-$177K</td>
+                            <td>0%</td>
+                            <td>$0</td>
+                            <td>-$177K</td>
+                            <td>100%</td>
+                            <td>$4,200K</td>
+                            <td>$2,400K</td>
+                        </tr>
+                        <tr class="expandable-row" onclick="toggleRow(this)">
+                            <td><strong>Tax</strong></td>
+                            <td>234</td>
+                            <td>$83,956</td>
+                            <td class="metric-badge negative">-$3,018K</td>
+                            <td>0%</td>
+                            <td>$18,258</td>
+                            <td>-$3,018K</td>
+                            <td>100%</td>
+                            <td>$79,613K</td>
+                            <td>$57,900K</td>
+                        </tr>
+                        <tr class="sub-row">
+                            <td>Greater Los Angeles</td>
+                            <td>234</td>
+                            <td>$83,956</td>
+                            <td>-$1,047K</td>
+                            <td>0%</td>
+                            <td>$18,258</td>
+                            <td>-$1,047K</td>
+                            <td>100%</td>
+                            <td>$31,763K</td>
+                            <td>$23,100K</td>
+                        </tr>
+                        <tr class="sub-row">
+                            <td>Northern California</td>
+                            <td>0</td>
+                            <td>$0</td>
+                            <td>-$524K</td>
+                            <td>0%</td>
+                            <td>$0</td>
+                            <td>-$524K</td>
+                            <td>100%</td>
+                            <td>$16,500K</td>
+                            <td>$12,000K</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Utilization & Allocation Tab -->
+        <div id="utilization" class="tab-content">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Department Allocation</div>
+                    <div class="kpi-value">40,418</div>
+                    <div class="kpi-subtitle">Total Charge Hours</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Production Value</div>
+                    <div class="kpi-value">$13.92M</div>
+                    <div class="kpi-subtitle">Before Write-offs</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Standard Cost</div>
+                    <div class="kpi-value">$3.65M</div>
+                    <div class="kpi-subtitle">Total Labor Cost</div>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <div class="section-header">
+                    <h2 class="section-title">Departmental Resource Allocation</h2>
+                    <div class="section-actions">
+                        <button class="btn">By Employee</button>
+                        <button class="btn">By Level</button>
+                        <button class="btn primary">Export</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Chg Hours</th>
+                            <th>Production</th>
+                            <th>Standard Cost</th>
+                            <th>Margin</th>
+                            <th>Utilization</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Home - Belloti Tax</strong></td>
+                            <td>920</td>
+                            <td>$321,396</td>
+                            <td>$112,000</td>
+                            <td class="metric-badge positive">65.1%</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 78%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Home - Biz Mgmnt</strong></td>
+                            <td>596</td>
+                            <td>$187,399</td>
+                            <td>$42,000</td>
+                            <td class="metric-badge positive">77.6%</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Home - BRM A&A</strong></td>
+                            <td>303</td>
+                            <td>$119,646</td>
+                            <td>$21,000</td>
+                            <td class="metric-badge positive">82.4%</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Home - BRM Tax</strong></td>
+                            <td>974</td>
+                            <td>$370,272</td>
+                            <td>$75,000</td>
+                            <td class="metric-badge positive">79.7%</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 82%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h3 class="section-title">Utilization by Department</h3>
+                    <div class="chart-placeholder">
+                        [Department Utilization Chart]
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="section-title">Resource Allocation Trend</h3>
+                    <div class="chart-placeholder">
+                        [Monthly Trend Chart]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Markdowns Tab -->
+        <div id="markdowns" class="tab-content">
+            <div class="data-section">
+                <div class="section-header">
+                    <h2 class="section-title">Markdown Analysis - January 2025 YTD</h2>
+                    <div class="section-actions">
+                        <button class="btn">By Partner</button>
+                        <button class="btn">By Client</button>
+                        <button class="btn primary">Export Report</button>
+                    </div>
+                </div>
+
+                <div class="kpi-grid" style="margin-bottom: 20px;">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Markdowns</div>
+                        <div class="kpi-value metric-badge negative">$5.49M</div>
+                        <div class="kpi-subtitle">YTD Amount</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Production</div>
+                        <div class="kpi-value">$10.86M</div>
+                        <div class="kpi-subtitle">Before Write-offs</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Write-off Rate</div>
+                        <div class="kpi-value metric-badge negative">50.5%</div>
+                        <div class="kpi-subtitle">Average</div>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Partner</th>
+                            <th>Write-Off Amount</th>
+                            <th>Production</th>
+                            <th>Write-Off %</th>
+                            <th>Top Client Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Bill Osborn</strong></td>
+                            <td class="metric-badge negative">-$683,854</td>
+                            <td>$1,250,000</td>
+                            <td class="metric-badge negative">54.7%</td>
+                            <td>PGM3031899 - Aspire</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Andrea Link</strong></td>
+                            <td class="metric-badge negative">-$185,309</td>
+                            <td>$450,000</td>
+                            <td class="metric-badge negative">41.2%</td>
+                            <td>PGM3005823 - Wondery</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amanda Schlank</strong></td>
+                            <td class="metric-badge negative">-$83,682</td>
+                            <td>$320,000</td>
+                            <td class="metric-badge neutral">26.2%</td>
+                            <td>PGM3029869 - Teamsters</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Andrea Roschke</strong></td>
+                            <td class="metric-badge negative">-$84,020</td>
+                            <td>$285,000</td>
+                            <td class="metric-badge neutral">29.5%</td>
+                            <td>PGM3029881 - Local 142</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="section-title">Top 10 Client Write-offs</h3>
+                <div class="chart-placeholder" style="height: 400px;">
+                    [Bar Chart: Aspire $175K | Wondery $131K | Teamsters $128K | Local 142 $128K | Operative $127K | Hotel & Restaurant $120K | Hawaii Tapers $115K | Masons $108K | Moldex $107K | Hawaii Insulation $102K]
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Analysis Tab -->
+        <div id="revenue-analysis" class="tab-content">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Charge Hours</div>
+                    <div class="kpi-value">40.42K</div>
+                    <div class="kpi-subtitle">Total Hours Charged</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Production</div>
+                    <div class="kpi-value">$13.92M</div>
+                    <div class="kpi-subtitle">Gross Revenue</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Standard Cost</div>
+                    <div class="kpi-value">$3.65M</div>
+                    <div class="kpi-subtitle">Labor Cost</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Markdowns</div>
+                    <div class="kpi-value metric-badge negative">$5.22M</div>
+                    <div class="kpi-subtitle">Total Write-offs</div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="data-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Summary by Partner</h2>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Partner</th>
+                                <th>Billings</th>
+                                <th>Hours</th>
+                                <th>Net Revenue</th>
+                                <th>Realization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Amanda Schlank</strong></td>
+                                <td>$27,942</td>
+                                <td>234</td>
+                                <td>$16,857</td>
+                                <td class="metric-badge negative">19.9%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Andrea Link</strong></td>
+                                <td>$112,333</td>
+                                <td>744</td>
+                                <td>$73,212</td>
+                                <td class="metric-badge positive">57.9%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Andrea Roschke</strong></td>
+                                <td>$107,018</td>
+                                <td>386</td>
+                                <td>$65,643</td>
+                                <td class="metric-badge positive">67.8%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bill Osborn</strong></td>
+                                <td>$85,811</td>
+                                <td>1,542</td>
+                                <td>$315,619</td>
+                                <td class="metric-badge positive">88.9%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="data-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Summary by Level</h2>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Level</th>
+                                <th>Hours</th>
+                                <th>Production</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Director</strong></td>
+                                <td>2,354</td>
+                                <td>$1,334K</td>
+                                <td class="metric-badge neutral">5.82%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Experienced Staff</strong></td>
+                                <td>3,910</td>
+                                <td>$929K</td>
+                                <td class="metric-badge neutral">9.68%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Contractor</strong></td>
+                                <td>405</td>
+                                <td>$73K</td>
+                                <td class="metric-badge neutral">1.00%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FS</strong></td>
+                                <td>30</td>
+                                <td>$17K</td>
+                                <td class="metric-badge neutral">0.07%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function toggleRow(row) {
+            row.classList.toggle('expanded');
+            let nextRow = row.nextElementSibling;
+            while (nextRow && nextRow.classList.contains('sub-row')) {
+                nextRow.classList.toggle('show');
+                nextRow = nextRow.nextElementSibling;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to data cells
+            const dataCells = document.querySelectorAll('.data-table td');
+            dataCells.forEach(cell => {
+                if (cell.textContent.includes('$') || cell.textContent.includes('%')) {
+                    cell.style.cursor = 'pointer';
+                    cell.title = 'Click for details';
+                }
+            });
+
+            // Animate KPI values on load
+            const kpiValues = document.querySelectorAll('.kpi-value');
+            kpiValues.forEach((value, index) => {
+                setTimeout(() => {
+                    value.style.animation = 'fadeIn 0.5s ease';
+                }, index * 100);
+            });
+
+            // Add smooth scrolling for large tables
+            const scrollContainers = document.querySelectorAll('.scroll-container');
+            scrollContainers.forEach(container => {
+                container.addEventListener('wheel', (e) => {
+                    if (e.deltaY !== 0) {
+                        e.preventDefault();
+                        container.scrollLeft += e.deltaY;
+                    }
+                });
+            });
+
+            // Progress bar animations
+            const progressBars = document.querySelectorAll('.progress-fill');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'none';
+                        setTimeout(() => {
+                            entry.target.style.animation = 'fillProgress 1s ease-out';
+                        }, 100);
+                    }
+                });
+            });
+
+            progressBars.forEach(bar => observer.observe(bar));
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                console.log(`Filter changed: ${this.previousElementSibling.textContent} = ${this.value}`);
+                // This would trigger data refresh in actual implementation
+            });
+        });
+
+        // Export functionality placeholder
+        document.querySelectorAll('.btn').forEach(btn => {
+            if (btn.textContent.includes('Export')) {
+                btn.addEventListener('click', function() {
+                    console.log('Export functionality would be triggered here');
+                    // In production, this would generate Excel/PDF exports
+                });
+            }
+        });
+
+        // Add animation for progress bars
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fillProgress {
+                from { width: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
