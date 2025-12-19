@@ -19,31 +19,51 @@
         }
         .question {
             background: white;
-            padding: 12px 15px;
-            margin: 8px 0;
+            padding: 15px;
+            margin: 10px 0;
             border-radius: 6px;
             border-left: 3px solid #667eea;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
         }
         .question.checked {
             border-left-color: #48bb78;
             background: #f0fff4;
         }
-        .question.checked label {
+        .question.checked .q-text {
             color: #718096;
             text-decoration: line-through;
+        }
+        .q-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
         }
         input[type="checkbox"] {
             width: 20px;
             height: 20px;
             margin-top: 2px;
             cursor: pointer;
+            flex-shrink: 0;
         }
-        label {
+        .q-text {
             cursor: pointer;
             line-height: 1.5;
+            font-weight: 500;
+        }
+        .answer {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 60px;
+            box-sizing: border-box;
+        }
+        .answer:focus {
+            outline: none;
+            border-color: #667eea;
         }
         .section {
             color: #718096;
@@ -62,79 +82,121 @@
     <div class="section">Latching & Feeding Frequency</div>
     
     <div class="question">
-        <input type="checkbox" id="q1" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q1">Now that we know her weight, how many times is it appropriate to latch her on? And for how long?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q1" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q1">Now that we know her weight, how many times is it appropriate to latch her on? And for how long?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q2" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q2">How many times can I latch her on now that she's gained her weight?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q2" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q2">How many times can I latch her on now that she's gained her weight?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q3" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q3">Still latching her after she eats?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q3" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q3">Still latching her after she eats?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q4" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q4">When she wakes up sooner than her 2 hr mark, should I prioritize formula or latching her on?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q4" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q4">When she wakes up sooner than her 2 hr mark, should I prioritize formula or latching her on?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q5" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q5">Feeding schedule now that she's over 2 weeks old?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q5" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q5">Feeding schedule now that she's over 2 weeks old?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="section">Intake & Amounts</div>
 
     <div class="question">
-        <input type="checkbox" id="q6" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q6">How much intake per feeding session should we be expecting now?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q6" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q6">How much intake per feeding session should we be expecting now?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q7" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q7">Is the 60 ml still what we need to shoot for?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q7" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q7">Is the 60 ml still what we need to shoot for?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q8" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q8">When and how to know when to increase her ml per feeding?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q8" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q8">When and how to know when to increase her ml per feeding?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q9" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q9">How much weight should we expect for her to gain in the next few weeks?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q9" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q9">How much weight should we expect for her to gain in the next few weeks?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="section">Breastfeeding Technique</div>
 
     <div class="question">
-        <input type="checkbox" id="q10" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q10">When do I know to switch breasts? (She continues to suck, ear/jaw still moves but taking more breaks, still swallowing, been over 15 min on one breast)</label>
+        <div class="q-row">
+            <input type="checkbox" id="q10" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q10">When do I know to switch breasts? (She continues to suck, ear/jaw still moves but taking more breaks, still swallowing, been over 15 min on one breast)</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q11" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q11">If I breastfed her, do I still have to pump for that session?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q11" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q11">If I breastfed her, do I still have to pump for that session?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q12" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q12">How to fix her upper lip — fish lips?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q12" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q12">How to fix her upper lip — fish lips?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="section">Diapers & Output</div>
 
     <div class="question">
-        <input type="checkbox" id="q13" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q13">Poop diapers have slowed down from several to maybe 2-3 in a day — normal?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q13" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q13">Poop diapers have slowed down from several to maybe 2-3 in a day — normal?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
     <div class="question">
-        <input type="checkbox" id="q14" onchange="this.parentElement.classList.toggle('checked')">
-        <label for="q14">Poopy diapers — do we count them when it's just a little smear?</label>
+        <div class="q-row">
+            <input type="checkbox" id="q14" onchange="this.closest('.question').classList.toggle('checked')">
+            <label class="q-text" for="q14">Poopy diapers — do we count them when it's just a little smear?</label>
+        </div>
+        <textarea class="answer" placeholder="Answer..."></textarea>
     </div>
 
 </body>
