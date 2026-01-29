@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Net Reimbursement Expenses Billed - Training Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState } = React;
+
+    const NetReimbursementTraining = () => {
+      const [activeTab, setActiveTab] = useState('overview');
+      const [selectedAccount, setSelectedAccount] = useState(null);
+
+      const accounts = [
+        {
+          id: 'tax-computer',
+          gl: '400061',
+          name: 'Tax Return Computer Costs',
+          type: 'exception',
+          owner: 'AP (Jenifer/Kenia)',
+          offLimits: ['Kai', 'Ron'],
+          passThrough: false,
+          description: 'Only computer-related costs. NOT a pass-through account.',
+          details: [
+            'Must be 100% computer-related expenses',
+            'Generally hit by AP only',
+            'If Kai/Ron booking here, double-check entries'
+          ],
+          color: 'amber'
+        },
+        {
+          id: 'messenger-expense',
+          gl: '400063',
+          name: 'Messenger Expense',
+          type: 'expense',
+          owner: 'AP',
+          offLimits: ['Kai', 'Ron'],
+          passThrough: true,
+          linkedTo: '400062',
+          description: 'What we pay out of pocket to couriers.',
+          details: [
+            'FedEx, UPS, local messengers',
+            'Same day delivery services',
+            'Document on spreadsheet for Ron',
+            'Dollar figure must match BC upload'
+          ],
+          color: 'red'
+        },
+        {
+          id: 'messenger-billed',
+          gl: '400062',
+          name: 'Messenger Billed',
+          type: 'billed',
+          owner: 'Ron',
+          offLimits: ['Kai', 'AP'],
+          passThrough: true,
+          linkedTo: '400063',
+          description: 'What we charge back to clients.',
+          details: [
+            'Direct output of Messenger Expense',
+            'Each entry tied to a client/engagement',
+            'Validate notes and categories',
+            'Trail back to AP entries in BC'
+          ],
+          color: 'green'
+        },
+        {
+          id: 'travel-expense',
+          gl: '400065',
+          name: 'Travel Expense',
+          type: 'expense',
+          owner: 'Kai',
+          offLimits: ['AP', 'Ron'],
+          passThrough: true,
+          linkedTo: '400064',
+          description: 'Travel costs paid out to employees.',
+          details: [
+            '✓ Tied to an engagement',
+            '✓ Paid out to an employee',
+            '✓ Related to travel',
+            'All 3 requirements must be met monthly!'
+          ],
+          color: 'red'
+        },
+        {
+          id: 'travel-billed',
+          gl: '400064',
+          name: 'Travel Billed',
+          type: 'billed',
+          owner: 'Ron',
+          offLimits: ['Kai', 'AP'],
+          passThrough: true,
+          linkedTo: '400065',
+          description: 'Travel costs charged to clients.',
+          details: [
+            'Should match Kai\'s entries',
+            'Reconcile independently',
+            'Descriptions must indicate travel',
+            'Flag discrepancies to Kai'
+          ],
+          color: 'green'
+        },
+        {
+          id: 'other-reimb',
+          gl: '400066',
+          name: 'Other Reimb. Expense Billed',
+          type: 'other',
+          owner: 'Various',
+          offLimits: [],
+          passThrough: true,
+          description: 'Catch-all for everything else.',
+          details: [
+            'Use ONLY when doesn\'t fit other categories',
+            'Not computer, travel, or messenger',
+            'Every amount traceable to PracticePro',
+            'Last resort category'
+          ],
+          color: 'blue'
+        },
+        {
+          id: 'client-advance',
+          gl: '400067',
+          name: 'Client Advance',
+          type: 'exclusive',
+          owner: 'AP Only',
+          offLimits: ['Kai', 'Ron', 'Everyone else'],
+          passThrough: false,
+          description: 'Exclusively for client advances.',
+          details: [
+            'AP exclusive - no exceptions',
+            'Only client advances, nothing else',
+            'Provide details to Ron timely',
+            'Late recording throws off everything!'
+          ],
+          color: 'amber'
+        }
+      ];
+
+      const teamMembers = [
+        { name: 'AP (Jenifer/Kenia)', accounts: ['400061', '400063', '400067'], color: 'bg-blue-500' },
+        { name: 'Ron', accounts: ['400062', '400064'], color: 'bg-teal-500' },
+        { name: 'Kai', accounts: ['400065'], color: 'bg-emerald-500' }
+      ];
+
+      const getColorClasses = (color) => {
+        const colors = {
+          red: { bg: 'bg-red-100', border: 'border-red-500', text: 'text-red-700', badge: 'bg-red-500' },
+          green: { bg: 'bg-green-100', border: 'border-green-500', text: 'text-green-700', badge: 'bg-green-500' },
+          amber: { bg: 'bg-amber-100', border: 'border-amber-500', text: 'text-amber-700', badge: 'bg-amber-500' },
+          blue: { bg: 'bg-blue-100', border: 'border-blue-500', text: 'text-blue-700', badge: 'bg-blue-500' }
+        };
+        return colors[color] || colors.blue;
+      };
+
+      const AccountCard = ({ account, isSelected, onClick }) => {
+        const colorClasses = getColorClasses(account.color);
+        return (
+          <div
+            onClick={onClick}
+            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+              isSelected ? `${colorClasses.border} ${colorClasses.bg} shadow-lg` : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-xs font-mono px-2 py-1 rounded ${colorClasses.badge} text-white`}>
+                GL {account.gl}
+              </span>
+              {account.passThrough ? (
+                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Pass-Through</span>
+              ) : (
+                <span className="text-xs bg-amber-200 text-amber-700 px-2 py-1 rounded font-medium">Exception</span>
+              )}
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-1">{account.name}</h3>
+            <p className="text-sm text-gray-600">Owner: <span className="font-medium">{account.owner}</span></p>
+          </div>
+        );
+      };
+
+      const FlowDiagram = () => {
+        const flows = [
+          { expense: accounts.find(a => a.gl === '400063'), billed: accounts.find(a => a.gl === '400062'), label: 'Messenger' },
+          { expense: accounts.find(a => a.gl === '400065'), billed: accounts.find(a => a.gl === '400064'), label: 'Travel' }
+        ];
+
+        return (
+          <div className="space-y-8">
+            {flows.map((flow, idx) => (
+              <div key={idx} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">{flow.label} Flow</h3>
+                <div className="flex items-center justify-center gap-4">
+                  <div className="flex-1 max-w-xs">
+                    <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 text-center">
+                      <div className="text-xs font-mono text-red-600 mb-1">GL {flow.expense.gl}</div>
+                      <div className="font-semibold text-red-800">{flow.expense.name}</div>
+                      <div className="text-sm text-gray-600 mt-2">Owner: {flow.expense.owner}</div>
+                      <div className="text-xs text-red-600 mt-1">What we pay out</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-center">
+                    <svg className="w-12 h-8 text-teal-500" fill="none" viewBox="0 0 48 24">
+                      <path d="M0 12h40M32 4l10 8-10 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span className="text-xs text-gray-500 mt-1">Should net to $0</span>
+                  </div>
+                  
+                  <div className="flex-1 max-w-xs">
+                    <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 text-center">
+                      <div className="text-xs font-mono text-green-600 mb-1">GL {flow.billed.gl}</div>
+                      <div className="font-semibold text-green-800">{flow.billed.name}</div>
+                      <div className="text-sm text-gray-600 mt-2">Owner: {flow.billed.owner}</div>
+                      <div className="text-xs text-green-600 mt-1">What we charge clients</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      };
+
+      const TeamView = () => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {teamMembers.map((member, idx) => (
+            <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className={`${member.color} text-white p-4`}>
+                <h3 className="font-bold text-lg">{member.name}</h3>
+              </div>
+              <div className="p-4">
+                <h4 className="text-sm font-medium text-gray-500 mb-3">Primary Accounts:</h4>
+                <div className="space-y-2">
+                  {member.accounts.map(gl => {
+                    const acc = accounts.find(a => a.gl === gl);
+                    return (
+                      <div key={gl} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                        <span className="text-xs font-mono bg-gray-200 px-2 py-1 rounded">{gl}</span>
+                        <span className="text-sm text-gray-700">{acc?.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+
+      const RulesView = () => (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl p-6">
+            <h3 className="font-bold text-xl mb-3 flex items-center gap-2">
+              <span className="text-2xl">⚠️</span> Critical Rule
+            </h3>
+            <p className="text-lg">ALL entries must pass through a Client Account. No non-billable entries in these sub-accounts.</p>
+            <p className="mt-2 text-red-100">Non-billable entries → Contact Kristine/Iva immediately</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-teal-600">↔</span>
+                Pass-Through Concept
+              </h3>
+              <p className="text-gray-600">Most sub-accounts should net to zero. What we pay out (Expense) should equal what we charge clients (Billed).</p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">!</span>
+                Exceptions
+              </h3>
+              <p className="text-gray-600">Tax Return Computer Costs (400061) is NOT a pass-through. Client Advance (400067) is AP exclusive.</p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">📋</span>
+                Documentation
+              </h3>
+              <p className="text-gray-600">AP must document messenger expenses on spreadsheet. Dollar figures must match BC upload to PracticePro.</p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">⏰</span>
+                Timing
+              </h3>
+              <p className="text-gray-600">Provide details timely for monthly close. Late recording throws off reconciliation and reporting.</p>
+            </div>
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-6 md:p-8 mb-8 text-white">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">Net Reimbursement Expenses Billed</h1>
+              <p className="text-slate-300">Training Guide for Proper Entry Booking</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <span className="bg-teal-500/20 text-teal-300 px-3 py-1 rounded-full text-sm">Part of Net Revenue</span>
+                <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-sm">Pass-Through Accounts</span>
+                <span className="bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-sm">Client Account Required</span>
+              </div>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {[
+                { id: 'overview', label: '📊 Overview' },
+                { id: 'flow', label: '↔️ Flow Diagram' },
+                { id: 'team', label: '👥 By Team Member' },
+                { id: 'rules', label: '📋 Key Rules' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-slate-800 text-white shadow-md'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Content */}
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {accounts.map(account => (
+                      <AccountCard
+                        key={account.id}
+                        account={account}
+                        isSelected={selectedAccount?.id === account.id}
+                        onClick={() => setSelectedAccount(selectedAccount?.id === account.id ? null : account)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="lg:col-span-1">
+                  {selectedAccount ? (
+                    <div className={`sticky top-4 rounded-xl p-6 shadow-lg border-2 ${getColorClasses(selectedAccount.color).border} ${getColorClasses(selectedAccount.color).bg}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className={`font-mono text-sm px-3 py-1 rounded ${getColorClasses(selectedAccount.color).badge} text-white`}>
+                          GL {selectedAccount.gl}
+                        </span>
+                        <button onClick={() => setSelectedAccount(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+                      </div>
+                      <h3 className="font-bold text-xl text-gray-800 mb-2">{selectedAccount.name}</h3>
+                      <p className="text-gray-600 mb-4">{selectedAccount.description}</p>
+                      
+                      <div className="mb-4">
+                        <span className="text-sm font-medium text-gray-500">Primary Owner:</span>
+                        <p className="font-semibold text-gray-800">{selectedAccount.owner}</p>
+                      </div>
+                      
+                      {selectedAccount.offLimits.length > 0 && (
+                        <div className="mb-4">
+                          <span className="text-sm font-medium text-gray-500">Off Limits For:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {selectedAccount.offLimits.map(person => (
+                              <span key={person} className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded">{person}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Details:</span>
+                        <ul className="mt-2 space-y-1">
+                          {selectedAccount.details.map((detail, idx) => (
+                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                              <span className="text-teal-500 mt-0.5">•</span>
+                              {detail}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="sticky top-4 bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
+                      <div className="text-4xl mb-3">👆</div>
+                      <p className="text-gray-500">Click an account card to see details</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'flow' && <FlowDiagram />}
+            {activeTab === 'team' && <TeamView />}
+            {activeTab === 'rules' && <RulesView />}
+
+            {/* Footer */}
+            <div className="mt-8 text-center text-sm text-gray-500">
+              <p>Questions? Contact Kristine/Iva for non-billable guidance or FP&A for general questions.</p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<NetReimbursementTraining />);
+  </script>
+</body>
+</html>
