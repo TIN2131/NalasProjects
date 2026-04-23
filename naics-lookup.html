@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAICS Lookup · Singer Lewak</title>
+<link rel="stylesheet" href="naics-lookup.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SL</div>
+      <div class="brand-text">
+        <div class="eyebrow">Singer Lewak &middot; Internal Tool</div>
+        <h1>NAICS Code Lookup</h1>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <div><strong id="totalCount">&mdash;</strong> codes indexed</div>
+      <div>North American Industry Classification</div>
+    </div>
+  </header>
+
+  <div class="selected-bar" id="selectedBar" role="status" aria-live="polite">
+    <div class="check" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <div class="sb-code" id="sbCode"></div>
+    <div class="sb-desc" id="sbDesc"></div>
+    <div class="sb-actions">
+      <button class="sb-btn" id="copyBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <span id="copyLabel">Copy</span>
+      </button>
+      <button class="sb-btn ghost" id="clearBtn" type="button" aria-label="Clear selection">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" id="searchInput" placeholder='Search by keyword or code &middot; e.g. "accounting", "dentist", "5412"' autocomplete="off" spellcheck="false">
+    <button class="search-clear" id="searchClear" type="button" aria-label="Clear search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <div class="search-shortcut" aria-hidden="true">
+      <span class="kbd">/</span>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <aside class="sidebar">
+
+      <div class="sidebar-section">
+        <div class="section-head">
+          <div class="section-title">Industries We Serve</div>
+        </div>
+        <div class="featured">
+          <div class="featured-list" id="featuredList"></div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-head">
+          <div class="section-title">Browse Categories</div>
+          <button class="section-link" id="clearCat" type="button">Clear</button>
+        </div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+
+      <div class="sidebar-section hidden" id="recentSection">
+        <div class="section-head">
+          <div class="section-title">Recent Lookups</div>
+          <button class="section-link muted" id="clearRecent" type="button">Clear</button>
+        </div>
+        <div class="recent-chips" id="recentChips"></div>
+      </div>
+
+    </aside>
+
+    <section class="results-pane">
+      <div class="results-head">
+        <div class="results-title" id="resultsTitle">All Codes</div>
+        <div class="results-count" id="resultsCount"></div>
+      </div>
+      <div class="results-body" id="resultsBody" role="listbox" aria-label="NAICS code results"></div>
+    </section>
+
+  </div>
+
+  <div class="footer-note">
+    <div>Singer Lewak LLP &middot; FP&amp;A Systems</div>
+    <div class="kbd-hint">
+      <span><span class="kbd">/</span> focus search</span>
+      <span><span class="kbd">&uarr;</span><span class="kbd">&darr;</span> navigate</span>
+      <span><span class="kbd">&crarr;</span> select</span>
+      <span><span class="kbd">esc</span> clear</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastText">Copied to clipboard</span>
+</div>
+
+<script src="naics-lookup.js"></script>
+</body>
+</html>
